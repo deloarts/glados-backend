@@ -13,6 +13,8 @@ repos:
     hooks:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
+      - id: "no-commit-to-branch"
+        args: ["--branch", "main"]
 
   - repo: local
     hooks:
