@@ -1,0 +1,14 @@
+{
+    "cSpell.words": [
+        "glados",
+        "pylint",
+        "pylintrc",
+        "pyproject",
+        "rcfile"
+    ],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
+}

@@ -1,0 +1,47 @@
+[tool.poetry]
+authors = ["Philip Delorenzo <git@deloarts.com>"]
+classifiers = ["Operating System :: Linux"]
+description = "Backend for the glados project."
+name = "glados"
+readme = "README.md"
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+alembic = "^1.4.2"
+celery = "^4.4.2"
+email-validator = "^1.0.5"
+emails = "^0.5.15"
+fastapi = "^0.54.1"
+gunicorn = "^20.0.4"
+jinja2 = "^2.11.2"
+passlib = {extras = ["bcrypt"], version = "^1.7.2"}
+psycopg2-binary = "^2.8.5"
+pydantic = "^1.4"
+python = "^3.10"
+python-jose = {extras = ["cryptography"], version = "^3.1.0"}
+python-multipart = "^0.0.5"
+raven = "^6.10.0"
+requests = "^2.23.0"
+sqlalchemy = "^1.3.16"
+tenacity = "^6.1.0"
+uvicorn = "^0.11.3"
+
+[tool.poetry.dev-dependencies]
+black = "21.12b0"
+isort = "^4.3.21"
+pdoc3 = "^0.10.0"
+pre-commit = "^2.19.0"
+pylint = "^2.13.9"
+pytest = "^7.1.1"
+pytest-cov = "^2.8.1"
+sqlalchemy-stubs = "^0.3"
+
+[tool.isort]
+force_grid_wrap = 0
+include_trailing_comma = true
+line_length = 88
+multi_line_output = 3
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
