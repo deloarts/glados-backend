@@ -1,14 +1,44 @@
 {
     "cSpell.words": [
+        "apscheduler",
+        "autoflush",
+        "bothify",
+        "cifs",
+        "coloredlogs",
+        "COMPUTERNAME",
+        "dateutil",
+        "ecommerce",
+        "fastapi",
         "glados",
+        "ilike",
+        "jsonable",
+        "levelname",
+        "multilog",
+        "mylowercasehost",
+        "openpyxl",
+        "partnumber",
+        "passlib",
+        "pydantic",
         "pylint",
         "pylintrc",
         "pyproject",
-        "rcfile"
+        "pytest",
+        "qualname",
+        "rcfile",
+        "sessionmaker",
+        "sqlalchemy",
+        "starlette",
+        "systemuser",
+        "uvicorn"
     ],
     "python.testing.pytestArgs": [
         "tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "isort.args": [
+        "--profile",
+        "black",
+        "--skip-gitignore",
+    ],
 }

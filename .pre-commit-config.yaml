@@ -3,22 +3,23 @@
 
 repos:
   - repo: https://github.com/psf/black
-    rev: "21.12b0"
+    rev: "22.12.0"
     hooks:
       - id: black
-        additional_dependencies: ["click==8.0.4"]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v4.2.0"
     hooks:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
+      - id: "no-commit-to-branch"
+        args: ["--branch", "main"]
 
   - repo: local
     hooks:
       - id: pylint
         name: pylint
-        entry: poetry run pylint glados/
+        entry: poetry run pylint app/
         language: system
         always_run: true
         pass_filenames: false
