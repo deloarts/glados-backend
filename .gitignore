@@ -3,6 +3,7 @@
 .pytype
 .DS_Store
 .idea/
+.ignore/
 .hide/
 .backup/
 hidden_assets/
@@ -14,9 +15,23 @@ playground/
 old.txt
 global_modules.txt
 
+# Database
+*.db
+
+# Log files
+*.log
+*.log.*
+
 # Config files
+config.yml
 settings.json
 users.json
+
+# Template files
+*.j2
+*.xlsx
+!*.sample.j2
+!*.sample.xlsx
 
 # VS Code files
 .vscode/*

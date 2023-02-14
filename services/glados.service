@@ -1,0 +1,14 @@
+[Unit]
+Description=Glados Backend
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/glados/glados-backend
+ExecStart=/opt/glados/glados-backend/.env/bin/python /opt/glados/glados-backend/app/main.py
+Restart=on-abort
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

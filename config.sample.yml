@@ -1,0 +1,87 @@
+debug: False
+
+locale:
+  tz: europe/vienna
+
+security:
+  min_pw_len: 8
+  algorithm: HS256
+  token_url: /api/web/v1/login/access-token
+  expire_minutes: 3600
+  debug_api_key: myDebugAPIKey
+  debug_secret_key: myDebugSecretKey
+
+server:
+  host: 0.0.0.0
+  port: 5000
+  whitelist:
+    - "127.0.0.1"
+
+schedules:
+  database_hour: 0
+  system_hour: 0
+  email_notifications_hour: 6
+  backup_db_hour: 0
+  delete_temp_hour: 0
+  delete_uploads_hour: 0
+
+filesystem:
+  disc_space_warning: 10 # GiB
+  db_backup:
+    path: /mnt/glados-backup
+    is_mount: True
+
+items:
+  bought:
+    status:
+      open: "open"
+      requested: "requested"
+      ordered: "ordered"
+      late: "late"
+      partial: "partial"
+      delivered: "delivered"
+      canceled: "canceled"
+      lost: "lost"
+    units:
+      default: "PCS"
+      values: ["PCS", "M2", "M3"]
+    order_by:
+      high_priority: "high_priority"
+      created: "created"
+      project: "project"
+      machine: "machine"
+      group_1: "group1"
+      manufacturer: "manufacturer"
+      supplier: "supplier"
+
+excel:
+  header_row: 0
+  data_row: 1
+  style:
+    font: "Monospac821 BT"
+    size: 8
+    header_color: "FFFFFF"
+    header_bg_color: "007ACC"
+    data_color_1: "000000"
+    data_bg_color_1: "F0F0F0"
+    data_color_2: "000000"
+    data_bg_color_2: "FFFFFF"
+
+mailing:
+  server: smtp.office365.com
+  port: 587
+  account: glados@company.com
+  password: "FooBarBla"
+  debug_receiver: admin@company.com
+  debug_no_send: True
+
+templates:
+  bought_item_excel_import: "bought_item_import.xlsx"
+  mail_item_notification: "item_notification.j2"
+  mail_schedule_error: "schedule_error.j2"
+  mail_disc_space_warning: "disc_space_warning.j2"
+
+init:
+  full_name: "System"
+  mail: glados@company.com
+  password: "12345678"

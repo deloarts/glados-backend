@@ -1,5 +1,5 @@
-from glados import __version__
+from app.const import VERSION
 
 
 def test_version():
-    assert __version__ == "0.1.0"
+    assert VERSION == "0.1.0"
