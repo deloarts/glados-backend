@@ -27,6 +27,7 @@ class SystemSchedules(BaseSchedules):
             self._get_disc_space()
 
     def _get_disc_space(self) -> None:
+        log.info("Running system schedule: Retrieving disc space.")
         # TODO: Reactor this method
 
         db_total, db_used, db_free = shutil.disk_usage(DB_PRODUCTION.parent)
@@ -49,12 +50,15 @@ class SystemSchedules(BaseSchedules):
             backup_free = 0
             backup_path = "Not mounted."
 
+        log.info(f"Free disc space at {db_path!r}: {db_free}GiB.")
+        log.info(f"Free disc space at {backup_path!r}: {backup_free}GiB.")
+
         if (
             db_free < cfg.filesystem.disc_space_warning
             or backup_free < cfg.filesystem.disc_space_warning
         ):
             log.warning(
-                f"Disc space is running low (<{cfg.filesystem.disc_space_warning}GB)"
+                f"Disc space is running low (<{cfg.filesystem.disc_space_warning}GiB)."
             )
             MailPreset.send_disc_space_warning(
                 db_total,

@@ -35,6 +35,8 @@ class FileSchedules(BaseSchedules):
             self._backup_database()
 
     def _delete_temp(self) -> None:
+        log.info("Running file schedule: Deleting content of temp-folder.")
+
         try:
             Files.delete_content(path=TEMP)
         except Exception as e:
@@ -42,6 +44,8 @@ class FileSchedules(BaseSchedules):
             MailPreset.send_schedule_error("Delete Temp Files", str(e))
 
     def _delete_uploads(self) -> None:
+        log.info("Running file schedule: Deleting content of uploads-folder.")
+
         try:
             Files.delete_content(path=UPLOADS)
         except Exception as e:
@@ -49,6 +53,8 @@ class FileSchedules(BaseSchedules):
             MailPreset.send_schedule_error("Delete Uploaded Files", str(e))
 
     def _backup_database(self) -> None:
+        log.info("Running file schedule: Backing up database.")
+
         backup_dir = Path(cfg.filesystem.db_backup.path)
         if not backup_dir.exists():
             log.error(msg := f"Backup destination {str(backup_dir)!r} does not exist.")
