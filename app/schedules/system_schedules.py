@@ -27,19 +27,27 @@ class SystemSchedules(BaseSchedules):
             self._get_disc_space()
 
     def _get_disc_space(self) -> None:
+        # TODO: Reactor this method
+
         db_total, db_used, db_free = shutil.disk_usage(DB_PRODUCTION.parent)
         db_total = db_total // (2**30)
         db_used = db_used // (2**30)
         db_free = db_free // (2**30)
         db_path = DB_PRODUCTION.parent.resolve()
 
-        backup_total, backup_used, backup_free = shutil.disk_usage(
-            cfg.filesystem.db_backup.path
-        )
-        backup_total = backup_total // (2**30)
-        backup_used = backup_used // (2**30)
-        backup_free = backup_free // (2**30)
-        backup_path = Path(cfg.filesystem.db_backup.path).resolve()
+        if Path(cfg.filesystem.db_backup.path).exists():
+            backup_total, backup_used, backup_free = shutil.disk_usage(
+                cfg.filesystem.db_backup.path
+            )
+            backup_total = backup_total // (2**30)
+            backup_used = backup_used // (2**30)
+            backup_free = backup_free // (2**30)
+            backup_path = Path(cfg.filesystem.db_backup.path).resolve()
+        else:
+            backup_total = 0
+            backup_used = 0
+            backup_free = 0
+            backup_path = "Not mounted."
 
         if (
             db_free < cfg.filesystem.disc_space_warning
