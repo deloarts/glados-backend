@@ -21,6 +21,10 @@ class FileSchedules(BaseSchedules):
         """Initializes the file schedules."""
         super().__init__()
 
+        # Make sure all directories exist for all schedules
+        os.makedirs(TEMP, exist_ok=True)
+        os.makedirs(UPLOADS, exist_ok=True)
+
         self.add(function=self._delete_temp, hour=cfg.schedules.delete_temp_hour)
         self.add(function=self._delete_uploads, hour=cfg.schedules.delete_uploads_hour)
         self.add(function=self._backup_database, hour=cfg.schedules.backup_db_hour)
