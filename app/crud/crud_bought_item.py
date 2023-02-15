@@ -187,6 +187,11 @@ class CRUDBoughtItem(
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+
+        log.info(
+            f"User {db_obj_user.username!r} created new 'bought item' "
+            f"({db_obj.partnumber}), ID={db_obj.id}."
+        )
         return db_obj
 
     def update(
@@ -243,7 +248,13 @@ class CRUDBoughtItem(
             changes="Item updated.", db_obj_user=db_obj_user, db_obj_item=db_obj_item
         )
 
-        return super().update(db, db_obj=db_obj_item, obj_in=data)
+        item = super().update(db, db_obj=db_obj_item, obj_in=data)
+
+        log.info(
+            f"User {db_obj_user.username!r} updated a bought item "
+            f"({item.partnumber}), ID={item.id}."
+        )
+        return item
 
     def update_status(
         self,
@@ -332,7 +343,12 @@ class CRUDBoughtItem(
             )
             email_notification.create(db=db, obj_in=notification)
 
-        return return_obj
+        item = return_obj
+        log.info(
+            f"User {db_obj_user.username!r} updated the status of a bought item "
+            f"({item.partnumber}), status={item.status}, ID={item.id}."
+        )
+        return item
 
     def update_field(
         self,
@@ -378,7 +394,13 @@ class CRUDBoughtItem(
             db_obj_user=db_obj_user,
             db_obj_item=db_obj_item,
         )
-        return super().update(db, db_obj=db_obj_item, obj_in=data)
+        item = super().update(db, db_obj=db_obj_item, obj_in=data)
+
+        log.info(
+            f"User {db_obj_user.username!r} updated the field {field_name!r} of a "
+            f"bought item ({item.partnumber}), value={value}, ID={item.id}."
+        )
+        return item
 
     def update_required_field(
         self,
@@ -469,7 +491,13 @@ class CRUDBoughtItem(
             db_obj_user=db_obj_user,
             db_obj_item=db_obj_item,
         )
-        return super().update(db, db_obj=db_obj_item, obj_in=data)
+        item = super().update(db, db_obj=db_obj_item, obj_in=data)
+
+        log.info(
+            f"User {db_obj_user.username!r} deleted the a bought item "
+            f"({item.partnumber}), ID={item.id}."
+        )
+        return item
 
 
 bought_item = CRUDBoughtItem(model_bought_item.BoughtItem)

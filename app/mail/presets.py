@@ -20,7 +20,7 @@ class MailPreset:
     @staticmethod
     def send_schedule_error(task_name: str, message: str) -> None:
         """Send a schedule error message to the init-systemuser."""
-        log.info(f"Sending email notification to {cfg.init.mail!r}...")
+        log.info(f"Sending schedule error email notification to {cfg.init.mail!r}...")
         body = render_template(
             template_file=Path(TEMPLATES, cfg.templates.mail_schedule_error), **locals()
         )
@@ -40,7 +40,9 @@ class MailPreset:
         backup_path: str,
     ) -> None:
         """Send a disc space warning message to the init-systemuser."""
-        log.info(f"Sending email notification to {cfg.init.mail!r}...")
+        log.info(
+            f"Sending disc space warning email notification to {cfg.init.mail!r}..."
+        )
         body = render_template(
             template_file=Path(TEMPLATES, cfg.templates.mail_disc_space_warning),
             **locals(),
