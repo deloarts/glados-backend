@@ -235,6 +235,8 @@ No you're ready to create new users.
 
 ## 2 update
 
+> ⚠️ Very important: The frontend depends on a certain server version. Make sure your frontend has the correct version when updating in production!
+
 ### 2.1 stop the service
 
 ```bash
