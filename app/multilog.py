@@ -28,7 +28,9 @@ class Log:
             self.logger.setLevel(logging.INFO)
 
         self.stream_handler: logging.StreamHandler = None  # type: ignore
-        self.file_handler: logging.handlers.RotatingFileHandler = None  # type:ignore
+        self.file_handler: logging.handlers.TimedRotatingFileHandler = (
+            None
+        )  # type:ignore
         coloredlogs.install(level=logging.DEBUG if cfg.debug else logging.INFO)
 
     def add_stream_handler(self):
@@ -38,31 +40,28 @@ class Log:
         self.stream_handler.setFormatter(self.format)
         self.logger.addHandler(self.stream_handler)
 
-    def add_file_handler(
-        self,
-        backup_count: int = 10,
-    ):
-        """
-        Adds a rotating file handler.
+    def add_file_handler(self):
+        """Adds a timed rotating file handler."""
 
-        Args:
-            backup_count (int, optional): The amount of backups. Each new file handler \
-                will create a backup of an existing log file. Defaults to 10.
-        """
+        def namer(default: str) -> str:
+            return default.replace(".log", "") + ".log"
 
         os.makedirs(LOGS, exist_ok=True)
 
         filename = f"{NAME}.debug.log" if cfg.debug else f"{NAME}.log"
         logfile_path = Path(LOGS, filename)
 
-        self.file_handler = logging.handlers.RotatingFileHandler(
-            logfile_path, mode="w", backupCount=backup_count, delay=True
+        self.file_handler = logging.handlers.TimedRotatingFileHandler(
+            filename=logfile_path,
+            when="midnight",
+            encoding="utf-8",
         )
+        self.file_handler.namer = namer
         self.file_handler.setLevel(self.logger.level)
         self.file_handler.setFormatter(self.format)
         self.logger.addHandler(self.file_handler)
-        if os.path.isfile(logfile_path):
-            self.file_handler.doRollover()
+        # if logfile_path.exists():
+        #     self.file_handler.doRollover()
 
     def _set_level_debug(self) -> None:
         """Sets the log-level to DEBUG."""
