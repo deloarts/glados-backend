@@ -6,6 +6,7 @@ from typing import List, Optional
 
 from crud.crud_base import CRUDBase
 from models import model_email_notification
+from multilog import log
 from schemas import schema_email_notification
 from sqlalchemy.orm import Session
 
@@ -50,6 +51,10 @@ class CRUDEmailNotification(
     ) -> model_email_notification.EmailNotification:
         """Creates a new email notification by the given schema."""
         db_obj = super().create(db, obj_in=obj_in)
+        log.info(
+            f"Created new pending email notification for {obj_in.receiver_id!r} "
+            f"about item ID={obj_in.bought_item_id}, ID={db_obj.id}."
+        )
         return db_obj
 
     def delete(
@@ -60,6 +65,7 @@ class CRUDEmailNotification(
     ) -> Optional[model_email_notification.EmailNotification]:
         """Deletes an email notification by its id."""
         db_obj = super().delete(db, id=id)
+        log.info(f"Deleted email notification with ID={id}.")
         return db_obj
 
 

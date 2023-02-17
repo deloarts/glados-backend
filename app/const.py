@@ -6,7 +6,7 @@ import os
 import secrets
 from pathlib import Path
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 NAME = "glados"
 
 # Security
@@ -23,9 +23,7 @@ API_WEB_V1 = "/api/web/v1"
 API_PAT_V1 = "/api/pat/v1"
 
 # Paths
-ROOT = Path(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))).replace(os.sep, "/")
-)
+ROOT = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CONFIG = Path(ROOT, "config.yml")
 TEMP = Path(ROOT, "temp")
 DB_DEVELOPMENT = Path(ROOT, "database/dev.db")

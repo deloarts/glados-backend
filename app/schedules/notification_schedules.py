@@ -32,6 +32,9 @@ class NotificationSchedules(BaseSchedules):
             self._send_item_notification()
 
     def _send_item_notification(self) -> None:
+        log.info(
+            "Running notification schedule: Sending pending bought item notifications."
+        )
 
         receiver_ids = email_notification.get_distinct_receiver_ids(self.db)
         if not receiver_ids:

@@ -69,8 +69,16 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
 
     def _read_file(self) -> None:
         """Reads the data from the uploaded excel file."""
-        self.wb = load_workbook(filename=BytesIO(self.data))
-        self.ws = self.wb.worksheets[0]
+
+        log.info(f"Reading workbook, uploaded by user {self.db_obj_user.username!r}...")
+        try:
+            self.wb = load_workbook(filename=BytesIO(self.data))
+            self.ws = self.wb.worksheets[0]
+        except Exception as e:
+            log.error(
+                f"Failed to load workbook from user {self.db_obj_user.username}: {e}"
+            )
+            raise HTTPException(status_code=422, detail=[str(e)])
 
     def _get_header_row(self) -> int:
         """Return the header row with EXCEL index (index starts by 1)
@@ -93,6 +101,9 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
                 log.debug(f"Import file header row is {row_index}")
                 return row_index
 
+        log.warning(
+            f"Failed to read header data from workbook, uploaded by user {self.db_obj_user.username!r}."
+        )
         raise HTTPException(status_code=422, detail=["Header missing or invalid."])
 
     def _read_data(self) -> List[CreateSchemaType]:
@@ -134,6 +145,9 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
                 warnings.append(f"Error in row #{row_index}: {error}")
 
         if warnings:
+            log.warning(
+                f"Failed to read data from workbook, uploaded by user {self.db_obj_user.username!r}."
+            )
             raise HTTPException(status_code=422, detail=warnings)
 
         return db_objs_in

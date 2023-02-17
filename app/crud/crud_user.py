@@ -9,6 +9,7 @@ from config import cfg
 from crud.crud_base import CRUDBase
 from fastapi import HTTPException
 from models import model_user
+from multilog import log
 from schemas import schema_user
 from security import get_password_hash, verify_password
 from sqlalchemy.orm import Session
@@ -56,6 +57,10 @@ class CRUDUser(
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+
+        log.info(
+            f"Created user {db_obj.username!r} ({db_obj.full_name}), ID={db_obj.id}."
+        )
         return db_obj
 
     def update(
@@ -91,7 +96,9 @@ class CRUDUser(
             del data["password"]
             data["hashed_password"] = hashed_password
 
-        return super().update(db, db_obj=db_obj, obj_in=data)
+        user = super().update(db, db_obj=db_obj, obj_in=data)
+        log.info(f"Updated user {user.username!r} ({user.full_name}), ID={user}.")
+        return user
 
     def authenticate(
         self, db: Session, *, username: str, password: str

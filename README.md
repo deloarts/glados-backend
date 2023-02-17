@@ -3,7 +3,7 @@
 Backend for the glados project.
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
-![version](https://img.shields.io/badge/Version-0.1.0-orange.svg?style=for-the-badge)
+![version](https://img.shields.io/badge/Version-0.1.1-orange.svg?style=for-the-badge)
 
 [![python](https://img.shields.io/badge/Python-3.10-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
@@ -19,20 +19,21 @@ Table of contents:
       - [1.2.1 glados directory](#121-glados-directory)
       - [1.2.2 glados database backup directory](#122-glados-database-backup-directory)
     - [1.3 software requirements](#13-software-requirements)
-      - [1.2.1 install python](#121-install-python)
-      - [1.2.2 install git](#122-install-git)
+      - [1.3.1 install python](#131-install-python)
+      - [1.3.2 install git](#132-install-git)
     - [1.4 clone the repository](#14-clone-the-repository)
     - [1.5 create the environment](#15-create-the-environment)
     - [1.6 setup the config file \& all templates](#16-setup-the-config-file--all-templates)
     - [1.7 create the database](#17-create-the-database)
     - [1.8 setup startup scripts](#18-setup-startup-scripts)
     - [1.9 create the service](#19-create-the-service)
+    - [1.10 first login](#110-first-login)
   - [2 update](#2-update)
     - [2.1 stop the service](#21-stop-the-service)
     - [2.2 git](#22-git)
-    - [2.2 update the config file](#22-update-the-config-file)
-    - [2.3 migrate the database](#23-migrate-the-database)
-    - [2.4 restart the service](#24-restart-the-service)
+    - [2.3 update the config file](#23-update-the-config-file)
+    - [2.4 migrate the database](#24-migrate-the-database)
+    - [2.5 restart the service](#25-restart-the-service)
   - [3 developing](#3-developing)
     - [3.1 repository](#31-repository)
       - [3.1.1 cloning](#311-cloning)
@@ -88,7 +89,7 @@ In the following chapters you'll find a description on how to create an alias fo
 sudo apt update -y
 ```
 
-#### 1.2.1 install python
+#### 1.3.1 install python
 
 Install build dependencies:
 
@@ -99,14 +100,14 @@ sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-
 Download and extract python 3.10:
 
 ```bash
-wget https://www.python.org/ftp/python/3.10.0/Python-3.10.7.tgz
+wget https://www.python.org/ftp/python/3.10.7/Python-3.10.7.tgz
 tar -xvf Python-3.10.7.tgz
 ```
 
 Build and install python:
 
 ```bash
-cd Python-3.10.*
+cd Python-3.10.7
 sudo ./configure --enable-optimizations
 sudo make -j 2
 sudo make altinstall
@@ -135,7 +136,7 @@ python --version
 Python 3.10.7
 ```
 
-#### 1.2.2 install git
+#### 1.3.2 install git
 
 ```bash
 sudo apt install git -y
@@ -151,6 +152,7 @@ To perform this you'll need:
 ```bash
 cd /opt/glados
 sudo git clone https://github.com/deloarts/glados-backend.git
+cd glados-backend
 git checkout {TAG_NAME}
 ```
 
@@ -175,8 +177,8 @@ python -m pip install -r requirements.txt
 
 ### 1.6 setup the config file & all templates
 
- - Copy the `config.sample.yml` file and paste it as `config.yml` file. Then edit the config file to fit your needs.
- - Do the same for all template files in the templates folder.
+- Copy the `config.sample.yml` file and paste it as `config.yml` file. Then edit the config file to fit your needs.
+- Do the same for all template files in the templates folder.
 
 ### 1.7 create the database
 
@@ -205,7 +207,7 @@ sudo nano ~/.bashrc
 # Glados
 alias watch-glados-service='watch -c SYSTEMD_COLORS=1 systemctl status glados.service'
 alias mount-glados-backup='sudo mount -t cifs "//{SHARE_HOST}/{SHARE_NAME}" "/mnt/glados-backup" -o username={WINDOWS_USER}'
-bash bash /opt/glados/glados-backend/scripts/glados-welcome.sh
+bash /opt/glados/glados-backend/scripts/glados-welcome.sh
 ```
 
 - SHARE_HOST: The IP address of the Windows server, which holds the share.
@@ -222,7 +224,18 @@ sudo systemctl enable glados.service
 sudo systemctl start glados.service
 ```
 
+### 1.10 first login
+
+Login to Glados at the IP address you've specified in the config file (this requires the frontend to be set up):
+
+- Username: `system`
+- Password: The password you've setup in the config file.
+
+No you're ready to create new users.
+
 ## 2 update
+
+> ⚠️ Very important: The frontend depends on a certain server version. Make sure your frontend has the correct version when updating in production!
 
 ### 2.1 stop the service
 
@@ -244,13 +257,13 @@ git checkout {TAG_NAME}
 python -m pip install -r requirements.txt
 ```
 
-Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.1.0`.
+Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.1.1`.
 
-### 2.2 update the config file
+### 2.3 update the config file
 
 Compare the `config.sample.yml` file with your `config.yml` file and adjust, if necessary.
 
-### 2.3 migrate the database
+### 2.4 migrate the database
 
 To upgrade the database to the latest version run:
 
@@ -262,7 +275,7 @@ python -m alembic upgrade head
 
 > ⚠️ Be sure to have a backup of your database before migrating!
 
-### 2.4 restart the service
+### 2.5 restart the service
 
 ```bash
 sudo systemctl start glados.service
@@ -383,6 +396,7 @@ No license.
 
 ## 5 changelog
 
+**v0.1.1**: Update log handler.  
 **v0.1.0**: Initial commit.
 
 ## 6 to do

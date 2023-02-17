@@ -78,5 +78,5 @@ class ExportExcel(Generic[ModelType, SchemaType]):
 
         path = Path(TEMP, f"{self.name}.xlsx")
         self.wb.save(str(path))
-        log.info(f"Saved EXCEL file at {str(path)!r}")
+        log.info(f"Saved EXCEL file at {str(path)!r}.")
         return path
