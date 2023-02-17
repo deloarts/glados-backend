@@ -50,8 +50,8 @@ class SystemSchedules(BaseSchedules):
             backup_free = 0
             backup_path = "Not mounted."
 
-        log.info(f"Free disc space at {db_path!r}: {db_free}GiB.")
-        log.info(f"Free disc space at {backup_path!r}: {backup_free}GiB.")
+        log.info(f"Free disc space at {str(db_path)!r}: {db_free}GiB.")
+        log.info(f"Free disc space at {str(backup_path)!r}: {backup_free}GiB.")
 
         if (
             db_free < cfg.filesystem.disc_space_warning
