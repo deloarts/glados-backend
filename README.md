@@ -196,6 +196,7 @@ To be able to run all startup scripts, you'll need to make them executable:
 
 ```bash
 sudo chmod +x /opt/glados/glados-backend/scripts/glados-welcome.sh
+sudo chmod +x /opt/glados/glados-backend/scripts/glados-aliases.sh
 ```
 
 Now you have to create an alias and a run-command to your .bashrc file:
@@ -208,6 +209,7 @@ sudo nano ~/.bashrc
 alias watch-glados-service='watch -c SYSTEMD_COLORS=1 systemctl status glados.service'
 alias mount-glados-backup='sudo mount -t cifs "//{SHARE_HOST}/{SHARE_NAME}" "/mnt/glados-backup" -o username={WINDOWS_USER}'
 bash /opt/glados/glados-backend/scripts/glados-welcome.sh
+source /opt/glados/glados-backend/scripts/glados-aliases.sh
 ```
 
 - SHARE_HOST: The IP address of the Windows server, which holds the share.

@@ -4,11 +4,6 @@ isMounted() {
         findmnt "$1" >/dev/null;
 }
 
-# Create glados aliases
-alias watch-glados-service='watch -c SYSTEMD_COLORS=1 systemctl status glados.service'
-alias start-glados-service='sudo systemctl start glados.service'
-alias stop-glados-service='sudo systemctl stop glados.service'
-
 # Show a welcome message on shell login.
 echo -e ''
 if isMounted "/mnt/glados-backup";
