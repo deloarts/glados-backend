@@ -67,12 +67,14 @@ class CRUDBoughtItem(
             # TODO: Refactor this.
             """
             if keyword is None:
-                return f"{self.model.created} desc"
+                return f"{self.model.id} desc"
             output_list = []
             values = keyword.split(",")
             for value in values:
                 if value == cfg.items.bought.order_by.high_priority:
                     output_list.append(f"{self.model.high_priority} desc")
+                elif value == cfg.items.bought.order_by.created:
+                    output_list.append(f"{self.model.created} asc")
                 elif value == cfg.items.bought.order_by.project:
                     output_list.append(f"{self.model.project} asc")
                 elif value == cfg.items.bought.order_by.machine:
@@ -83,7 +85,7 @@ class CRUDBoughtItem(
                     output_list.append(f"{self.model.manufacturer} asc")
                 elif value == cfg.items.bought.order_by.supplier:
                     output_list.append(f"{self.model.supplier} asc")
-            output_list.append(f"{self.model.created} desc")
+            output_list.append(f"{self.model.id} desc")
             return ",".join(output_list)
 
         if created_from is None:
