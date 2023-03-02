@@ -90,16 +90,34 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             int: The header row index.
         """
         db_columns = []
+        empty_row_count = 0
+
         for col in self.model.__table__.columns.keys():  # type: ignore
             db_columns.append(" ".join(i.capitalize() for i in str(col).split("_")))
 
         for row_index in range(1, self.ws.max_row + 1):
+            # Abort after 100 empty rows
+            # Sometimes ws.max_row doesn't return the correct value and the loop
+            # would run forever...
+            if empty_row_count > 100:
+                break
+
             header_candidate = []
             for col_index in range(1, self.ws.max_column + 1):
-                header_candidate.append(self.ws.cell(row_index, col_index).value)
-            if set(header_candidate) <= set(db_columns):
-                log.debug(f"Import file header row is {row_index}")
-                return row_index
+                cell_value = self.ws.cell(row_index, col_index).value
+                log.debug(
+                    f"Reading header candidate in row {row_index} and col {col_index}..."
+                )
+                if cell_value is not None:
+                    header_candidate.append(cell_value)
+
+            if not header_candidate:
+                empty_row_count += 1
+            else:
+                empty_row_count = 0
+                if set(header_candidate) <= set(db_columns):
+                    log.debug(f"Import file header row is {row_index}")
+                    return row_index
 
         log.warning(
             f"Failed to read header data from workbook, uploaded by user {self.db_obj_user.username!r}."
