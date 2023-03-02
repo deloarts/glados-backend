@@ -97,7 +97,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
 
         for row_index in range(1, self.ws.max_row + 1):
             # Abort after 100 empty rows
-            # Sometimes es.max_row doesn't return the correct value and the loop
+            # Sometimes ws.max_row doesn't return the correct value and the loop
             # would run forever...
             if empty_row_count > 100:
                 break
