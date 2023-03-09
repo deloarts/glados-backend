@@ -2,6 +2,7 @@
     Handles all routes to the host-resource.
 """
 
+from dataclasses import asdict
 from datetime import datetime
 from typing import Any
 
@@ -44,3 +45,14 @@ def get_host_config_items_bought_status(
 ) -> Any:
     """Returns available bought items status."""
     return cfg.items.bought.status
+
+
+@router.get(
+    "/config/items/bought/units",
+    response_model=schema_host.HostConfigItemsBoughtUnits,
+)
+def get_host_config_items_bought_units(
+    verified: bool = Depends(deps.verify_token),
+) -> Any:
+    """Returns available bought items units."""
+    return cfg.items.bought.units
