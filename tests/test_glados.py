@@ -2,4 +2,4 @@ from app.const import VERSION
 
 
 def test_version():
-    assert VERSION == "0.1.3"
+    assert VERSION == "0.2.0"
