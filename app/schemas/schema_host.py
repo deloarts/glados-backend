@@ -3,6 +3,7 @@
 """
 
 from datetime import datetime
+from typing import List
 
 from config import Config
 from pydantic import BaseModel
@@ -38,3 +39,10 @@ class HostConfigItemsBoughtStatus(BaseModel):
     partial: str
     delivered: str
     lost: str
+
+
+class HostConfigItemsBoughtUnits(BaseModel):
+    """Bought item units schema."""
+
+    default: str
+    values: List[str]
