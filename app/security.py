@@ -33,7 +33,7 @@ def get_secret_key() -> str:
     Returns the secret key. Return the key from the config file if the app runs in
     debug mode, creates a new key otherwise.
     """
-    if cfg.security.debug_secret_key:
+    if cfg.debug and cfg.security.debug_secret_key:
         log.debug("Using debug secret key from config-file.")
         return cfg.security.debug_secret_key
     log.debug("Using generated secret key.")
