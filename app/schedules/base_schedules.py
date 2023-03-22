@@ -7,7 +7,7 @@ from typing import Callable
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from config import cfg
-from db.session import SessionLocal
+from db.session import Engine
 from multilog import log
 from sqlalchemy.orm import Session
 
@@ -19,6 +19,7 @@ class BaseSchedules:
         """Initializes the schedules."""
         self._schedule = BackgroundScheduler()
         self._schedule.configure(timezone=cfg.locale.tz)
+        self._db = Engine.new_session(name="Schedules")
 
         atexit.register(lambda: self.stop())
 
@@ -37,4 +38,4 @@ class BaseSchedules:
 
     @property
     def db(self) -> Session:
-        return SessionLocal()
+        return self._db
