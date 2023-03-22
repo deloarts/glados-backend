@@ -2,12 +2,17 @@
     Handles all routes to the users-resource.
 """
 
-import secrets
 from datetime import timedelta
 from typing import Any, List
 
-from api import deps
+from api.deps import (
+    get_current_active_superuser,
+    get_current_active_user,
+    verify_token,
+    verify_token_superuser,
+)
 from crud import crud_user
+from db.session import DB
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Body, Depends
@@ -23,10 +28,10 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schema_user.User])
 def read_users(
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(DB.get),
     skip: int = 0,
     limit: int = 100,
-    verified: model_user.User = Depends(deps.verify_token),
+    verified: model_user.User = Depends(verify_token),
 ) -> Any:
     """Retrieve all users."""
     return crud_user.user.get_multi(db, skip=skip, limit=limit)
@@ -35,9 +40,9 @@ def read_users(
 @router.post("/", response_model=schema_user.User)
 def create_user(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(DB.get),
     user_in: schema_user.UserCreate,
-    verified: model_user.User = Depends(deps.verify_token_superuser),
+    verified: model_user.User = Depends(verify_token_superuser),
 ) -> Any:
     """Create new user."""
     user = crud_user.user.get_by_email(
@@ -54,11 +59,11 @@ def create_user(
 @router.put("/me", response_model=schema_user.User)
 def update_user_me(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(DB.get),
     password: str = Body(None),
     full_name: str = Body(None),
     email: EmailStr = Body(None),
-    current_user: model_user.User = Depends(deps.get_current_active_user),
+    current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Update own user."""
     current_user_data = jsonable_encoder(current_user)
@@ -75,8 +80,8 @@ def update_user_me(
 
 @router.get("/me", response_model=schema_user.User)
 def read_user_me(
-    db: Session = Depends(deps.get_db),
-    current_user: model_user.User = Depends(deps.get_current_active_user),
+    db: Session = Depends(DB.get),
+    current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Get current user."""
     return current_user
@@ -85,8 +90,8 @@ def read_user_me(
 @router.get("/{user_id}", response_model=schema_user.User)
 def read_user_by_id(
     user_id: int,
-    current_user: model_user.User = Depends(deps.get_current_active_user),
-    db: Session = Depends(deps.get_db),
+    current_user: model_user.User = Depends(get_current_active_user),
+    db: Session = Depends(DB.get),
 ) -> Any:
     """Get a specific user by id."""
     user = crud_user.user.get(db, id=user_id)
@@ -103,10 +108,10 @@ def read_user_by_id(
 @router.put("/{user_id}", response_model=schema_user.User)
 def update_user(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(DB.get),
     user_id: int,
     user_in: schema_user.UserUpdate,
-    current_user: model_user.User = Depends(deps.get_current_active_superuser),
+    current_user: model_user.User = Depends(get_current_active_superuser),
 ) -> Any:
     """Update a user."""
     user = crud_user.user.get(db, id=user_id)
@@ -122,9 +127,9 @@ def update_user(
 @router.put("/me/personal-access-token", response_model=str)
 def update_user_personal_access_token(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(DB.get),
     expires_in_minutes: int,
-    current_user: model_user.User = Depends(deps.get_current_active_user),
+    current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Updates the personal access token of an user."""
     # access_token = secrets.token_urlsafe(32)
@@ -140,7 +145,7 @@ def update_user_personal_access_token(
 
 
 # @router.delete("/{user_id}", response_model=schema_user.User)
-# def delete_user(*, db: Session = Depends(deps.get_db), user_id: int) -> Any:
+# def delete_user(*, db: Session = Depends(DB.get), user_id: int) -> Any:
 #     """Deletes a user."""
 #     user = crud_user.user.get(db, id=user_id)
 #     if not user:

@@ -3,7 +3,7 @@
 """
 
 from crud import crud_user
-from db.session import get_db
+from db.session import DB
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends, Security
@@ -78,7 +78,7 @@ def verify_api_key(
 
 
 def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
+    db: Session = Depends(DB.get), token: str = Depends(reusable_oauth2)
 ) -> model_user.User:
     """
     Verifies the current user by its access token. Returns the user if valid.
@@ -133,7 +133,7 @@ def get_current_active_superuser(
 
 
 def get_current_user_personal_access_token(
-    db: Session = Depends(get_db),
+    db: Session = Depends(DB.get),
     token: str = Security(api_key_header),
     verified: bool = Depends(verify_personal_access_token),
 ) -> model_user.User:

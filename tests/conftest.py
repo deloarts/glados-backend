@@ -4,8 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.config import cfg
-from app.db.session import SessionLocal
+from app.db.session import DB
 from app.server import app
 from tests.utils.user import TEST_MAIL, authentication_token_from_email
 from tests.utils.utils import get_superuser_token_headers
@@ -13,7 +12,7 @@ from tests.utils.utils import get_superuser_token_headers
 
 @pytest.fixture(scope="session")
 def db() -> Generator:
-    yield SessionLocal()
+    yield DB.base_session
 
 
 @pytest.fixture(scope="module")
