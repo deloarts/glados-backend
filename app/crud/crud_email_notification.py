@@ -38,11 +38,13 @@ class CRUDEmailNotification(
 
     def get_distinct_receiver_ids(self, db: Session) -> Optional[List[int]]:
         """Returns a list of all distinct user ids."""
-        query = db.query(
-            model_email_notification.EmailNotification.receiver_id
-        ).distinct()
+        query = (
+            db.query(model_email_notification.EmailNotification.receiver_id)
+            .distinct()
+            .all()
+        )
         try:
-            return query[0]
+            return [item[0] for item in query]
         except:
             return []
 
