@@ -36,9 +36,14 @@ class NotificationSchedules(BaseSchedules):
             "Running notification schedule: Sending pending bought item notifications."
         )
 
+        pending = email_notification.get_all(self.db)
+        pending_count = len(pending) if pending else 0
+        log.info(f"There are {pending_count} pending notifications.")
+
         receiver_ids = email_notification.get_distinct_receiver_ids(self.db)
         if not receiver_ids:
             return
+        log.debug(f"Notification receivers are {receiver_ids}.")
 
         for receiver_id in receiver_ids:
             current_user = user.get(db=self.db, id=receiver_id)

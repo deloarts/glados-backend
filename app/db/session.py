@@ -12,24 +12,36 @@ from crud import crud_user
 from multilog import log
 from schemas import schema_user
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
-engine = create_engine(
-    f"sqlite:///{DB_DEVELOPMENT if cfg.debug else DB_PRODUCTION}",
-    convert_unicode=True,
-    connect_args={"check_same_thread": False},
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # Base = declarative_base()
 
 
-def get_db() -> Generator:
-    """Connects to the db."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+class Engine:
+    engine = create_engine(
+        f"sqlite:///{DB_DEVELOPMENT if cfg.debug else DB_PRODUCTION}",
+        convert_unicode=True,
+        connect_args={"check_same_thread": False},
+    )
+
+    @staticmethod
+    def new_session(name: str) -> Session:
+        Session = sessionmaker(autocommit=False, autoflush=False, bind=Engine.engine)
+        log.info(f"Created new session {name!r}")
+        return Session()
+
+
+class DB:
+    base_session = Engine.new_session(name="Base Session")
+
+    @staticmethod
+    def get() -> Generator:
+        """Connects to the db."""
+        db = DB.base_session
+        try:
+            yield db
+        finally:
+            db.close()
 
 
 class InitDatabase:
@@ -50,7 +62,7 @@ class InitDatabase:
         # line 'Base = declarative_base()'
         # Base.metadata.create_all(bind=engine)
 
-        db = SessionLocal()
+        db = DB.base_session
         user = crud_user.user.get_by_email(db, email=cfg.init.mail)
         if not user:
             log.info("Admin user not found in database. Creating admin user.")
