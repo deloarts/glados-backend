@@ -19,6 +19,7 @@ class BaseSchedules:
         """Initializes the schedules."""
         self._schedule = BackgroundScheduler()
         self._schedule.configure(timezone=cfg.locale.tz)
+        self._db = SessionLocal()
 
         atexit.register(lambda: self.stop())
 
@@ -37,4 +38,4 @@ class BaseSchedules:
 
     @property
     def db(self) -> Session:
-        return SessionLocal()
+        return self._db
