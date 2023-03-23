@@ -12,7 +12,7 @@ from api.deps import (
     verify_token_superuser,
 )
 from crud import crud_user
-from db.session import DB
+from db.session import get_db
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Body, Depends
@@ -28,7 +28,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schema_user.User])
 def read_users(
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
     verified: model_user.User = Depends(verify_token),
@@ -40,7 +40,7 @@ def read_users(
 @router.post("/", response_model=schema_user.User)
 def create_user(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     user_in: schema_user.UserCreate,
     verified: model_user.User = Depends(verify_token_superuser),
 ) -> Any:
@@ -59,7 +59,7 @@ def create_user(
 @router.put("/me", response_model=schema_user.User)
 def update_user_me(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     password: str = Body(None),
     full_name: str = Body(None),
     email: EmailStr = Body(None),
@@ -80,7 +80,7 @@ def update_user_me(
 
 @router.get("/me", response_model=schema_user.User)
 def read_user_me(
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Get current user."""
@@ -91,7 +91,7 @@ def read_user_me(
 def read_user_by_id(
     user_id: int,
     current_user: model_user.User = Depends(get_current_active_user),
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
 ) -> Any:
     """Get a specific user by id."""
     user = crud_user.user.get(db, id=user_id)
@@ -108,7 +108,7 @@ def read_user_by_id(
 @router.put("/{user_id}", response_model=schema_user.User)
 def update_user(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     user_id: int,
     user_in: schema_user.UserUpdate,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -127,7 +127,7 @@ def update_user(
 @router.put("/me/personal-access-token", response_model=str)
 def update_user_personal_access_token(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     expires_in_minutes: int,
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
@@ -145,7 +145,7 @@ def update_user_personal_access_token(
 
 
 # @router.delete("/{user_id}", response_model=schema_user.User)
-# def delete_user(*, db: Session = Depends(DB.get), user_id: int) -> Any:
+# def delete_user(*, db: Session = Depends(get_db), user_id: int) -> Any:
 #     """Deletes a user."""
 #     user = crud_user.user.get(db, id=user_id)
 #     if not user:

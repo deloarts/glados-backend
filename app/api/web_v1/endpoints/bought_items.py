@@ -9,11 +9,11 @@ import datetime
 from pathlib import Path
 from typing import Any, List
 
-from db.session import DB
 from api.deps import get_current_active_superuser, get_current_active_user, verify_token
 from config import cfg
 from const import ROOT, TEMPLATES
 from crud import crud_bought_item
+from db.session import get_db
 from excel.xlsx_export import ExportExcel
 from excel.xlsx_import import ImportExcel
 from fastapi import UploadFile
@@ -31,7 +31,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schema_bought_item.BoughtItem])
 def read_bought_items(
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     skip: int | None = None,
     limit: int | None = None,
     sort_by: str | None = None,
@@ -65,7 +65,7 @@ def read_bought_items(
 
 @router.get("/excel", response_class=FileResponse)
 def read_bought_items_excel(
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     skip: int | None = None,
     limit: int | None = None,
     sort_by: str | None = None,
@@ -131,7 +131,7 @@ def read_bought_items_excel_template(
 def read_bought_item_by_id(
     item_id: int,
     verified: bool = Depends(verify_token),
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
 ) -> Any:
     """Get a specific bought item by db id."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -147,7 +147,7 @@ def read_bought_item_by_id(
 def read_bought_item_changelog_by_id(
     item_id: int,
     verified: bool = Depends(verify_token),
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
 ) -> Any:
     """Get a specific bought item by db id."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -162,7 +162,7 @@ def read_bought_item_changelog_by_id(
 @router.post("/", response_model=schema_bought_item.BoughtItem)
 def create_bought_item(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     obj_in: schema_bought_item.BoughtItemCreate,
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
@@ -175,7 +175,7 @@ def create_bought_item(
 @router.post("/excel", response_model=List[schema_bought_item.BoughtItem])
 def create_bought_items_from_excel(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     file: UploadFile,
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
@@ -193,7 +193,7 @@ def create_bought_items_from_excel(
 @router.put("/{item_id}", response_model=schema_bought_item.BoughtItem)
 def update_bought_item(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     obj_in: schema_bought_item.BoughtItemUpdate,
     current_user: model_user.User = Depends(get_current_active_user),
@@ -208,7 +208,7 @@ def update_bought_item(
 @router.put("/{item_id}/status", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_status(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     status: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -223,7 +223,7 @@ def update_bought_item_status(
 @router.put("/{item_id}/group-1", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_group_1(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     group: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -242,7 +242,7 @@ def update_bought_item_group_1(
 @router.put("/{item_id}/project", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_project(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     project: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -261,7 +261,7 @@ def update_bought_item_project(
 @router.put("/{item_id}/machine", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_machine(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     machine: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -280,7 +280,7 @@ def update_bought_item_machine(
 @router.put("/{item_id}/quantity", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_quantity(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     quantity: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -299,7 +299,7 @@ def update_bought_item_quantity(
 @router.put("/{item_id}/partnumber", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_partnumber(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     partnumber: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -318,7 +318,7 @@ def update_bought_item_partnumber(
 @router.put("/{item_id}/definition", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_definition(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     definition: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -337,7 +337,7 @@ def update_bought_item_definition(
 @router.put("/{item_id}/manufacturer", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_manufacturer(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     manufacturer: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -356,7 +356,7 @@ def update_bought_item_manufacturer(
 @router.put("/{item_id}/supplier", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_supplier(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     supplier: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -375,7 +375,7 @@ def update_bought_item_supplier(
 @router.put("/{item_id}/note-general", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_note_general(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     note: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -394,7 +394,7 @@ def update_bought_item_note_general(
 @router.put("/{item_id}/note-supplier", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_note_supplier(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     note: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -415,7 +415,7 @@ def update_bought_item_note_supplier(
 )
 def update_bought_item_desired_delivery_date(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     date: datetime.date,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -436,7 +436,7 @@ def update_bought_item_desired_delivery_date(
 )
 def update_bought_item_expected_delivery_date(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     date: datetime.date,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -455,7 +455,7 @@ def update_bought_item_expected_delivery_date(
 @router.put("/{item_id}/storage", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_storage(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     storage_place: str,
     current_user: model_user.User = Depends(get_current_active_superuser),
@@ -474,7 +474,7 @@ def update_bought_item_storage(
 @router.delete("/{item_id}", response_model=schema_bought_item.BoughtItem)
 def delete_bought_item(
     *,
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     item_id: int,
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
