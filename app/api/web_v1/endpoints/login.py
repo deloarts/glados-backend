@@ -8,7 +8,7 @@ from typing import Any
 from api.deps import get_current_user
 from config import cfg
 from crud import crud_user
-from db.session import DB
+from db.session import get_db
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
@@ -23,7 +23,7 @@ router = APIRouter()
 
 @router.post("/login/access-token", response_model=schema_token.Token)
 def login_access_token(
-    db: Session = Depends(DB.get), form_data: OAuth2PasswordRequestForm = Depends()
+    db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """OAuth2 compatible token login, get an access token for future requests."""
     user = crud_user.user.authenticate(

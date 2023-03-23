@@ -8,7 +8,7 @@ from typing import Any, Optional
 from config import cfg
 from const import SECRET_KEY
 from crud import crud_api_key, crud_user
-from db.session import DB
+from db.session import get_db
 from fastapi.param_functions import Depends, Security
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.security.http import HTTPBasic
@@ -99,7 +99,7 @@ def get_password_hash(password: str) -> str:
 
 
 def validate_api_key(
-    api_key: str = Security(api_key_header), db: Session = Depends(DB.get)
+    api_key: str = Security(api_key_header), db: Session = Depends(get_db)
 ) -> bool:
     """Validates the api key."""
     if cfg.debug and api_key == cfg.security.debug_api_key:
@@ -111,7 +111,7 @@ def validate_api_key(
 
 
 def validate_personal_access_token(
-    db: Session = Depends(DB.get),
+    db: Session = Depends(get_db),
     token: str = Security(api_key_header),
 ) -> bool:
     """
@@ -142,7 +142,7 @@ def validate_personal_access_token(
 
 
 def validate_access_token(
-    db: Session = Depends(DB.get), token: str = Depends(reusable_oauth2)
+    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
 ) -> bool:
     """
     Validates the access token for active users. Validation requires: The token must be
@@ -164,7 +164,7 @@ def validate_access_token(
 
 
 def validate_access_token_superuser(
-    db: Session = Depends(DB.get), token: str = Depends(reusable_oauth2)
+    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
 ) -> bool:
     """
     Validates the access token for active superusers. Same as 'validate_access_token',
