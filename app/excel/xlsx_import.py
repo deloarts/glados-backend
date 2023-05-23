@@ -141,8 +141,10 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
 
         for row_index in range(header_row + 1, self.ws.max_row + 1):
             # Sometimes ws.max_row doesn't work correct and the
-            # row is empty. With this we check there are values
+            # row is empty. With this we check if there are values
             # in at least one cell in the current row.
+            # If there are no values in any cell of the current row,
+            # the import stops with the previous row.
             row_is_valid = False
             log.debug(f"Reading data from row {row_index}...")
 
