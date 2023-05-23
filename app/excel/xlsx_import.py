@@ -72,7 +72,9 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
 
         log.info(f"Reading workbook, uploaded by user {self.db_obj_user.username!r}...")
         try:
-            self.wb = load_workbook(filename=BytesIO(self.data))
+            self.wb = load_workbook(
+                filename=BytesIO(self.data), read_only=True, data_only=True
+            )
             self.ws = self.wb.worksheets[0]
         except Exception as e:
             log.error(
@@ -142,6 +144,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             # row is empty. With this we check there are values
             # in at least one cell in the current row.
             row_is_valid = False
+            log.debug(f"Reading data from row {row_index}...")
 
             db_obj_in = {}
             for col_index in range(1, self.ws.max_column + 1):
@@ -152,13 +155,17 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
                     ).split(" ")
                 )
                 value = self.ws.cell(row_index, col_index).value
+
                 if value is not None:
                     row_is_valid = True
                 db_obj_in[key] = value
 
+            if not row_is_valid:
+                log.debug(f"Stopping reading file. Row {row_index} contains no data.")
+                break
+
             try:
-                if row_is_valid:
-                    db_objs_in.append(self.schema(**db_obj_in))
+                db_objs_in.append(self.schema(**db_obj_in))
             except ValidationError as error:
                 warnings.append(f"Error in row #{row_index}: {error}")
 
