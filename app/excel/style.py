@@ -14,9 +14,14 @@ def style_worksheet(worksheet: Worksheet) -> None:
     Args:
         worksheet (Worksheet): The worksheet to style.
     """
+
+    # Note: I am getting a typing error with Pylance that appears incorrect and is
+    # not reported as an error by mypy --strict. The error occurs everywhere in this
+    # file where type: ignore is set.
+
     for column_cells in worksheet.columns:
         # Set format, font and size
-        for index, cell in enumerate(column_cells):
+        for index, cell in enumerate(column_cells):  # type: ignore
             if index > cfg.excel.data_row - 1:
                 color = (
                     cfg.excel.style.data_color_1
@@ -44,25 +49,25 @@ def style_worksheet(worksheet: Worksheet) -> None:
             worksheet.row_dimensions[  # type: ignore
                 cfg.excel.header_row + 1
             ].height = 20  # type:ignore
-            column_cells[cfg.excel.header_row].font = Font(
+            column_cells[cfg.excel.header_row].font = Font(  # type: ignore
                 name=cfg.excel.style.font,
                 size=cfg.excel.style.size,
                 bold=True,
                 color=cfg.excel.style.header_color,
             )
-            column_cells[cfg.excel.header_row].fill = PatternFill(
+            column_cells[cfg.excel.header_row].fill = PatternFill(  # type: ignore
                 start_color=cfg.excel.style.header_bg_color,
                 end_color=cfg.excel.style.header_bg_color,
                 fill_type="solid",
             )
-            column_cells[cfg.excel.header_row].alignment = Alignment(
+            column_cells[cfg.excel.header_row].alignment = Alignment(  # type: ignore
                 horizontal="center", vertical="center"
             )
 
         # Set cell width
-        length = max(len(str(cell.value)) * 1.1 for cell in column_cells)
+        length = max(len(str(cell.value)) * 1.1 for cell in column_cells)  # type: ignore
         worksheet.column_dimensions[  # type:ignore
-            column_cells[0].column_letter
+            column_cells[0].column_letter  # type: ignore
         ].width = (  # type:ignore
             length if length > 2 else 2
         )

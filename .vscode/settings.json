@@ -19,6 +19,7 @@
         "partnumber",
         "passlib",
         "pydantic",
+        "Pylance",
         "pylint",
         "pylintrc",
         "pyproject",
