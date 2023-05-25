@@ -35,7 +35,8 @@ class ExportExcel(Generic[ModelType, SchemaType]):
         self.name = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         self.wb: Workbook = Workbook()
-        self.ws: Worksheet = self.wb.active
+        self.ws: Worksheet = self.wb.active  # type: ignore
+        assert isinstance(self.ws, Worksheet)
         self.ws.title = self.name
 
     @staticmethod
