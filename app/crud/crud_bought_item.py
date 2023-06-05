@@ -40,20 +40,36 @@ class CRUDBoughtItem(
         sort_by: str | None = None,
         id: str | None = None,  # pylint: disable=W0622
         status: str | None = None,
-        group_1: str | None = None,
         project: str | None = None,
         machine: str | None = None,
+        quantity: float | None = None,
+        unit: str | None = None,
         partnumber: str | None = None,
         definition: str | None = None,
         manufacturer: str | None = None,
         supplier: str | None = None,
+        group_1: str | None = None,
+        note_general: str | None = None,
+        note_supplier: str | None = None,
         creator_id: int | None = None,
         created_from: date | None = None,
         created_to: date | None = None,
         changed_from: date | None = None,
         changed_to: date | None = None,
+        desired_from: date | None = None,
+        desired_to: date | None = None,
+        requester_id: int | None = None,
+        requested_from: date | None = None,
+        requested_to: date | None = None,
+        orderer_id: int | None = None,
+        ordered_from: date | None = None,
+        ordered_to: date | None = None,
         expected_from: date | None = None,
         expected_to: date | None = None,
+        delivered_from: date | None = None,
+        delivered_to: date | None = None,
+        taken_over_id: int | None = None,
+        storage_place: str | None = None,
         high_priority: bool | None = None,
         ignore_delivered: bool | None = None,
         ignore_canceled: bool | None = None,
@@ -98,6 +114,11 @@ class CRUDBoughtItem(
         if changed_to is None:
             changed_to = date.today()
 
+        # if desired_from is None:
+        #     desired_from = date(2000, 1, 1)
+        # if desired_to is None:
+        #     desired_to = date.today()
+
         # if expected_from is None:
         #     expected_from = date(2000, 1, 1)
         # if expected_to is None:
@@ -114,6 +135,8 @@ class CRUDBoughtItem(
                 if high_priority
                 else self.model.high_priority,
                 id=id if id else self.model.id,
+                quantity=quantity if quantity else self.model.quantity,
+                unit=unit if unit else self.model.unit,
                 creator_id=creator_id if creator_id else self.model.creator_id,
             )
             .filter(
@@ -128,7 +151,6 @@ class CRUDBoughtItem(
                 if ignore_lost
                 else text(""),
                 # search filter
-                self.model.group_1.ilike(f"%{group_1}%") if group_1 else text(""),
                 self.model.project.ilike(f"%{project}%") if project else text(""),
                 self.model.machine.ilike(f"%{machine}%") if machine else text(""),
                 self.model.partnumber.ilike(f"%{partnumber}%")
@@ -141,15 +163,46 @@ class CRUDBoughtItem(
                 if manufacturer
                 else text(""),
                 self.model.supplier.ilike(f"%{supplier}%") if supplier else text(""),
+                self.model.group_1.ilike(f"%{group_1}%") if group_1 else text(""),
+                self.model.note_general.ilike(f"%{note_general}%")
+                if note_general
+                else text(""),
+                self.model.note_supplier.ilike(f"%{note_supplier}%")
+                if note_supplier
+                else text(""),
                 self.model.created >= created_from,
                 self.model.created <= created_to,
                 self.model.changed >= changed_from,
                 self.model.changed <= changed_to,
+                self.model.desired_delivery_date >= desired_from
+                if desired_from
+                else text(""),
+                self.model.desired_delivery_date <= desired_to
+                if desired_to
+                else text(""),
+                self.model.requester_id == requester_id if requester_id else text(""),
+                self.model.requested_date >= requested_from
+                if requested_from
+                else text(""),
+                self.model.requested_date <= requested_to if requested_to else text(""),
+                self.model.orderer_id == orderer_id if orderer_id else text(""),
+                self.model.ordered_date >= ordered_from if ordered_from else text(""),
+                self.model.ordered_date <= ordered_to if ordered_to else text(""),
                 self.model.expected_delivery_date >= expected_from
                 if expected_from
                 else text(""),
                 self.model.expected_delivery_date <= expected_to
                 if expected_to
+                else text(""),
+                self.model.delivery_date >= delivered_from
+                if delivered_from
+                else text(""),
+                self.model.delivery_date <= delivered_to if delivered_to else text(""),
+                self.model.taken_over_id == taken_over_id
+                if taken_over_id
+                else text(""),
+                self.model.storage_place.ilike(f"%{storage_place}%")
+                if storage_place
                 else text(""),
             )
             .order_by(text(order_by))
