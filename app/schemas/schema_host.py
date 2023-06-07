@@ -38,6 +38,7 @@ class HostConfigItemsBoughtStatus(BaseModel):
     late: str
     partial: str
     delivered: str
+    canceled: str
     lost: str
 
 
