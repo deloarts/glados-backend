@@ -180,6 +180,8 @@ python -m pip install -r requirements.txt
 - Copy the `config.sample.yml` file and paste it as `config.yml` file. Then edit the config file to fit your needs.
 - Do the same for all template files in the templates folder.
 
+> ⚠️ Both keys, `debug_api_key` and `debug_secret_key`, are only for debugging.
+
 ### 1.7 create the database
 
 To create the database run:
