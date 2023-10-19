@@ -3,7 +3,8 @@
 """
 
 import functools
-from ipaddress import ip_address, ip_network
+from ipaddress import ip_address
+from ipaddress import ip_network
 from typing import Any
 
 from config import cfg

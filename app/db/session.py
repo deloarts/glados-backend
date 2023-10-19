@@ -7,12 +7,15 @@
 from typing import Generator
 
 from config import cfg
-from const import DB_DEVELOPMENT, DB_PRODUCTION, SYSTEM_USER
+from const import DB_DEVELOPMENT
+from const import DB_PRODUCTION
+from const import SYSTEM_USER
 from crud import crud_user
 from multilog import log
 from schemas import schema_user
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 
 engine = create_engine(
     f"sqlite:///{DB_DEVELOPMENT if cfg.debug else DB_PRODUCTION}",

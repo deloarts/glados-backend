@@ -37,9 +37,30 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.rulers": [
+            120
+        ],
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": false,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "pylint.args": [
+        "--line-length",
+        "120"
+    ],
+    "black-formatter.args": [
+        "--line-length",
+        "120"
+    ],
     "isort.args": [
         "--profile",
         "black",
+        "-sl",
         "--skip-gitignore",
-    ],
+    ]
 }

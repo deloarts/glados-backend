@@ -8,7 +8,8 @@ from pathlib import Path
 
 from config import cfg
 from const import TEMPLATES
-from mail import Mail, Receiver
+from mail import Mail
+from mail import Receiver
 from mail.render import render_template
 from mail.send import send_mail
 from multilog import log

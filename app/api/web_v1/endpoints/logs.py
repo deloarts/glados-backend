@@ -5,7 +5,8 @@
 from typing import Any
 
 from api import deps
-from api.worker import gather_logs, read_logfile
+from api.worker import gather_logs
+from api.worker import read_logfile
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends

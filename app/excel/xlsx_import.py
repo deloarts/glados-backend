@@ -5,11 +5,15 @@
 # pylint: disable=R0903
 
 from io import BytesIO
-from typing import Generic, List, Type, TypeVar
+from typing import Generic
+from typing import List
+from typing import Type
+from typing import TypeVar
 
 from crud import crud_bought_item
 from db.base import Base
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException
+from fastapi import UploadFile
 from fastapi.encoders import jsonable_encoder
 from models import model_user
 from multilog import log

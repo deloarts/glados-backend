@@ -2,14 +2,18 @@
     Authentication & Security.
 """
 
-from datetime import datetime, timedelta
-from typing import Any, Optional
+from datetime import datetime
+from datetime import timedelta
+from typing import Any
+from typing import Optional
 
 from config import cfg
 from const import SECRET_KEY
-from crud import crud_api_key, crud_user
+from crud import crud_api_key
+from crud import crud_user
 from db.session import get_db
-from fastapi.param_functions import Depends, Security
+from fastapi.param_functions import Depends
+from fastapi.param_functions import Security
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.security.http import HTTPBasic
 from fastapi.security.oauth2 import OAuth2PasswordBearer

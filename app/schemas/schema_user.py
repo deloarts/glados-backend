@@ -6,7 +6,9 @@ from datetime import datetime
 from typing import Optional
 
 from config import cfg
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel
+from pydantic import EmailStr
+from pydantic import Field
 
 
 class UserBase(BaseModel):

@@ -8,7 +8,8 @@ from email.mime.text import MIMEText
 from multiprocessing import Process
 
 from config import cfg
-from mail import Mail, Receiver
+from mail import Mail
+from mail import Receiver
 from multilog import log
 
 

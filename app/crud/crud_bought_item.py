@@ -5,7 +5,8 @@
 # pylint: disable=R0914
 
 from datetime import date
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 from config import cfg
 from crud.crud_base import CRUDBase
@@ -14,7 +15,8 @@ from crud.helper import get_changelog
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from multilog import log
-from schemas import schema_bought_item, schema_email_notification
+from schemas import schema_bought_item
+from schemas import schema_email_notification
 from sqlalchemy import Column
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
@@ -238,7 +240,7 @@ class CRUDBoughtItem(
             changes="Item created.", db_obj_user=db_obj_user
         )
 
-        db_obj = model_bought_item.BoughtItem(**data)
+        db_obj = model_bought_item.BoughtItem(**data)  # type: ignore
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)

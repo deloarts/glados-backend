@@ -8,7 +8,8 @@
 # pylint: disable=R0903
 
 import os
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
+from dataclasses import fields
 from typing import List
 
 import yaml

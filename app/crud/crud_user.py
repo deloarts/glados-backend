@@ -3,7 +3,9 @@
 """
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
 
 from config import cfg
 from crud.crud_base import CRUDBase
@@ -11,7 +13,8 @@ from fastapi import HTTPException
 from models import model_user
 from multilog import log
 from schemas import schema_user
-from security import get_password_hash, verify_password
+from security import get_password_hash
+from security import verify_password
 from sqlalchemy.orm import Session
 
 
@@ -53,7 +56,7 @@ class CRUDUser(
             data["is_active"] = True
             data["is_superuser"] = True
 
-        db_obj = model_user.User(**data)
+        db_obj = model_user.User(**data)  # type: ignore
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
