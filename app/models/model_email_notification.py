@@ -5,7 +5,9 @@
 # pylint: disable=C0115,R0903
 
 from db.base import Base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column
+from sqlalchemy import Integer
+from sqlalchemy import String
 
 
 class EmailNotification(Base):  # type: ignore

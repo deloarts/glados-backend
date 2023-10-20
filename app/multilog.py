@@ -9,7 +9,8 @@ from pathlib import Path
 
 import coloredlogs
 from config import cfg
-from const import LOGS, NAME
+from const import LOGS
+from const import NAME
 
 
 class Log:

@@ -2,7 +2,8 @@
     Create-Read-Update-Delete: Email Notification
 """
 
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 from crud.crud_base import CRUDBase
 from models import model_email_notification

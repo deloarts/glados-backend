@@ -6,7 +6,10 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Generic, List, Type, TypeVar
+from typing import Generic
+from typing import List
+from typing import Type
+from typing import TypeVar
 
 from const import TEMP
 from db.base import Base

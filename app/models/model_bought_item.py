@@ -8,16 +8,14 @@ from typing import TYPE_CHECKING
 
 from config import cfg
 from db.base import Base
-from sqlalchemy import (
-    Boolean,
-    Column,
-    Date,
-    Float,
-    ForeignKey,
-    Integer,
-    PickleType,
-    String,
-)
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import Date
+from sqlalchemy import Float
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import PickleType
+from sqlalchemy import String
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false

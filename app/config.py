@@ -8,12 +8,12 @@
 # pylint: disable=R0903
 
 import os
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
+from dataclasses import fields
 from typing import List
 
 import yaml
 from const import CONFIG
-from pydantic import EmailStr
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
@@ -129,7 +129,7 @@ class ConfigItems:
 @dataclass(slots=True, kw_only=True, frozen=True)
 class ConfigInit:
     full_name: str
-    mail: EmailStr
+    mail: str
     password: str
 
 

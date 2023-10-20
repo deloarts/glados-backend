@@ -2,7 +2,10 @@
     Create-Read-Update-Delete: Api-Key
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
 
 from crud.crud_base import CRUDBase
 from models import model_api_key
@@ -18,8 +21,8 @@ class CRUDAPIKey(
     """CRUDAPIKey class. Descendent of the CRUDBase class."""
 
     def get(
-        self, db: Session, id: Any  # pylint: disable=W0622
-    ) -> Optional[model_api_key.APIKey]:
+        self, db: Session, id: Any
+    ) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
         """
         Retrieves an api key by its id.
         """
@@ -62,8 +65,8 @@ class CRUDAPIKey(
         )
 
     def get_deleted(
-        self, db: Session, *, id: int  # pylint: disable=W0622
-    ) -> Optional[model_api_key.APIKey]:
+        self, db: Session, *, id: int
+    ) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
         """
         Retrieves an as deleted marked api key by its id.
         """
@@ -114,8 +117,8 @@ class CRUDAPIKey(
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
     def delete(
-        self, db: Session, *, id: int  # pylint: disable=W0622
-    ) -> Optional[model_api_key.APIKey]:
+        self, db: Session, *, id: int
+    ) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
         """
         Marks an api key as deleted. An api key will never be fully deleted.
         """

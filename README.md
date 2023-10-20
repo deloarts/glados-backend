@@ -3,7 +3,7 @@
 Backend for the glados project.
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
-![version](https://img.shields.io/badge/Version-0.3.1-orange.svg?style=for-the-badge)
+![version](https://img.shields.io/badge/Version-0.3.2-orange.svg?style=for-the-badge)
 
 [![python](https://img.shields.io/badge/Python-3.10-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
@@ -180,6 +180,8 @@ python -m pip install -r requirements.txt
 - Copy the `config.sample.yml` file and paste it as `config.yml` file. Then edit the config file to fit your needs.
 - Do the same for all template files in the templates folder.
 
+> ⚠️ Both keys, `debug_api_key` and `debug_secret_key`, are only for debugging.
+
 ### 1.7 create the database
 
 To create the database run:
@@ -259,7 +261,7 @@ git checkout {TAG_NAME}
 python -m pip install -r requirements.txt
 ```
 
-Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.3.1`.
+Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.3.2`.
 
 ### 2.3 update the config file
 
@@ -398,6 +400,7 @@ No license.
 
 ## 5 changelog
 
+**v0.3.2**: Update env.  
 **v0.3.1**: Add missing status in response schema.  
 **v0.3.0**: Add api for changing items.  
 **v0.2.4**: Fix excel import.  
