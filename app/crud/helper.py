@@ -2,7 +2,8 @@
 
 from copy import deepcopy
 from datetime import datetime
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 from models import model_user, model_bought_item  # isort:skip
 

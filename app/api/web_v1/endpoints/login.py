@@ -14,7 +14,8 @@ from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from models import model_user
-from schemas import schema_token, schema_user
+from schemas import schema_token
+from schemas import schema_user
 from security import create_access_token
 from sqlalchemy.orm import Session
 

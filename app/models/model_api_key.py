@@ -9,7 +9,11 @@ from datetime import datetime
 
 from dateutil import parser
 from db.base import Base
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
+from sqlalchemy import String
 
 
 class APIKey(Base):  # type: ignore

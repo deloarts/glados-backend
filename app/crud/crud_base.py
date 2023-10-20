@@ -2,7 +2,13 @@
     Create-Read-Update-Delete: Base
 """
 
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
+from typing import Any
+from typing import Dict
+from typing import Generic
+from typing import List
+from typing import Optional
+from typing import Type
+from typing import TypeVar
 
 from db.base import Base
 from fastapi.encoders import jsonable_encoder
@@ -77,8 +83,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     def delete(
-        self, db: Session, *, id: int  # pylint: disable=W0622
-    ) -> Optional[ModelType]:
+        self, db: Session, *, id: int
+    ) -> Optional[ModelType]:  # pylint: disable=W0622
         """
         Deletes an db entry.
         """

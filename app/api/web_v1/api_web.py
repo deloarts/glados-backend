@@ -2,7 +2,12 @@
     Includes all web-endpoint-routes to the api router.
 """
 
-from api.web_v1.endpoints import api_key, bought_items, host, login, logs, users
+from api.web_v1.endpoints import api_key
+from api.web_v1.endpoints import bought_items
+from api.web_v1.endpoints import host
+from api.web_v1.endpoints import login
+from api.web_v1.endpoints import logs
+from api.web_v1.endpoints import users
 from fastapi.routing import APIRouter
 
 api_router = APIRouter()

@@ -4,7 +4,9 @@
 
 from config import cfg
 from multilog import log
-from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.styles import Alignment
+from openpyxl.styles import Font
+from openpyxl.styles import PatternFill
 from openpyxl.worksheet.worksheet import Worksheet
 
 

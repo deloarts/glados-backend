@@ -3,10 +3,13 @@
 """
 
 from datetime import date
-from typing import List, Literal, Optional
+from typing import List
+from typing import Literal
+from typing import Optional
 
 from config import cfg
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from pydantic import Field
 
 
 class BoughtItemBase(BaseModel):
@@ -22,9 +25,7 @@ class BoughtItemCreate(BoughtItemBase):
     project: str = Field(..., min_length=1)
     machine: Optional[str] = None
     quantity: float = Field(..., gt=0)
-    unit: Literal[tuple(cfg.items.bought.units.values)] = Field(  # type: ignore
-        cfg.items.bought.units.default
-    )
+    unit: Literal[tuple(cfg.items.bought.units.values)] = Field(cfg.items.bought.units.default)  # type: ignore
     partnumber: str = Field(..., min_length=1)
     definition: str = Field(..., min_length=1)
     supplier: Optional[str] = None

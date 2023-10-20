@@ -6,17 +6,16 @@ from crud import crud_user
 from db.session import get_db
 from fastapi import status
 from fastapi.exceptions import HTTPException
-from fastapi.param_functions import Depends, Security
+from fastapi.param_functions import Depends
+from fastapi.param_functions import Security
 from models import model_user
-from security import (
-    api_key_header,
-    get_id_from_access_token,
-    reusable_oauth2,
-    validate_access_token,
-    validate_access_token_superuser,
-    validate_api_key,
-    validate_personal_access_token,
-)
+from security import api_key_header
+from security import get_id_from_access_token
+from security import reusable_oauth2
+from security import validate_access_token
+from security import validate_access_token_superuser
+from security import validate_api_key
+from security import validate_personal_access_token
 from sqlalchemy.orm import Session
 
 

@@ -6,7 +6,8 @@ from datetime import date
 
 from config import cfg
 from const import SYSTEM_USER
-from crud import crud_bought_item, crud_user
+from crud import crud_bought_item
+from crud import crud_user
 from multilog import log
 from schedules.base_schedules import BaseSchedules
 

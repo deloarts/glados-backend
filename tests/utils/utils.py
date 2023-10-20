@@ -1,13 +1,13 @@
 import random
 import string
-from typing import Dict, cast
+from typing import Dict
 
 from faker import Faker
 from fastapi.testclient import TestClient
-from pydantic import EmailStr
 
 from app.config import cfg
-from app.const import API_WEB_V1, SYSTEM_USER
+from app.const import API_WEB_V1
+from app.const import SYSTEM_USER
 
 fake = Faker()
 Faker.seed(random.randint(0, 999))
@@ -17,8 +17,8 @@ def random_lower_string() -> str:
     return "".join(random.choices(string.ascii_lowercase, k=32))
 
 
-def random_email() -> EmailStr:
-    return cast(EmailStr, f"{random_lower_string()}@glados.com")
+def random_email() -> str:
+    return f"{random_lower_string()}@glados.com"
 
 
 def random_username() -> str:

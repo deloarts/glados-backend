@@ -9,7 +9,8 @@ from crud.crud_bought_item import bought_item
 from crud.crud_email_notification import email_notification
 from crud.crud_user import user
 from fastapi.encoders import jsonable_encoder
-from mail import Mail, Receiver
+from mail import Mail
+from mail import Receiver
 from mail.render import render_template
 from mail.send import send_mail
 from multilog import log

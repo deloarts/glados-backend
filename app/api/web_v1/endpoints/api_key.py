@@ -2,7 +2,8 @@
     Handles all routes to the api-key-resource.
 """
 
-from typing import Any, List
+from typing import Any
+from typing import List
 
 from api import deps
 from crud import crud_api_key
