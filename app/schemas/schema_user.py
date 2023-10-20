@@ -7,7 +7,6 @@ from typing import Optional
 
 from config import cfg
 from pydantic import BaseModel
-from pydantic import EmailStr
 from pydantic import Field
 
 
@@ -16,7 +15,7 @@ class UserBase(BaseModel):
 
     username: str = Field(..., min_length=1)
     full_name: str = Field(..., min_length=1)
-    email: EmailStr = Field(...)
+    email: str = Field(...)
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
 

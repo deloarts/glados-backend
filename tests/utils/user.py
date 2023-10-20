@@ -5,18 +5,16 @@ sys.path.append("app")
 from typing import Dict
 
 from fastapi.testclient import TestClient
-from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
 from app.const import API_WEB_V1
 from app.crud import crud_user
-from app.schemas.schema_user import UserCreate, UserUpdate
-from tests.utils.utils import (
-    random_email,
-    random_lower_string,
-    random_name,
-    random_username,
-)
+from app.schemas.schema_user import UserCreate
+from app.schemas.schema_user import UserUpdate
+from tests.utils.utils import random_email
+from tests.utils.utils import random_lower_string
+from tests.utils.utils import random_name
+from tests.utils.utils import random_username
 
 # Important note: Throughout the app the user model is imported this way, not like
 # this: app.models.model_user ...
@@ -26,7 +24,7 @@ from tests.utils.utils import (
 from models.model_user import User  # type:ignore isort:skip
 
 TEST_USERNAME = "t000"
-TEST_MAIL = EmailStr("test@glados.com")
+TEST_MAIL = "test@glados.com"
 TEST_FULL_NAME = "Pytest User"
 
 
@@ -58,7 +56,7 @@ def create_random_user(db: Session) -> User:
 
 
 def authentication_token_from_email(
-    *, client: TestClient, email: EmailStr, db: Session
+    *, client: TestClient, email: str, db: Session
 ) -> Dict[str, str]:
     """
     Return a valid token for the user with given email.

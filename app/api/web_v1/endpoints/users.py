@@ -18,7 +18,6 @@ from fastapi.param_functions import Body
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from models import model_user
-from pydantic import EmailStr
 from schemas import schema_user
 from security import create_access_token
 from sqlalchemy.orm import Session
@@ -62,7 +61,7 @@ def update_user_me(
     db: Session = Depends(get_db),
     password: str = Body(None),
     full_name: str = Body(None),
-    email: EmailStr = Body(None),
+    email: str = Body(None),
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Update own user."""

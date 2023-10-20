@@ -19,7 +19,6 @@ from sqlalchemy.orm import sessionmaker
 
 engine = create_engine(
     f"sqlite:///{DB_DEVELOPMENT if cfg.debug else DB_PRODUCTION}",
-    convert_unicode=True,
     connect_args={"check_same_thread": False},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
