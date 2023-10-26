@@ -3,13 +3,20 @@
 """
 
 from datetime import date
+from typing import Annotated
 from typing import List
 from typing import Literal
 from typing import Optional
 
 from config import cfg
 from pydantic import BaseModel
+from pydantic import BeforeValidator
 from pydantic import Field
+
+# This type includes str, int, float, ...
+# It includes anything that can be converted to a string,
+# but it doesn't allow None
+IncludingString = Annotated[str, BeforeValidator(lambda s: str(s) if s is not None else None)]
 
 
 class BoughtItemBase(BaseModel):
@@ -27,7 +34,7 @@ class BoughtItemCreate(BoughtItemBase):
     quantity: float = Field(..., gt=0)
     unit: Literal[tuple(cfg.items.bought.units.values)] = Field(cfg.items.bought.units.default)  # type: ignore
     partnumber: str = Field(..., min_length=1)
-    definition: str = Field(..., min_length=1)
+    definition: IncludingString = Field(..., min_length=1)
     supplier: Optional[str] = None
     manufacturer: str = Field(..., min_length=1)
     note_general: Optional[str] = None

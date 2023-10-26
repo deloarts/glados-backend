@@ -21,7 +21,7 @@ from openpyxl import load_workbook
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from pydantic import BaseModel
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 ModelType = TypeVar("ModelType", bound=Base)  # pylint: disable=C0103
@@ -76,14 +76,10 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
 
         log.info(f"Reading workbook, uploaded by user {self.db_obj_user.username!r}...")
         try:
-            self.wb = load_workbook(
-                filename=BytesIO(self.data), read_only=True, data_only=True
-            )
+            self.wb = load_workbook(filename=BytesIO(self.data), read_only=True, data_only=True)
             self.ws = self.wb.worksheets[0]
         except Exception as e:
-            log.error(
-                f"Failed to load workbook from user {self.db_obj_user.username}: {e}"
-            )
+            log.error(f"Failed to load workbook from user {self.db_obj_user.username}: {e}")
             raise HTTPException(status_code=422, detail=[str(e)])
 
     def _get_header_row(self) -> int:
@@ -111,9 +107,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             header_candidate = []
             for col_index in range(1, self.ws.max_column + 1):
                 cell_value = self.ws.cell(row_index, col_index).value
-                log.debug(
-                    f"Reading header candidate in row {row_index} and col {col_index}..."
-                )
+                log.debug(f"Reading header candidate in row {row_index} and col {col_index}...")
                 if cell_value is not None:
                     header_candidate.append(cell_value)
 
@@ -125,9 +119,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
                     log.debug(f"Import file header row is {row_index}")
                     return row_index
 
-        log.warning(
-            f"Failed to read header data from workbook, uploaded by user {self.db_obj_user.username!r}."
-        )
+        log.warning(f"Failed to read header data from workbook, uploaded by user {self.db_obj_user.username!r}.")
         raise HTTPException(status_code=422, detail=["Header missing or invalid."])
 
     def _read_data(self) -> List[CreateSchemaType]:
@@ -140,7 +132,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             List[CreateSchemaType]: The data as schema.
         """
         db_objs_in: List[CreateSchemaType] = []
-        warnings: List[str] = []
+        warnings: List[dict] = []
         header_row = self._get_header_row()
 
         for row_index in range(header_row + 1, self.ws.max_row + 1):
@@ -154,12 +146,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
 
             db_obj_in = {}
             for col_index in range(1, self.ws.max_column + 1):
-                key = "_".join(
-                    i.lower()
-                    for i in str(
-                        self.ws.cell(row=header_row, column=col_index).value
-                    ).split(" ")
-                )
+                key = "_".join(i.lower() for i in str(self.ws.cell(row=header_row, column=col_index).value).split(" "))
                 value = self.ws.cell(row_index, col_index).value
 
                 if value is not None:
@@ -173,12 +160,10 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             try:
                 db_objs_in.append(self.schema(**db_obj_in))
             except ValidationError as error:
-                warnings.append(f"Error in row #{row_index}: {error}")
+                warnings.append({"row": row_index, "errors": error.errors()})
 
         if warnings:
-            log.warning(
-                f"Failed to read data from workbook, uploaded by user {self.db_obj_user.username!r}."
-            )
+            log.warning(f"Failed to read data from workbook, uploaded by user {self.db_obj_user.username!r}.")
             raise HTTPException(status_code=422, detail=warnings)
 
         return db_objs_in
