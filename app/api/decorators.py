@@ -38,9 +38,7 @@ def whitelist(func) -> Any:
             value = func(*args, request=request, **kwargs)
         else:
             log.info(f"client IP {client_ip!r} not in whitelist.")
-            value = Response(
-                status_code=status.HTTP_403_FORBIDDEN, content="client not in whitelist"
-            )
+            value = Response(status_code=status.HTTP_403_FORBIDDEN, content="client not in whitelist")
 
         return value
 

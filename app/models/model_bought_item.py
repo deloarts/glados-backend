@@ -40,9 +40,7 @@ class BoughtItem(Base):  # type: ignore
     deleted = Column(Boolean, nullable=False, default=False)
 
     # data given on creation/update
-    high_priority = Column(
-        Boolean, nullable=False, default=False, server_default=false()
-    )
+    high_priority = Column(Boolean, nullable=False, default=False, server_default=false())
     notify_on_delivery = Column(Boolean, nullable=False, default=False)
     group_1 = Column(String, nullable=True)
     project = Column(String, index=True, nullable=False)

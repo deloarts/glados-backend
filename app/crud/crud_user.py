@@ -18,20 +18,12 @@ from security import verify_password
 from sqlalchemy.orm import Session
 
 
-class CRUDUser(
-    CRUDBase[model_user.User, schema_user.UserCreate, schema_user.UserUpdate]
-):
+class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.UserUpdate]):
     """CRUDUser class. Descendent of the CRUDBase class."""
 
-    def get_by_username(
-        self, db: Session, *, username: str
-    ) -> Optional[model_user.User]:
+    def get_by_username(self, db: Session, *, username: str) -> Optional[model_user.User]:
         """Returns a user by the username."""
-        return (
-            db.query(model_user.User)
-            .filter(model_user.User.username == username)
-            .first()
-        )
+        return db.query(model_user.User).filter(model_user.User.username == username).first()
 
     def get_by_email(self, db: Session, *, email: str) -> Optional[model_user.User]:
         """Returns a user by the email."""
@@ -61,9 +53,7 @@ class CRUDUser(
         db.commit()
         db.refresh(db_obj)
 
-        log.info(
-            f"Created user {db_obj.username!r} ({db_obj.full_name}), ID={db_obj.id}."
-        )
+        log.info(f"Created user {db_obj.username!r} ({db_obj.full_name}), ID={db_obj.id}.")
         return db_obj
 
     def update(
@@ -103,9 +93,7 @@ class CRUDUser(
         log.info(f"Updated user {user.username!r} ({user.full_name}), ID={user}.")
         return user
 
-    def authenticate(
-        self, db: Session, *, username: str, password: str
-    ) -> Optional[model_user.User]:
+    def authenticate(self, db: Session, *, username: str, password: str) -> Optional[model_user.User]:
         """Authenticates a user.
 
         Args:

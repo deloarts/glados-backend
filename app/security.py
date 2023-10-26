@@ -27,9 +27,7 @@ from sqlalchemy.orm import Session
 basic_auth = HTTPBasic(auto_error=False)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 api_key_header = APIKeyHeader(name="api_key_header", auto_error=False)
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=cfg.security.token_url, auto_error=False
-)
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=cfg.security.token_url, auto_error=False)
 
 
 def get_secret_key() -> str:
@@ -44,9 +42,7 @@ def get_secret_key() -> str:
     return SECRET_KEY
 
 
-def create_access_token(
-    subject: str | Any, expires_delta: Optional[timedelta] = None
-) -> str:
+def create_access_token(subject: str | Any, expires_delta: Optional[timedelta] = None) -> str:
     """Creates and returns a new reusable OAuth2 access token.
 
     Args:
@@ -63,9 +59,7 @@ def create_access_token(
         expire = datetime.utcnow() + timedelta(minutes=cfg.security.expire_minutes)
 
     to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(
-        to_encode, get_secret_key(), algorithm=cfg.security.algorithm
-    )
+    encoded_jwt = jwt.encode(to_encode, get_secret_key(), algorithm=cfg.security.algorithm)
     return encoded_jwt
 
 
@@ -81,9 +75,7 @@ def get_id_from_access_token(token: str) -> Optional[int]:
     if not token:
         return None
     try:
-        payload = jwt.decode(
-            token, get_secret_key(), algorithms=[cfg.security.algorithm]
-        )
+        payload = jwt.decode(token, get_secret_key(), algorithms=[cfg.security.algorithm])
         token_data = schema_token.TokenPayload(**payload)
     except (ValidationError, Exception):
         return None
@@ -102,9 +94,7 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def validate_api_key(
-    api_key: str = Security(api_key_header), db: Session = Depends(get_db)
-) -> bool:
+def validate_api_key(api_key: str = Security(api_key_header), db: Session = Depends(get_db)) -> bool:
     """Validates the api key."""
     if cfg.debug and api_key == cfg.security.debug_api_key:
         log.warning("Authorized using debug api key")
@@ -139,15 +129,11 @@ def validate_personal_access_token(
     user_id = get_id_from_access_token(token)
     if user_id is not None:
         user = crud_user.user.get(db, id=user_id)
-        return bool(
-            user is not None and user.is_active and user.personal_access_token == token
-        )
+        return bool(user is not None and user.is_active and user.personal_access_token == token)
     return False
 
 
-def validate_access_token(
-    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
-) -> bool:
+def validate_access_token(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> bool:
     """
     Validates the access token for active users. Validation requires: The token must be
     valid (the secret key must match), the encoded user ID must be present in the DB and
@@ -167,9 +153,7 @@ def validate_access_token(
     return False
 
 
-def validate_access_token_superuser(
-    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
-) -> bool:
+def validate_access_token_superuser(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> bool:
     """
     Validates the access token for active superusers. Same as 'validate_access_token',
     but the user must also be a superuser.

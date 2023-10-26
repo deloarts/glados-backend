@@ -34,11 +34,7 @@ class User(Base):  # type: ignore
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_superuser = Column(Boolean, nullable=False, default=False)
-    is_systemuser = Column(
-        Boolean, nullable=False, default=False, server_default=false()
-    )
+    is_systemuser = Column(Boolean, nullable=False, default=False, server_default=false())
 
     # relations
-    bought_items = relationship(
-        "models.model_bought_item.BoughtItem", back_populates="creator"
-    )
+    bought_items = relationship("models.model_bought_item.BoughtItem", back_populates="creator")

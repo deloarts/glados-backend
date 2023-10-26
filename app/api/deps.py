@@ -26,9 +26,7 @@ def verify_token(access_token_valid: bool = Depends(validate_access_token)) -> b
     """
     if access_token_valid:
         return True
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="Access token not valid."
-    )
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Access token not valid.")
 
 
 def verify_token_superuser(
@@ -76,17 +74,13 @@ def verify_api_key(
     )
 
 
-def get_current_user(
-    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
-) -> model_user.User:
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> model_user.User:
     """
     Verifies the current user by its access token. Returns the user if valid.
     Raises a HTTP exception if not.
     """
     if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token."
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid access token.")
     user_id = get_id_from_access_token(token)
     if not user_id:
         raise HTTPException(
@@ -95,9 +89,7 @@ def get_current_user(
         )
     user = crud_user.user.get(db, id=user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user
 
 
@@ -108,9 +100,7 @@ def get_current_active_user(
     Returns the current user if active. Raises a HTTP exception if not.
     """
     if not crud_user.user.is_active(current_user):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user."
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
     return current_user
 
 
@@ -121,13 +111,9 @@ def get_current_active_superuser(
     Returns the current user if it's an active super user. Raises a HTTP exception if not.
     """
     if not crud_user.user.is_active(current_user):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user."
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
     if not crud_user.user.is_superuser(current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges."
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
     return current_user
 
 
@@ -148,7 +134,5 @@ def get_current_user_personal_access_token(
         )
     user = crud_user.user.get(db, id=user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user

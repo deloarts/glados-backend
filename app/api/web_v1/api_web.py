@@ -16,6 +16,4 @@ api_router.include_router(api_key.router, prefix="/api-keys", tags=["api-keys"])
 api_router.include_router(host.router, prefix="/host", tags=["host"])
 api_router.include_router(logs.router, prefix="/logs", tags=["logs"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
-api_router.include_router(
-    bought_items.router, prefix="/items/bought", tags=["bought-items"]
-)
+api_router.include_router(bought_items.router, prefix="/items/bought", tags=["bought-items"])

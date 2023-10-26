@@ -205,9 +205,7 @@ def create_bought_item(
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Create new bought item."""
-    return crud_bought_item.bought_item.create(
-        db, db_obj_user=current_user, obj_in=obj_in
-    )
+    return crud_bought_item.bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)
 
 
 @router.post("/excel", response_model=List[schema_bought_item.BoughtItem])
@@ -238,9 +236,7 @@ def update_bought_item(
 ) -> Any:
     """Update a bought item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update(
-        db, db_obj_user=current_user, db_obj_item=item, obj_in=obj_in
-    )
+    return crud_bought_item.bought_item.update(db, db_obj_user=current_user, db_obj_item=item, obj_in=obj_in)
 
 
 @router.put("/{item_id}/status", response_model=schema_bought_item.BoughtItem)
@@ -253,9 +249,7 @@ def update_bought_item_status(
 ) -> Any:
     """Updates the status of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_status(
-        db, db_obj_user=current_user, db_obj_item=item, status=status
-    )
+    return crud_bought_item.bought_item.update_status(db, db_obj_user=current_user, db_obj_item=item, status=status)
 
 
 @router.put("/{item_id}/group-1", response_model=schema_bought_item.BoughtItem)
@@ -448,9 +442,7 @@ def update_bought_item_note_supplier(
     )
 
 
-@router.put(
-    "/{item_id}/desired-delivery-date", response_model=schema_bought_item.BoughtItem
-)
+@router.put("/{item_id}/desired-delivery-date", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_desired_delivery_date(
     *,
     db: Session = Depends(get_db),
@@ -469,9 +461,7 @@ def update_bought_item_desired_delivery_date(
     )
 
 
-@router.put(
-    "/{item_id}/expected-delivery-date", response_model=schema_bought_item.BoughtItem
-)
+@router.put("/{item_id}/expected-delivery-date", response_model=schema_bought_item.BoughtItem)
 def update_bought_item_expected_delivery_date(
     *,
     db: Session = Depends(get_db),
@@ -518,6 +508,4 @@ def delete_bought_item(
 ) -> Any:
     """Delete an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.delete(
-        db, db_obj_item=item, db_obj_user=current_user
-    )
+    return crud_bought_item.bought_item.delete(db, db_obj_item=item, db_obj_user=current_user)

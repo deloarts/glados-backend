@@ -53,9 +53,7 @@ def read_deleted_api_keys(
     verified: bool = Depends(deps.verify_token_superuser),
 ) -> Any:
     """Retrieve deleted api keys."""
-    deleted_api_keys = crud_api_key.api_key.get_deleted_multi(
-        db, skip=skip, limit=limit
-    )
+    deleted_api_keys = crud_api_key.api_key.get_deleted_multi(db, skip=skip, limit=limit)
     return deleted_api_keys
 
 

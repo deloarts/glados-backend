@@ -37,9 +37,7 @@ class SystemSchedules(BaseSchedules):
         db_path = DB_PRODUCTION.parent.resolve()
 
         if Path(cfg.filesystem.db_backup.path).exists():
-            backup_total, backup_used, backup_free = shutil.disk_usage(
-                cfg.filesystem.db_backup.path
-            )
+            backup_total, backup_used, backup_free = shutil.disk_usage(cfg.filesystem.db_backup.path)
             backup_total = backup_total // (2**30)
             backup_used = backup_used // (2**30)
             backup_free = backup_free // (2**30)
@@ -53,13 +51,8 @@ class SystemSchedules(BaseSchedules):
         log.info(f"Free disc space at {str(db_path)!r}: {db_free}GiB.")
         log.info(f"Free disc space at {str(backup_path)!r}: {backup_free}GiB.")
 
-        if (
-            db_free < cfg.filesystem.disc_space_warning
-            or backup_free < cfg.filesystem.disc_space_warning
-        ):
-            log.warning(
-                f"Disc space is running low (<{cfg.filesystem.disc_space_warning}GiB)."
-            )
+        if db_free < cfg.filesystem.disc_space_warning or backup_free < cfg.filesystem.disc_space_warning:
+            log.warning(f"Disc space is running low (<{cfg.filesystem.disc_space_warning}GiB).")
             MailPreset.send_disc_space_warning(
                 db_total,
                 db_used,

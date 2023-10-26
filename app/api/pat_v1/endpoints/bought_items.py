@@ -45,6 +45,4 @@ def create_bought_item(
     current_user: model_user.User = Depends(get_current_user_personal_access_token),
 ) -> Any:
     """Create new bought item."""
-    return crud_bought_item.bought_item.create(
-        db, db_obj_user=current_user, obj_in=obj_in
-    )
+    return crud_bought_item.bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)

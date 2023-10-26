@@ -12,9 +12,7 @@ from const import VERSION
 from fastapi.applications import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-web_api = FastAPI(
-    title="GLADOS WEB API", openapi_url="/docs.json" if cfg.debug else None
-)
+web_api = FastAPI(title="GLADOS WEB API", openapi_url="/docs.json" if cfg.debug else None)
 web_api.include_router(api_web.api_router)
 web_api.add_middleware(
     CORSMiddleware,
@@ -25,9 +23,7 @@ web_api.add_middleware(
 )
 
 
-pat_api = FastAPI(
-    title="GLADOS PAT API", openapi_url="/docs.json" if cfg.debug else None
-)
+pat_api = FastAPI(title="GLADOS PAT API", openapi_url="/docs.json" if cfg.debug else None)
 pat_api.include_router(api_pat.api_router)
 pat_api.add_middleware(
     CORSMiddleware,

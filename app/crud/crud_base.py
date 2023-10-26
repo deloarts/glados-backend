@@ -40,9 +40,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         return db.query(self.model).filter(self.model.id == id).first()
 
-    def get_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100
-    ) -> List[ModelType]:
+    def get_multi(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[ModelType]:
         """
         Retrieves many.
         """
@@ -82,9 +80,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db.refresh(db_obj)
         return db_obj
 
-    def delete(
-        self, db: Session, *, id: int
-    ) -> Optional[ModelType]:  # pylint: disable=W0622
+    def delete(self, db: Session, *, id: int) -> Optional[ModelType]:  # pylint: disable=W0622
         """
         Deletes an db entry.
         """

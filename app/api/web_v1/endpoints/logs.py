@@ -18,9 +18,7 @@ router = APIRouter()
 
 @router.get("/", response_model=list)
 # @whitelist
-def get_logs(
-    request: Request, verified: bool = Depends(deps.verify_token_superuser)
-) -> Any:
+def get_logs(request: Request, verified: bool = Depends(deps.verify_token_superuser)) -> Any:
     """Returns a list all log files."""
     log_files = gather_logs()
     return log_files

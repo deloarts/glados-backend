@@ -44,9 +44,9 @@ def create_user(
     verified: model_user.User = Depends(verify_token_superuser),
 ) -> Any:
     """Create new user."""
-    user = crud_user.user.get_by_email(
-        db, email=user_in.email
-    ) or crud_user.user.get_by_username(db, username=user_in.username)
+    user = crud_user.user.get_by_email(db, email=user_in.email) or crud_user.user.get_by_username(
+        db, username=user_in.username
+    )
     if user:
         raise HTTPException(
             status_code=406,
@@ -132,9 +132,7 @@ def update_user_personal_access_token(
 ) -> Any:
     """Updates the personal access token of an user."""
     # access_token = secrets.token_urlsafe(32)
-    access_token = create_access_token(
-        subject=current_user.id, expires_delta=timedelta(minutes=expires_in_minutes)
-    )
+    access_token = create_access_token(subject=current_user.id, expires_delta=timedelta(minutes=expires_in_minutes))
     crud_user.user.update(
         db,
         db_obj=current_user,

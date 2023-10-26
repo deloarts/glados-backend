@@ -20,18 +20,14 @@ class Log:
         """Inits the logger named glados."""
 
         self.logger = logging.getLogger(NAME)
-        self.format = logging.Formatter(
-            "%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s"
-        )
+        self.format = logging.Formatter("%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s")
         if cfg.debug:
             self.logger.setLevel(logging.DEBUG)
         else:
             self.logger.setLevel(logging.INFO)
 
         self.stream_handler: logging.StreamHandler = None  # type: ignore
-        self.file_handler: logging.handlers.TimedRotatingFileHandler = (
-            None
-        )  # type:ignore
+        self.file_handler: logging.handlers.TimedRotatingFileHandler = None  # type:ignore
         coloredlogs.install(level=logging.DEBUG if cfg.debug else logging.INFO)
 
     def add_stream_handler(self):
