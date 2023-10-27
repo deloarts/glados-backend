@@ -84,7 +84,7 @@ class CRUDAPIKey(CRUDBase[model_api_key.APIKey, schema_api_key.APIKeyCreate, sch
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
-            update_data = obj_in.dict(exclude_unset=True)
+            update_data = obj_in.model_dump(exclude_unset=True)
 
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 

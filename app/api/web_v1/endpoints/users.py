@@ -60,19 +60,28 @@ def update_user_me(
     *,
     db: Session = Depends(get_db),
     password: str = Body(None),
-    full_name: str = Body(None),
-    email: str = Body(None),
+    full_name: str = Body(str, min_length=1),
+    email: str = Body(str, min_length=1),
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Update own user."""
     current_user_data = jsonable_encoder(current_user)
     user_in = schema_user.UserUpdate(**current_user_data)
+
+    user_email = crud_user.user.get_by_email(db, email=email)
+    if user_email and user_email.id != current_user.id:
+        raise HTTPException(
+            status_code=422,
+            detail="This email is already in user by another user.",
+        )
+
     if password is not None:
         user_in.password = password
     if full_name is not None:
         user_in.full_name = full_name
     if email is not None:
         user_in.email = email
+
     user = crud_user.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
 
@@ -117,8 +126,23 @@ def update_user(
     if not user:
         raise HTTPException(
             status_code=404,
-            detail="The user with this id does not exist in the system",
+            detail="The user with this id does not exist in the system.",
         )
+
+    user_username = crud_user.user.get_by_username(db, username=user_in.username)
+    if user_username and user_username.id != user_id:
+        raise HTTPException(
+            status_code=422,
+            detail="This username is already in user by another user.",
+        )
+
+    user_email = crud_user.user.get_by_email(db, email=user_in.email)
+    if user_email and user_email.id != user_id:
+        raise HTTPException(
+            status_code=422,
+            detail="This email is already in user by another user.",
+        )
+
     user = crud_user.user.update(db, db_obj=user, obj_in=user_in)
     return user
 

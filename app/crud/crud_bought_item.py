@@ -196,7 +196,7 @@ class CRUDBoughtItem(
         Returns:
             model_bought_item.BoughtItem: The new bought item model.
         """
-        data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=False)
+        data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=False)
 
         # Manipulate data
         data["created"] = date.today()
@@ -240,7 +240,7 @@ class CRUDBoughtItem(
         if not db_obj_item:
             raise HTTPException(status_code=404, detail="The item does not exist.")
 
-        data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
+        data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
         # Rules
         if not db_obj_user.is_superuser and db_obj_item.status != cfg.items.bought.status.open:

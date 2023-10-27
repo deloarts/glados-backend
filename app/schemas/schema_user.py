@@ -15,7 +15,7 @@ class UserBase(BaseModel):
 
     username: str = Field(..., min_length=1)
     full_name: str = Field(..., min_length=1)
-    email: str = Field(...)
+    email: str = Field(..., min_length=1)
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
 

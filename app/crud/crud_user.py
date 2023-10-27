@@ -39,7 +39,7 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         Returns:
             model_user.User: The user model.
         """
-        data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
+        data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["created"] = datetime.utcnow()
         data["hashed_password"] = get_password_hash(obj_in.password)
         del data["password"]
@@ -77,7 +77,9 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         Returns:
             model_user.User: The user model.
         """
-        data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
+        data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
+
+        print(data)
 
         if "password" in data:
             if len(data["password"]) < cfg.security.min_pw_len:
