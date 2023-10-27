@@ -59,28 +59,24 @@ def create_user(
 def update_user_me(
     *,
     db: Session = Depends(get_db),
-    password: str = Body(None),
-    full_name: str = Body(str, min_length=1),
-    email: str = Body(str, min_length=1),
+    user_in: schema_user.UserUpdate,
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Update own user."""
-    current_user_data = jsonable_encoder(current_user)
-    user_in = schema_user.UserUpdate(**current_user_data)
 
-    user_email = crud_user.user.get_by_email(db, email=email)
-    if user_email and user_email.id != current_user.id:
+    user_username = crud_user.user.get_by_username(db, username=user_in.username)
+    if user_username and user_username.id != current_user.id:
         raise HTTPException(
-            status_code=422,
-            detail="This email is already in user by another user.",
+            status_code=409,
+            detail="This username is already in use.",
         )
 
-    if password is not None:
-        user_in.password = password
-    if full_name is not None:
-        user_in.full_name = full_name
-    if email is not None:
-        user_in.email = email
+    user_email = crud_user.user.get_by_email(db, email=user_in.email)
+    if user_email and user_email.id != current_user.id:
+        raise HTTPException(
+            status_code=409,
+            detail="This email is already in use.",
+        )
 
     user = crud_user.user.update(db, db_obj=current_user, obj_in=user_in)
     return user
@@ -132,15 +128,15 @@ def update_user(
     user_username = crud_user.user.get_by_username(db, username=user_in.username)
     if user_username and user_username.id != user_id:
         raise HTTPException(
-            status_code=422,
-            detail="This username is already in user by another user.",
+            status_code=409,
+            detail="This username is already in use.",
         )
 
     user_email = crud_user.user.get_by_email(db, email=user_in.email)
     if user_email and user_email.id != user_id:
         raise HTTPException(
-            status_code=422,
-            detail="This email is already in user by another user.",
+            status_code=409,
+            detail="This email is already in use.",
         )
 
     user = crud_user.user.update(db, db_obj=user, obj_in=user_in)
