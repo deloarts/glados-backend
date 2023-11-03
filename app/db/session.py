@@ -11,6 +11,7 @@ from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION
 from const import SYSTEM_USER
 from crud import crud_user
+from models import model_user
 from multilog import log
 from schemas import schema_user
 from sqlalchemy import create_engine
@@ -61,8 +62,22 @@ class InitDatabase:
                 email=cfg.init.mail,
                 password=cfg.init.password,
                 full_name=cfg.init.full_name,
-                is_superuser=True,
                 is_active=True,
+                is_superuser=True,
+                is_adminuser=True,
                 is_systemuser=True,
+                is_guestuser=False,
             )
-            user = crud_user.user.create(db, obj_in=user_in)
+            creator = user_in.model_dump()
+            del creator["password"]
+            creator["username"] = "Glados Init"
+            creator["full_name"] = "-"
+            creator["id"] = 0
+            creator["hashed_password"] = "not_relevant_because_temp"
+            creator["is_systemuser"] = True
+
+            user = crud_user.user.create(
+                db,
+                obj_in=user_in,
+                current_user=model_user.User(**creator),
+            )

@@ -196,6 +196,9 @@ class CRUDBoughtItem(
         Returns:
             model_bought_item.BoughtItem: The new bought item model.
         """
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot create items.")
+
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=False)
 
         # Manipulate data
@@ -243,13 +246,19 @@ class CRUDBoughtItem(
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
         # Rules
-        if not db_obj_user.is_superuser and db_obj_item.status != cfg.items.bought.status.open:
-            raise HTTPException(status_code=403, detail="Only a superuser can change planned items.")
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
 
-        if not db_obj_user.is_superuser and not db_obj_item.creator_id == db_obj_user.id:
+        if (
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
+            and db_obj_item.status != cfg.items.bought.status.open
+        ):
+            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
+
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
             raise HTTPException(
                 status_code=403,
-                detail="Only a superuser can edit an item from another user.",
+                detail="Only superusers and adminusers can edit items from another user.",
             )
 
         # Manipulate data
@@ -293,8 +302,23 @@ class CRUDBoughtItem(
             return db_obj_item
 
         # Rules
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+
         if status == cfg.items.bought.status.open and db_obj_item.status != cfg.items.bought.status.open:
             raise HTTPException(status_code=403, detail="Cannot change status back to open.")
+
+        if (
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
+            and db_obj_item.status != cfg.items.bought.status.open
+        ):
+            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
+
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
+            raise HTTPException(
+                status_code=403,
+                detail="Only superusers and adminusers can edit items from another user.",
+            )
 
         # Incoming data rules
         if status not in cfg.items.bought.status.values:
@@ -375,6 +399,22 @@ class CRUDBoughtItem(
         if not db_obj_item:
             raise HTTPException(status_code=404, detail="The item with this id does not exist.")
 
+        # Rules
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+
+        if (
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
+            and db_obj_item.status != cfg.items.bought.status.open
+        ):
+            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
+
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
+            raise HTTPException(
+                status_code=403,
+                detail="Only superusers and adminusers can edit an items from another user.",
+            )
+
         field_name = db_field.description
         field_value = jsonable_encoder(db_obj_item)[field_name]
 
@@ -423,6 +463,9 @@ class CRUDBoughtItem(
         Returns:
             model_bought_item.BoughtItem: Returns the updated item.
         """
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+
         kwargs = locals()
         kwargs.pop("self")
 
@@ -456,20 +499,26 @@ class CRUDBoughtItem(
         Returns:
             Optional[model_bought_item.BoughtItem]: The as deleted marked item.
         """
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot delete items.")
+
         if not db_obj_item:
             raise HTTPException(
                 status_code=404,
                 detail="The item does not exist.",
             )
 
-        if not db_obj_user.is_superuser and not db_obj_item.creator_id == db_obj_user.id:
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
             raise HTTPException(
                 status_code=403,
-                detail="Only a superuser can delete an item from another user.",
+                detail="Only a superuser or adminuser can delete an item from another user.",
             )
 
-        if not db_obj_user.is_superuser and db_obj_item.status != cfg.items.bought.status.open:
-            raise HTTPException(status_code=403, detail="Only a superuser can delete a planned item.")
+        if (
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
+            and db_obj_item.status != cfg.items.bought.status.open
+        ):
+            raise HTTPException(status_code=403, detail="Only a superuser or adminuser can delete a planned item.")
 
         data = {"deleted": True}
         data["changed"] = date.today()  # type:ignore

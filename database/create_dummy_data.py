@@ -41,14 +41,12 @@ if crud_user:
             data_in = schema_bought_item.BoughtItemCreate(  # type: ignore
                 project=project,
                 quantity=quantity,
-                unit="pcs",
+                unit=cfg.items.bought.units.default,
                 partnumber=partnumber,
                 definition=definition,
                 manufacturer=manufacturer,
             )
-            item = crud_bought_item.bought_item.create(
-                db, db_obj_user=crud_user, obj_in=data_in
-            )
+            item = crud_bought_item.bought_item.create(db, db_obj_user=crud_user, obj_in=data_in)
             count += 1
 
             print(f"{count}/{projects * items}: Created item {partnumber!r}")

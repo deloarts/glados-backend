@@ -3,7 +3,8 @@ from typing import Dict
 from fastapi.testclient import TestClient
 
 from app.config import cfg
-from app.const import API_WEB_V1, SYSTEM_USER
+from app.const import API_WEB_V1
+from app.const import SYSTEM_USER
 
 
 def test_get_access_token(client: TestClient) -> None:
@@ -18,12 +19,10 @@ def test_get_access_token(client: TestClient) -> None:
     assert tokens["access_token"]
 
 
-def test_use_access_token(
-    client: TestClient, superuser_token_headers: Dict[str, str]
-) -> None:
+def test_use_access_token(client: TestClient, systemuser_token_headers: Dict[str, str]) -> None:
     r = client.post(
         f"{API_WEB_V1}/login/test-token",
-        headers=superuser_token_headers,
+        headers=systemuser_token_headers,
     )
     result = r.json()
     assert r.status_code == 200

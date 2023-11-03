@@ -1,5 +1,7 @@
 {
     "cSpell.words": [
+        "adminuser",
+        "adminusers",
         "apscheduler",
         "autoflush",
         "bothify",
@@ -10,6 +12,8 @@
         "ecommerce",
         "fastapi",
         "glados",
+        "guestuser",
+        "guestusers",
         "ilike",
         "jsonable",
         "levelname",

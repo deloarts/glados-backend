@@ -25,7 +25,6 @@ from schemas import schema_token
 from sqlalchemy.orm import Session
 
 basic_auth = HTTPBasic(auto_error=False)
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 api_key_header = APIKeyHeader(name="api_key_header", auto_error=False)
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=cfg.security.token_url, auto_error=False)
 
@@ -80,18 +79,6 @@ def get_id_from_access_token(token: str) -> Optional[int]:
     except (ValidationError, Exception):
         return None
     return token_data.sub  # a.k.a the id
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Returns True if the plain_password matches the hashed_password, otherwise False.
-    """
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    """Returns the hash from the given password."""
-    return pwd_context.hash(password)
 
 
 def validate_api_key(api_key: str = Security(api_key_header), db: Session = Depends(get_db)) -> bool:
@@ -163,5 +150,33 @@ def validate_access_token_superuser(db: Session = Depends(get_db), token: str = 
         user = crud_user.user.get(db, id=user_id)
         if user is not None:
             if crud_user.user.is_active(user) and crud_user.user.is_superuser(user):
+                return True
+    return False
+
+
+def validate_access_token_adminuser(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> bool:
+    """
+    Validates the access token for active adminusers. Same as 'validate_access_token',
+    but the user must also be a adminuser.
+    """
+    user_id = get_id_from_access_token(token)
+    if user_id is not None:
+        user = crud_user.user.get(db, id=user_id)
+        if user is not None:
+            if crud_user.user.is_active(user) and crud_user.user.is_adminuser(user):
+                return True
+    return False
+
+
+def validate_access_token_guestuser(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> bool:
+    """
+    Validates the access token for active guestusers. Same as 'validate_access_token',
+    but the user must also be a guestuser.
+    """
+    user_id = get_id_from_access_token(token)
+    if user_id is not None:
+        user = crud_user.user.get(db, id=user_id)
+        if user is not None:
+            if crud_user.user.is_active(user) and crud_user.user.is_guestuser(user):
                 return True
     return False

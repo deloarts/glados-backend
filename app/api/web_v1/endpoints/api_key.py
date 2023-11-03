@@ -22,7 +22,7 @@ def read_api_keys(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    verified: bool = Depends(deps.verify_token_superuser),
+    verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Retrieve api keys."""
     api_keys = crud_api_key.api_key.get_multi(db, skip=skip, limit=limit)
@@ -33,7 +33,7 @@ def read_api_keys(
 def read_api_key_by_id(
     api_key_id: int,
     db: Session = Depends(get_db),
-    verified: bool = Depends(deps.verify_token_superuser),
+    verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Get a specific api key by id."""
     api_key = crud_api_key.api_key.get(db, id=api_key_id)
@@ -50,7 +50,7 @@ def read_deleted_api_keys(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    verified: bool = Depends(deps.verify_token_superuser),
+    verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Retrieve deleted api keys."""
     deleted_api_keys = crud_api_key.api_key.get_deleted_multi(db, skip=skip, limit=limit)
@@ -61,7 +61,7 @@ def read_deleted_api_keys(
 def read_deleted_api_key_by_id(
     api_key_id: int,
     db: Session = Depends(get_db),
-    verified: bool = Depends(deps.verify_token_superuser),
+    verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Get a specific deleted api key by id."""
     deleted_api_key = crud_api_key.api_key.get_deleted(db, id=api_key_id)
@@ -78,7 +78,7 @@ def create_api_key(
     *,
     db: Session = Depends(get_db),
     data_in: schema_api_key.APIKeyCreate,
-    verified: bool = Depends(deps.verify_token_superuser),
+    verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Create an new api key."""
     return crud_api_key.api_key.create(db, obj_in=data_in)
@@ -90,7 +90,7 @@ def create_api_key(
 #     db: Session = Depends(get_db),
 #     api_key_id: int,
 #     data_in: schema_api_key.APIKeyUpdate,
-#     verified: bool = Depends(deps.verify_token_superuser),
+#     verified: bool = Depends(deps.verify_token_adminuser),
 # ) -> Any:
 #     """
 #     Update an api key.
@@ -110,7 +110,7 @@ def delete_api_key(
     *,
     db: Session = Depends(get_db),
     api_key_id: int,
-    verified: bool = Depends(deps.verify_token_superuser),
+    verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Deletes an api key."""
     api_key = crud_api_key.api_key.get(db, id=api_key_id)

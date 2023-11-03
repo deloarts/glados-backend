@@ -22,7 +22,7 @@ def random_email() -> str:
 
 
 def random_username() -> str:
-    return f"t{random.randint(1, 999999):06d}"
+    return f"test_{random.randint(1000, 9999):06d}"
 
 
 def random_name() -> str:
@@ -33,7 +33,7 @@ def random_project() -> str:
     return f"P{random.randint(1, 99999):05d}"
 
 
-def get_superuser_token_headers(client: TestClient) -> Dict[str, str]:
+def get_systemuser_token_headers(client: TestClient) -> Dict[str, str]:
     login_data = {
         "username": SYSTEM_USER,
         "password": cfg.init.password,
