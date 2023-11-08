@@ -9,13 +9,15 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.param_functions import Security
 from models import model_user
-from security import api_key_header
-from security import get_id_from_access_token
-from security import reusable_oauth2
-from security import validate_access_token
-from security import validate_access_token_superuser
-from security import validate_api_key
-from security import validate_personal_access_token
+from security.access import api_key_header
+from security.access import get_id_from_access_token
+from security.access import reusable_oauth2
+from security.access import validate_access_token
+from security.access import validate_access_token_adminuser
+from security.access import validate_access_token_guestuser
+from security.access import validate_access_token_superuser
+from security.access import validate_api_key
+from security.access import validate_personal_access_token
 from sqlalchemy.orm import Session
 
 
@@ -34,6 +36,36 @@ def verify_token_superuser(
 ) -> bool:
     """
     Verifies the access token for active superusers.
+    Returns True is valid, raises a http exception if not.
+    """
+    if access_token_valid:
+        return True
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Access token not valid or not enough permissions.",
+    )
+
+
+def verify_token_adminuser(
+    access_token_valid: bool = Depends(validate_access_token_adminuser),
+) -> bool:
+    """
+    Verifies the access token for active adminusers.
+    Returns True is valid, raises a http exception if not.
+    """
+    if access_token_valid:
+        return True
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Access token not valid or not enough permissions.",
+    )
+
+
+def verify_token_guestuser(
+    access_token_valid: bool = Depends(validate_access_token_guestuser),
+) -> bool:
+    """
+    Verifies the access token for active guestusers.
     Returns True is valid, raises a http exception if not.
     """
     if access_token_valid:
@@ -113,6 +145,32 @@ def get_current_active_superuser(
     if not crud_user.user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
     if not crud_user.user.is_superuser(current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
+    return current_user
+
+
+def get_current_active_adminuser(
+    current_user: model_user.User = Depends(get_current_user),
+) -> model_user.User:
+    """
+    Returns the current user if it's an active admin user. Raises a HTTP exception if not.
+    """
+    if not crud_user.user.is_active(current_user):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
+    if not crud_user.user.is_adminuser(current_user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
+    return current_user
+
+
+def get_current_active_guestuser(
+    current_user: model_user.User = Depends(get_current_user),
+) -> model_user.User:
+    """
+    Returns the current user if it's an active guest user. Raises a HTTP exception if not.
+    """
+    if not crud_user.user.is_active(current_user):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
+    if not crud_user.user.is_guestuser(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
     return current_user
 

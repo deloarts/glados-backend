@@ -13,13 +13,17 @@ from fastapi import HTTPException
 from models import model_user
 from multilog import log
 from schemas import schema_user
-from security import get_password_hash
-from security import verify_password
+from security.pwd import get_password_hash
+from security.pwd import verify_password
 from sqlalchemy.orm import Session
 
 
 class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.UserUpdate]):
     """CRUDUser class. Descendent of the CRUDBase class."""
+
+    def get_by_id(self, db: Session, *, id: int) -> Optional[model_user.User]:
+        """Returns a user by the id."""
+        return db.query(model_user.User).filter(model_user.User.id == id).first()
 
     def get_by_username(self, db: Session, *, username: str) -> Optional[model_user.User]:
         """Returns a user by the username."""
@@ -29,7 +33,7 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         """Returns a user by the email."""
         return db.query(model_user.User).filter(model_user.User.email == email).first()
 
-    def create(self, db: Session, *, obj_in: schema_user.UserCreate) -> model_user.User:
+    def create(self, db: Session, *, current_user: model_user.User, obj_in: schema_user.UserCreate) -> model_user.User:
         """Creates a user.
 
         Args:
@@ -44,22 +48,39 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         data["hashed_password"] = get_password_hash(obj_in.password)
         del data["password"]
 
-        if "is_systemuser" in data and data["is_systemuser"]:
+        # The systemuser can only be created by another systemuser!
+        # Permissions of a systemuser cannot be edited!
+        if "is_systemuser" in data and data["is_systemuser"] and current_user.is_systemuser:
             data["is_active"] = True
             data["is_superuser"] = True
+            data["is_adminuser"] = True
+            data["is_guestuser"] = False
 
-        db_obj = model_user.User(**data)  # type: ignore
+        # A adminuser has all permissions, even if they aren't received via api, and is no guestuser
+        elif "is_adminuser" in data and data["is_adminuser"]:
+            data["is_superuser"] = True
+            data["is_guestuser"] = False
+
+        # A superuser is no guestuser
+        elif "is_superuser" in data and data["is_superuser"]:
+            data["is_guestuser"] = False
+
+        db_obj = model_user.User(**data)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
 
-        log.info(f"Created user {db_obj.username!r} ({db_obj.full_name}), ID={db_obj.id}.")
+        log.info(
+            f"Created user {db_obj.username!r} (Name={db_obj.full_name!r}, ID={db_obj.id}) "
+            f"by {current_user.username!r} (Name={current_user.full_name!r}, ID={current_user.id})."
+        )
         return db_obj
 
     def update(
         self,
         db: Session,
         *,
+        current_user: model_user.User,
         db_obj: model_user.User,
         obj_in: schema_user.UserUpdate | Dict[str, Any],
     ) -> model_user.User:
@@ -79,8 +100,7 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         """
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
-        print(data)
-
+        # Handle a new password
         if "password" in data:
             if len(data["password"]) < cfg.security.min_pw_len:
                 raise HTTPException(
@@ -91,8 +111,33 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
             del data["password"]
             data["hashed_password"] = hashed_password
 
+        # The systemuser can only update itself!
+        # The systemuser has fixed permissions that cannot be altered.
+        if db_obj.is_systemuser:
+            if db_obj.id != current_user.id:
+                raise HTTPException(
+                    status_code=403,
+                    detail="The systemuser cannot be edited by another user.",
+                )
+            data["is_active"] = True
+            data["is_superuser"] = True
+            data["is_adminuser"] = True
+            data["is_guestuser"] = False
+
+        # A adminuser has all permissions and is no guestuser
+        elif "is_adminuser" in data and data["is_adminuser"]:
+            data["is_superuser"] = True
+            data["is_guestuser"] = False
+
+        # A superuser is no guestuser
+        elif "is_superuser" in data and data["is_superuser"]:
+            data["is_guestuser"] = False
+
         user = super().update(db, db_obj=db_obj, obj_in=data)
-        log.info(f"Updated user {user.username!r} ({user.full_name}), ID={user}.")
+        log.info(
+            f"Updated user {db_obj.username!r} (Name={db_obj.full_name!r}, ID={db_obj.id}) "
+            f"by {current_user.username!r} (Name={current_user.full_name!r}, ID={current_user.id})."
+        )
         return user
 
     def authenticate(self, db: Session, *, username: str, password: str) -> Optional[model_user.User]:
@@ -121,6 +166,14 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
     def is_superuser(self, user: model_user.User) -> bool:
         """Checks if a user is a superuser."""
         return bool(user.is_superuser)
+
+    def is_adminuser(self, user: model_user.User) -> bool:
+        """Checks if a user is a admin user."""
+        return bool(user.is_adminuser)
+
+    def is_guestuser(self, user: model_user.User) -> bool:
+        """Checks if a user is a guest user."""
+        return bool(user.is_guestuser)
 
     def is_systemuser(self, user: model_user.User) -> bool:
         """Checks if a user is a systemuser."""

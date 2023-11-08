@@ -30,7 +30,7 @@ def get_host_time(verified: bool = Depends(deps.verify_token)) -> Any:
 
 @router.get("/config", response_model=schema_host.HostConfig)
 def get_host_config(
-    verified: bool = Depends(deps.verify_token_superuser),
+    verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Returns vulnerable host information."""
     return {"now": datetime.now(), "config": cfg}

@@ -6,10 +6,10 @@ from datetime import timedelta
 from typing import Any
 from typing import List
 
-from api.deps import get_current_active_superuser
+from api.deps import get_current_active_adminuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
-from api.deps import verify_token_superuser
+from api.deps import verify_token_adminuser
 from crud import crud_user
 from db.session import get_db
 from fastapi.encoders import jsonable_encoder
@@ -19,7 +19,7 @@ from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from models import model_user
 from schemas import schema_user
-from security import create_access_token
+from security.access import create_access_token
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -41,7 +41,7 @@ def create_user(
     *,
     db: Session = Depends(get_db),
     user_in: schema_user.UserCreate,
-    verified: model_user.User = Depends(verify_token_superuser),
+    current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
     """Create new user."""
     user = crud_user.user.get_by_email(db, email=user_in.email) or crud_user.user.get_by_username(
@@ -52,7 +52,7 @@ def create_user(
             status_code=406,
             detail="The user already exists in the system.",
         )
-    return crud_user.user.create(db, obj_in=user_in)
+    return crud_user.user.create(db, current_user=current_user, obj_in=user_in)
 
 
 @router.put("/me", response_model=schema_user.User)
@@ -78,7 +78,7 @@ def update_user_me(
             detail="This email is already in use.",
         )
 
-    user = crud_user.user.update(db, db_obj=current_user, obj_in=user_in)
+    user = crud_user.user.update(db, current_user=current_user, db_obj=current_user, obj_in=user_in)
     return user
 
 
@@ -115,7 +115,7 @@ def update_user(
     db: Session = Depends(get_db),
     user_id: int,
     user_in: schema_user.UserUpdate,
-    current_user: model_user.User = Depends(get_current_active_superuser),
+    current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
     """Update a user."""
     user = crud_user.user.get(db, id=user_id)
@@ -139,7 +139,7 @@ def update_user(
             detail="This email is already in use.",
         )
 
-    user = crud_user.user.update(db, db_obj=user, obj_in=user_in)
+    user = crud_user.user.update(db, current_user=current_user, db_obj=user, obj_in=user_in)
     return user
 
 
@@ -151,24 +151,15 @@ def update_user_personal_access_token(
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Updates the personal access token of an user."""
+    if current_user.is_guestuser:
+        raise HTTPException(status_code=403, detail="A guest user cannot create an access token.")
+
     # access_token = secrets.token_urlsafe(32)
     access_token = create_access_token(subject=current_user.id, expires_delta=timedelta(minutes=expires_in_minutes))
     crud_user.user.update(
         db,
+        current_user=current_user,
         db_obj=current_user,
         obj_in={"personal_access_token": access_token},
     )
     return access_token
-
-
-# @router.delete("/{user_id}", response_model=schema_user.User)
-# def delete_user(*, db: Session = Depends(get_db), user_id: int) -> Any:
-#     """Deletes a user."""
-#     user = crud_user.user.get(db, id=user_id)
-#     if not user:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="The user with this id does not exist in the system",
-#         )
-#     user = crud_user.user.delete(db, id=user_id)
-#     return user

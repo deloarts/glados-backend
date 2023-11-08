@@ -1,5 +1,8 @@
 """
     DB user model.
+
+    Important note: There can only be one `system user`.
+    This user is created at db init.
 """
 
 # pylint: disable=C0115,R0903
@@ -34,6 +37,8 @@ class User(Base):  # type: ignore
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_superuser = Column(Boolean, nullable=False, default=False)
+    is_adminuser = Column(Boolean, nullable=False, default=False, server_default=false())
+    is_guestuser = Column(Boolean, nullable=False, default=False, server_default=false())
     is_systemuser = Column(Boolean, nullable=False, default=False, server_default=false())
 
     # relations
