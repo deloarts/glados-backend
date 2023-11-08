@@ -12,6 +12,9 @@ from const import VERSION
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from schemas import schema_host
+from utilities.disc_space import get_disc_space
+from utilities.system import get_hostname
+from utilities.system import get_os
 
 router = APIRouter()
 
@@ -28,12 +31,29 @@ def get_host_time(verified: bool = Depends(deps.verify_token)) -> Any:
     return {"now": datetime.now(), "timezone": cfg.locale.tz}
 
 
+@router.get("/info", response_model=schema_host.HostInfo)
+def get_host_info(
+    verified: bool = Depends(deps.verify_token_adminuser),
+) -> Any:
+    """Returns vulnerable host information."""
+    return {
+        "now": datetime.now(),
+        "version": VERSION,
+        "os": get_os(),
+        "hostname": get_hostname(),
+        "disc_space": get_disc_space(),
+    }
+
+
 @router.get("/config", response_model=schema_host.HostConfig)
 def get_host_config(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
-    """Returns vulnerable host information."""
-    return {"now": datetime.now(), "config": cfg}
+    """Returns vulnerable host configuration."""
+    return {
+        "now": datetime.now(),
+        "config": cfg,
+    }
 
 
 @router.get(

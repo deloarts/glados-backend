@@ -7,6 +7,7 @@ from typing import List
 
 from config import Config
 from pydantic import BaseModel
+from utilities.disc_space import DiscSpace
 
 
 class HostVersion(BaseModel):
@@ -27,6 +28,16 @@ class HostConfig(BaseModel):
 
     now: datetime
     config: Config
+
+
+class HostInfo(BaseModel):
+    """Host configuration schema."""
+
+    now: datetime
+    version: str
+    os: str
+    hostname: str
+    disc_space: DiscSpace
 
 
 class HostConfigItemsBoughtStatus(BaseModel):
