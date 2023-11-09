@@ -31,3 +31,7 @@ DB_PRODUCTION = Path(ROOT, "database/glados.db")
 LOGS = Path(ROOT, "logs")
 UPLOADS = Path(ROOT, "uploads")
 TEMPLATES = Path(ROOT, "templates")
+
+# Tools/Stock Cut
+N_MAX_PRECISE = 9  # 10 takes ~30s, 9 only 1.2s
+N_MAX = 500  # around 1 million with n^2
