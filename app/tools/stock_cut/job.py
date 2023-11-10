@@ -1,4 +1,8 @@
-from typing import Dict
+"""
+    Stock Cutting Solver: Job model
+"""
+
+
 from typing import Iterator
 from typing import List
 
@@ -22,54 +26,31 @@ class TargetSize(BaseModel):
 class Job(BaseModel):
     max_length: int
     cut_width: int = 0
-    target_sizes: Dict[int, int]
-
-    # utility
+    target_sizes: List[TargetSize]
 
     def iterate_sizes(self) -> Iterator[int]:
         """
         yields all lengths, sorted descending
         """
-
-        # sort descending to favor combining larger sizes first
-        for size, quantity in sorted(self.target_sizes.items(), reverse=True):
-            for _ in range(quantity):
-                yield size
-
-    def sizes_from_list(self, sizes_list: List[TargetSize]):
-        known_sizes = {}
-
-        # list to dict to make them unique
-        for size in sizes_list:
-            if size.length in known_sizes:
-                known_sizes[size.length] += size.quantity
-            else:
-                known_sizes[size.length] = size.quantity
-
-        self.target_sizes = known_sizes
-
-    def sizes_as_list(self) -> List[TargetSize]:
-        """
-        Compatibility function
-        """
-        # back to list again for compatibility
-        return [TargetSize(length=l, quantity=q) for (l, q) in self.target_sizes.items()]
+        for item in self.target_sizes:
+            for _ in range(item.quantity):
+                yield item.length
 
     def assert_valid(self):
         if self.max_length <= 0:
-            raise ValueError(f"Job has invalid max_length {self.max_length}")
+            raise ValueError(f"Max length {self.max_length!r} is not valid")
         if self.cut_width < 0:
-            raise ValueError(f"Job has invalid cut_width {self.cut_width}")
+            raise ValueError(f"Cut width {self.cut_width!r} is not valid")
         if len(self.target_sizes) <= 0:
-            raise ValueError(f"Job is missing target_sizes")
-        if any(size > (self.max_length - self.cut_width) for size in self.target_sizes.keys()):
-            raise ValueError(f"Job has target sizes longer than the stock")
+            raise ValueError(f"Target sizes are not set")
+        if any(item.length > (self.max_length - self.cut_width) for item in self.target_sizes):
+            raise ValueError(f"Some target sizes are longer than the stock")
 
     def __len__(self) -> int:
         """
         Number of target sizes in job
         """
-        return sum(self.target_sizes.values())
+        return sum(item.quantity for item in self.target_sizes)
 
     def __eq__(self, other):
         return (
@@ -79,4 +60,4 @@ class Job(BaseModel):
         )
 
     def __hash__(self) -> int:
-        return hash((self.max_length, self.cut_width, str(sorted(self.target_sizes.items()))))
+        return hash((self.max_length, self.cut_width, str(sorted(self.target_sizes))))

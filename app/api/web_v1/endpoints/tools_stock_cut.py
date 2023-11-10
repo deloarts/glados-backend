@@ -6,6 +6,7 @@ from typing import Any
 
 from api import deps
 from config import cfg
+from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from tools.stock_cut.job import Job
@@ -21,7 +22,29 @@ def post_solve(
     verified: bool = Depends(deps.verify_token),
 ) -> Any:
     """Solves the stock cutting problem."""
-    job.assert_valid()
-    solved: Result = distribute(job)
-    solved.assert_valid()
+
+    try:
+        job.assert_valid()
+    except ValueError as e:
+        raise HTTPException(
+            status_code=406,
+            detail=str(e),
+        )
+
+    try:
+        solved: Result = distribute(job)
+    except OverflowError as e:
+        raise HTTPException(
+            status_code=507,
+            detail=str(e),
+        )
+
+    try:
+        solved.assert_valid()
+    except ValueError as e:
+        raise HTTPException(
+            status_code=507,
+            detail=str(e),
+        )
+
     return solved

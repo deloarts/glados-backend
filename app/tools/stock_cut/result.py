@@ -1,3 +1,7 @@
+"""
+    Stock Cutting Solver: Result model
+"""
+
 from enum import Enum
 from enum import unique
 from typing import List
@@ -9,7 +13,6 @@ from tools.stock_cut.job import Job
 @unique
 class SolverType(str, Enum):
     bruteforce = "bruteforce"
-    gapfill = "gapfill"
     FFD = "FFD"
 
 
@@ -33,8 +36,8 @@ class Result(BaseModel):
     def assert_valid(self):
         self.job.assert_valid()
         if self.solver_type not in SolverType:
-            raise ValueError(f"Result has invalid solver_type {self.solver_type}")
+            raise ValueError(f"Result has invalid solver type {self.solver_type!r}")
         if self.time_us < 0:
-            raise ValueError(f"Result has invalid time_us {self.time_us}")
+            raise ValueError(f"Result has invalid time {self.time_us!r}")
         if len(self.lengths) <= 0:
             raise ValueError("Result is missing lengths")
