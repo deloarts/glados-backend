@@ -5,6 +5,7 @@
         "apscheduler",
         "autoflush",
         "bothify",
+        "bruteforce",
         "cifs",
         "coloredlogs",
         "COMPUTERNAME",
