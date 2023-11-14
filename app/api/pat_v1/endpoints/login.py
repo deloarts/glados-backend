@@ -15,9 +15,7 @@ router = APIRouter()
 
 @router.post("/login/test-personal-access-token", response_model=schema_user.User)
 def test_personal_access_token(
-    current_user: model_user.User = Depends(
-        deps.get_current_user_personal_access_token
-    ),
+    current_user: model_user.User = Depends(deps.get_current_user_personal_access_token),
 ) -> Any:
     """Test personal access token: This token must be provided as api key header."""
     return current_user

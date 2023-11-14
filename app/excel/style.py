@@ -25,25 +25,13 @@ def style_worksheet(worksheet: Worksheet) -> None:
         # Set format, font and size
         for index, cell in enumerate(column_cells):  # type: ignore
             if index > cfg.excel.data_row - 1:
-                color = (
-                    cfg.excel.style.data_color_1
-                    if index % 2 == 0
-                    else cfg.excel.style.data_color_2
-                )
-                bg_color = (
-                    cfg.excel.style.data_bg_color_1
-                    if index % 2 == 0
-                    else cfg.excel.style.data_bg_color_2
-                )
-                cell.fill = PatternFill(
-                    start_color=bg_color, end_color=bg_color, fill_type="solid"
-                )
+                color = cfg.excel.style.data_color_1 if index % 2 == 0 else cfg.excel.style.data_color_2
+                bg_color = cfg.excel.style.data_bg_color_1 if index % 2 == 0 else cfg.excel.style.data_bg_color_2
+                cell.fill = PatternFill(start_color=bg_color, end_color=bg_color, fill_type="solid")
             else:
                 color = None
             cell.number_format = "@"
-            cell.font = Font(
-                name=cfg.excel.style.font, size=cfg.excel.style.size, color=color
-            )
+            cell.font = Font(name=cfg.excel.style.font, size=cfg.excel.style.size, color=color)
             cell.alignment = Alignment(horizontal="left", vertical="center")
 
         # Set font and height for the header row

@@ -22,9 +22,7 @@ class MailPreset:
     def send_schedule_error(task_name: str, message: str) -> None:
         """Send a schedule error message to the init-systemuser."""
         log.info(f"Sending schedule error email notification to {cfg.init.mail!r}...")
-        body = render_template(
-            template_file=Path(TEMPLATES, cfg.templates.mail_schedule_error), **locals()
-        )
+        body = render_template(template_file=Path(TEMPLATES, cfg.templates.mail_schedule_error), **locals())
         receiver = Receiver(to=[cfg.init.mail])
         mail = Mail(subject="Glados Notification Service", body=body)
         send_mail(receiver=receiver, mail=mail)
@@ -41,9 +39,7 @@ class MailPreset:
         backup_path: str,
     ) -> None:
         """Send a disc space warning message to the init-systemuser."""
-        log.info(
-            f"Sending disc space warning email notification to {cfg.init.mail!r}..."
-        )
+        log.info(f"Sending disc space warning email notification to {cfg.init.mail!r}...")
         body = render_template(
             template_file=Path(TEMPLATES, cfg.templates.mail_disc_space_warning),
             **locals(),

@@ -13,16 +13,10 @@ from schemas import schema_api_key
 from sqlalchemy.orm import Session
 
 
-class CRUDAPIKey(
-    CRUDBase[
-        model_api_key.APIKey, schema_api_key.APIKeyCreate, schema_api_key.APIKeyUpdate
-    ]
-):
+class CRUDAPIKey(CRUDBase[model_api_key.APIKey, schema_api_key.APIKeyCreate, schema_api_key.APIKeyUpdate]):
     """CRUDAPIKey class. Descendent of the CRUDBase class."""
 
-    def get(
-        self, db: Session, id: Any
-    ) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
+    def get(self, db: Session, id: Any) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
         """
         Retrieves an api key by its id.
         """
@@ -35,23 +29,15 @@ class CRUDAPIKey(
             .first()
         )
 
-    def get_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100
-    ) -> List[model_api_key.APIKey]:
+    def get_multi(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[model_api_key.APIKey]:
         """
         Retrieves multiple api keys.
         """
         return (
-            db.query(model_api_key.APIKey)
-            .filter(model_api_key.APIKey.deleted is False)
-            .offset(skip)
-            .limit(limit)
-            .all()
+            db.query(model_api_key.APIKey).filter(model_api_key.APIKey.deleted is False).offset(skip).limit(limit).all()
         )
 
-    def get_by_api_key(
-        self, db: Session, *, key: str
-    ) -> Optional[model_api_key.APIKey]:
+    def get_by_api_key(self, db: Session, *, key: str) -> Optional[model_api_key.APIKey]:
         """
         Retrieves an api key by its key value.
         """
@@ -64,9 +50,7 @@ class CRUDAPIKey(
             .first()
         )
 
-    def get_deleted(
-        self, db: Session, *, id: int
-    ) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
+    def get_deleted(self, db: Session, *, id: int) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
         """
         Retrieves an as deleted marked api key by its id.
         """
@@ -76,23 +60,15 @@ class CRUDAPIKey(
             .first()
         )
 
-    def get_deleted_multi(
-        self, db: Session, *, skip: int = 0, limit: int = 100
-    ) -> List[model_api_key.APIKey]:
+    def get_deleted_multi(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[model_api_key.APIKey]:
         """
         Retrieves multiple as deleted marked api keys.
         """
         return (
-            db.query(model_api_key.APIKey)
-            .filter(model_api_key.APIKey.deleted is True)
-            .offset(skip)
-            .limit(limit)
-            .all()
+            db.query(model_api_key.APIKey).filter(model_api_key.APIKey.deleted is True).offset(skip).limit(limit).all()
         )
 
-    def create(
-        self, db: Session, *, obj_in: schema_api_key.APIKeyCreate
-    ) -> model_api_key.APIKey:
+    def create(self, db: Session, *, obj_in: schema_api_key.APIKeyCreate) -> model_api_key.APIKey:
         """
         Creates a new api key.
         """
@@ -100,11 +76,7 @@ class CRUDAPIKey(
         return db_obj
 
     def update(
-        self,
-        db: Session,
-        *,
-        db_obj: model_api_key.APIKey,
-        obj_in: schema_api_key.APIKeyUpdate | Dict[str, Any]
+        self, db: Session, *, db_obj: model_api_key.APIKey, obj_in: schema_api_key.APIKeyUpdate | Dict[str, Any]
     ) -> model_api_key.APIKey:
         """
         Updates an api key.
@@ -112,19 +84,15 @@ class CRUDAPIKey(
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
-            update_data = obj_in.dict(exclude_unset=True)
+            update_data = obj_in.model_dump(exclude_unset=True)
 
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def delete(
-        self, db: Session, *, id: int
-    ) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
+    def delete(self, db: Session, *, id: int) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
         """
         Marks an api key as deleted. An api key will never be fully deleted.
         """
-        obj = (
-            db.query(model_api_key.APIKey).filter(model_api_key.APIKey.id == id).first()
-        )
+        obj = db.query(model_api_key.APIKey).filter(model_api_key.APIKey.id == id).first()
         setattr(obj, model_api_key.APIKey.deleted.name, True)
         db.add(obj)
         db.commit()

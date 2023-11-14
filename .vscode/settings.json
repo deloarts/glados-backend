@@ -1,8 +1,11 @@
 {
     "cSpell.words": [
+        "adminuser",
+        "adminusers",
         "apscheduler",
         "autoflush",
         "bothify",
+        "bruteforce",
         "cifs",
         "coloredlogs",
         "COMPUTERNAME",
@@ -10,6 +13,8 @@
         "ecommerce",
         "fastapi",
         "glados",
+        "guestuser",
+        "guestusers",
         "ilike",
         "jsonable",
         "levelname",

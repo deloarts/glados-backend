@@ -3,7 +3,7 @@
 Backend for the glados project.
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
-![version](https://img.shields.io/badge/Version-0.3.2-orange.svg?style=for-the-badge)
+![version](https://img.shields.io/badge/Version-0.4.0-orange.svg?style=for-the-badge)
 
 [![python](https://img.shields.io/badge/Python-3.10-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
@@ -47,9 +47,15 @@ Table of contents:
     - [3.3 pre-commit hooks](#33-pre-commit-hooks)
     - [3.4 api docs](#34-api-docs)
     - [3.5 new revision checklist](#35-new-revision-checklist)
-  - [4 license](#4-license)
-  - [5 changelog](#5-changelog)
-  - [6 to do](#6-to-do)
+  - [4 user levels](#4-user-levels)
+    - [4.1 user](#41-user)
+    - [4.2 superuser](#42-superuser)
+    - [4.3 adminuser](#43-adminuser)
+    - [4.4 guestuser](#44-guestuser)
+    - [4.5 systemuser](#45-systemuser)
+  - [5 license](#5-license)
+  - [6 changelog](#6-changelog)
+  - [7 to do](#7-to-do)
 
 ## 1 installation
 
@@ -261,7 +267,7 @@ git checkout {TAG_NAME}
 python -m pip install -r requirements.txt
 ```
 
-Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.3.2`.
+Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.4.0`.
 
 ### 2.3 update the config file
 
@@ -394,12 +400,61 @@ The docs can be viewed at `localhost:port/docs`, where the port is the port you'
 5. Update the **lockfile**: `poetry lock`
 6. Update the **requirements.txt**: `poetry export -f requirements.txt -o requirements.txt`
 
-## 4 license
+## 4 user levels
+
+All user levels share a common `active` state. A user must be active to logon to Glados.
+
+### 4.1 user
+
+The **user** is the default level for new users in the app. The following rules are applied to the **user**:
+
+- A **user** can create items
+- A **user** can edit his or her own items, as long as the items state is `open`
+- A **user** can delete his or her own items, as long as the items state is `open`
+- A **user** cannot make changes to the settings of the app
+
+### 4.2 superuser
+
+The **superuser** has a bit more permissions, compared to the **user**. The following rules are applied to the **superuser**:
+
+- A **superuser** can create items
+- A **superuser** can edit all items from all users at any state
+- A **superuser** can delete all items from all users at any state
+- A **superuser** cannot make changes to the settings of the app
+
+### 4.3 adminuser
+
+The **adminuser** has the highest level of permissions. Elevate an **user** or a **superuser** to this right only if the person understands the consequences! The following rules are applied to the **adminuser**:
+
+- A **adminuser** can create items
+- A **adminuser** can edit all items from all users at any state
+- A **adminuser** can delete all items from all users at any state
+- A **adminuser** can make changed to the settings of the app
+- A **adminuser** can create new users and change their level
+
+### 4.4 guestuser
+
+The **guestuser** has the lowest level of permissions. This user exist, so people can view the state of items. The following rules are applied to the **guestuser**:
+
+- A **guestuser** flag in the user permission settings overrules all other levels (forbidden before allow)
+- A **guestuser** can only view items (cannot create, nor edit, nor delete)
+- A **guestuser** cannot make changed to the settings of the app
+
+### 4.5 systemuser
+
+The **systemuser** is created at DB init. The credentials for the **systemuser** must be applied in the *config.yml* file before the first run of the app. The following rules are applied to the **systemuser**:
+
+- There can only be one **systemuser**
+- The **systemuser** has the same rights as the **adminuser**
+- The **systemuser** is a fallback user for changing the configuration
+
+## 5 license
 
 No license.
 
-## 5 changelog
+## 6 changelog
 
+**v0.4.0**: Add new permission levels. Add tools. Add config editor.  
 **v0.3.2**: Update env.  
 **v0.3.1**: Add missing status in response schema.  
 **v0.3.0**: Add api for changing items.  
@@ -413,6 +468,6 @@ No license.
 **v0.1.1**: Update log handler.  
 **v0.1.0**: Initial commit.
 
-## 6 to do
+## 7 to do
 
 Using VS Code [Comment Anchors](https://marketplace.visualstudio.com/items?itemName=ExodiusStudios.comment-anchors) to keep track of to-dos.

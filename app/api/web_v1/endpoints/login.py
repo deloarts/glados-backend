@@ -16,20 +16,16 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from models import model_user
 from schemas import schema_token
 from schemas import schema_user
-from security import create_access_token
+from security.access import create_access_token
 from sqlalchemy.orm import Session
 
 router = APIRouter()
 
 
 @router.post("/login/access-token", response_model=schema_token.Token)
-def login_access_token(
-    db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
-) -> Any:
+def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
     """OAuth2 compatible token login, get an access token for future requests."""
-    user = crud_user.user.authenticate(
-        db, username=form_data.username, password=form_data.password
-    )
+    user = crud_user.user.authenticate(db, username=form_data.username, password=form_data.password)
 
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password.")
@@ -38,9 +34,7 @@ def login_access_token(
 
     access_token_expires = timedelta(minutes=cfg.security.expire_minutes)
     return {
-        "access_token": create_access_token(
-            user.id, expires_delta=access_token_expires
-        ),
+        "access_token": create_access_token(user.id, expires_delta=access_token_expires),
         "token_type": "bearer",
     }
 

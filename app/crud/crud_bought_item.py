@@ -133,9 +133,7 @@ class CRUDBoughtItem(
             .filter_by(
                 deleted=False,
                 status=status if status else self.model.status,
-                high_priority=high_priority
-                if high_priority
-                else self.model.high_priority,
+                high_priority=high_priority if high_priority else self.model.high_priority,
                 id=id if id else self.model.id,
                 quantity=quantity if quantity else self.model.quantity,
                 unit=unit if unit else self.model.unit,
@@ -143,69 +141,37 @@ class CRUDBoughtItem(
             )
             .filter(
                 # ignore filter
-                self.model.status != cfg.items.bought.status.delivered
-                if ignore_delivered
-                else text(""),
-                self.model.status != cfg.items.bought.status.canceled
-                if ignore_canceled
-                else text(""),
-                self.model.status != cfg.items.bought.status.lost
-                if ignore_lost
-                else text(""),
+                self.model.status != cfg.items.bought.status.delivered if ignore_delivered else text(""),
+                self.model.status != cfg.items.bought.status.canceled if ignore_canceled else text(""),
+                self.model.status != cfg.items.bought.status.lost if ignore_lost else text(""),
                 # search filter
                 self.model.project.ilike(f"%{project}%") if project else text(""),
                 self.model.machine.ilike(f"%{machine}%") if machine else text(""),
-                self.model.partnumber.ilike(f"%{partnumber}%")
-                if partnumber
-                else text(""),
-                self.model.definition.ilike(f"%{definition}%")
-                if definition
-                else text(""),
-                self.model.manufacturer.ilike(f"%{manufacturer}%")
-                if manufacturer
-                else text(""),
+                self.model.partnumber.ilike(f"%{partnumber}%") if partnumber else text(""),
+                self.model.definition.ilike(f"%{definition}%") if definition else text(""),
+                self.model.manufacturer.ilike(f"%{manufacturer}%") if manufacturer else text(""),
                 self.model.supplier.ilike(f"%{supplier}%") if supplier else text(""),
                 self.model.group_1.ilike(f"%{group_1}%") if group_1 else text(""),
-                self.model.note_general.ilike(f"%{note_general}%")
-                if note_general
-                else text(""),
-                self.model.note_supplier.ilike(f"%{note_supplier}%")
-                if note_supplier
-                else text(""),
+                self.model.note_general.ilike(f"%{note_general}%") if note_general else text(""),
+                self.model.note_supplier.ilike(f"%{note_supplier}%") if note_supplier else text(""),
                 self.model.created >= created_from,
                 self.model.created <= created_to,
                 self.model.changed >= changed_from,
                 self.model.changed <= changed_to,
-                self.model.desired_delivery_date >= desired_from
-                if desired_from
-                else text(""),
-                self.model.desired_delivery_date <= desired_to
-                if desired_to
-                else text(""),
+                self.model.desired_delivery_date >= desired_from if desired_from else text(""),
+                self.model.desired_delivery_date <= desired_to if desired_to else text(""),
                 self.model.requester_id == requester_id if requester_id else text(""),
-                self.model.requested_date >= requested_from
-                if requested_from
-                else text(""),
+                self.model.requested_date >= requested_from if requested_from else text(""),
                 self.model.requested_date <= requested_to if requested_to else text(""),
                 self.model.orderer_id == orderer_id if orderer_id else text(""),
                 self.model.ordered_date >= ordered_from if ordered_from else text(""),
                 self.model.ordered_date <= ordered_to if ordered_to else text(""),
-                self.model.expected_delivery_date >= expected_from
-                if expected_from
-                else text(""),
-                self.model.expected_delivery_date <= expected_to
-                if expected_to
-                else text(""),
-                self.model.delivery_date >= delivered_from
-                if delivered_from
-                else text(""),
+                self.model.expected_delivery_date >= expected_from if expected_from else text(""),
+                self.model.expected_delivery_date <= expected_to if expected_to else text(""),
+                self.model.delivery_date >= delivered_from if delivered_from else text(""),
                 self.model.delivery_date <= delivered_to if delivered_to else text(""),
-                self.model.taken_over_id == taken_over_id
-                if taken_over_id
-                else text(""),
-                self.model.storage_place.ilike(f"%{storage_place}%")
-                if storage_place
-                else text(""),
+                self.model.taken_over_id == taken_over_id if taken_over_id else text(""),
+                self.model.storage_place.ilike(f"%{storage_place}%") if storage_place else text(""),
             )
             .order_by(text(order_by))
             .offset(skip)
@@ -230,25 +196,23 @@ class CRUDBoughtItem(
         Returns:
             model_bought_item.BoughtItem: The new bought item model.
         """
-        data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=False)
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot create items.")
+
+        data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=False)
 
         # Manipulate data
         data["created"] = date.today()
         data["changed"] = date.today()
         data["creator_id"] = db_obj_user.id
-        data["changes"] = get_changelog(
-            changes="Item created.", db_obj_user=db_obj_user
-        )
+        data["changes"] = get_changelog(changes="Item created.", db_obj_user=db_obj_user)
 
         db_obj = model_bought_item.BoughtItem(**data)  # type: ignore
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
 
-        log.info(
-            f"User {db_obj_user.username!r} created new 'bought item' "
-            f"({db_obj.partnumber}), ID={db_obj.id}."
-        )
+        log.info(f"User {db_obj_user.username!r} created new 'bought item' " f"({db_obj.partnumber}), ID={db_obj.id}.")
         return db_obj
 
     def update(
@@ -279,38 +243,31 @@ class CRUDBoughtItem(
         if not db_obj_item:
             raise HTTPException(status_code=404, detail="The item does not exist.")
 
-        data = obj_in if isinstance(obj_in, dict) else obj_in.dict(exclude_unset=True)
+        data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
         # Rules
-        if (
-            not db_obj_user.is_superuser
-            and db_obj_item.status != cfg.items.bought.status.open
-        ):
-            raise HTTPException(
-                status_code=403, detail="Only a superuser can change planned items."
-            )
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
 
         if (
-            not db_obj_user.is_superuser
-            and not db_obj_item.creator_id == db_obj_user.id
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
+            and db_obj_item.status != cfg.items.bought.status.open
         ):
+            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
+
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
             raise HTTPException(
                 status_code=403,
-                detail="Only a superuser can edit an item from another user.",
+                detail="Only superusers and adminusers can edit items from another user.",
             )
 
         # Manipulate data
         data["changed"] = date.today()
-        data["changes"] = get_changelog(
-            changes="Item updated.", db_obj_user=db_obj_user, db_obj_item=db_obj_item
-        )
+        data["changes"] = get_changelog(changes="Item updated.", db_obj_user=db_obj_user, db_obj_item=db_obj_item)
 
         item = super().update(db, db_obj=db_obj_item, obj_in=data)
 
-        log.info(
-            f"User {db_obj_user.username!r} updated a bought item "
-            f"({item.partnumber}), ID={item.id}."
-        )
+        log.info(f"User {db_obj_user.username!r} updated a bought item " f"({item.partnumber}), ID={item.id}.")
         return item
 
     def update_status(
@@ -345,12 +302,22 @@ class CRUDBoughtItem(
             return db_obj_item
 
         # Rules
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+
+        if status == cfg.items.bought.status.open and db_obj_item.status != cfg.items.bought.status.open:
+            raise HTTPException(status_code=403, detail="Cannot change status back to open.")
+
         if (
-            status == cfg.items.bought.status.open
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
             and db_obj_item.status != cfg.items.bought.status.open
         ):
+            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
+
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
             raise HTTPException(
-                status_code=403, detail="Cannot change status back to open."
+                status_code=403,
+                detail="Only superusers and adminusers can edit items from another user.",
             )
 
         # Incoming data rules
@@ -389,10 +356,7 @@ class CRUDBoughtItem(
             )
             email_notification.create(db=db, obj_in=notification)
 
-        if (
-            db_obj_item.notify_on_delivery
-            and status == cfg.items.bought.status.delivered
-        ):
+        if db_obj_item.notify_on_delivery and status == cfg.items.bought.status.delivered:
             notification = schema_email_notification.EmailNotificationCreate(
                 reason="delivered",
                 receiver_id=db_obj_item.creator_id,
@@ -433,8 +397,22 @@ class CRUDBoughtItem(
             model_bought_item.BoughtItem: Returns the updated item.
         """
         if not db_obj_item:
+            raise HTTPException(status_code=404, detail="The item with this id does not exist.")
+
+        # Rules
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+
+        if (
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
+            and db_obj_item.status != cfg.items.bought.status.open
+        ):
+            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
+
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
             raise HTTPException(
-                status_code=404, detail="The item with this id does not exist."
+                status_code=403,
+                detail="Only superusers and adminusers can edit an items from another user.",
             )
 
         field_name = db_field.description
@@ -485,6 +463,9 @@ class CRUDBoughtItem(
         Returns:
             model_bought_item.BoughtItem: Returns the updated item.
         """
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+
         kwargs = locals()
         kwargs.pop("self")
 
@@ -518,28 +499,26 @@ class CRUDBoughtItem(
         Returns:
             Optional[model_bought_item.BoughtItem]: The as deleted marked item.
         """
+        if db_obj_user.is_guestuser:
+            raise HTTPException(status_code=403, detail="A guest user cannot delete items.")
+
         if not db_obj_item:
             raise HTTPException(
                 status_code=404,
                 detail="The item does not exist.",
             )
 
-        if (
-            not db_obj_user.is_superuser
-            and not db_obj_item.creator_id == db_obj_user.id
-        ):
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
             raise HTTPException(
                 status_code=403,
-                detail="Only a superuser can delete an item from another user.",
+                detail="Only a superuser or adminuser can delete an item from another user.",
             )
 
         if (
-            not db_obj_user.is_superuser
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
             and db_obj_item.status != cfg.items.bought.status.open
         ):
-            raise HTTPException(
-                status_code=403, detail="Only a superuser can delete a planned item."
-            )
+            raise HTTPException(status_code=403, detail="Only a superuser or adminuser can delete a planned item.")
 
         data = {"deleted": True}
         data["changed"] = date.today()  # type:ignore
@@ -550,10 +529,7 @@ class CRUDBoughtItem(
         )
         item = super().update(db, db_obj=db_obj_item, obj_in=data)
 
-        log.info(
-            f"User {db_obj_user.username!r} deleted the a bought item "
-            f"({item.partnumber}), ID={item.id}."
-        )
+        log.info(f"User {db_obj_user.username!r} deleted the a bought item " f"({item.partnumber}), ID={item.id}.")
         return item
 
 

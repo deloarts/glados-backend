@@ -2,6 +2,7 @@ import sys
 
 sys.path.append("app")
 
+from datetime import datetime
 from typing import Dict
 
 from fastapi.testclient import TestClient
@@ -23,14 +24,12 @@ from tests.utils.utils import random_username
 # resulting the pytest discovery to fail, and also to mess with the metadata instance.
 from models.model_user import User  # type:ignore isort:skip
 
-TEST_USERNAME = "t000"
+TEST_USERNAME = "test"
 TEST_MAIL = "test@glados.com"
 TEST_FULL_NAME = "Pytest User"
 
 
-def user_authentication_headers(
-    *, client: TestClient, username: str, password: str
-) -> Dict[str, str]:
+def user_authentication_headers(*, client: TestClient, username: str, password: str) -> Dict[str, str]:
     data = {"username": username, "password": password}
 
     r = client.post(f"{API_WEB_V1}/login/access-token", data=data)
@@ -51,13 +50,11 @@ def create_random_user(db: Session) -> User:
         password=password,
         full_name=full_name,
     )
-    user = crud_user.user.create(db=db, obj_in=user_in)
+    user = crud_user.user.create(db=db, obj_in=user_in, current_user=current_user_adminuser())
     return user
 
 
-def authentication_token_from_email(
-    *, client: TestClient, email: str, db: Session
-) -> Dict[str, str]:
+def authentication_token_from_email(*, client: TestClient, email: str, db: Session) -> Dict[str, str]:
     """
     Return a valid token for the user with given email.
 
@@ -72,7 +69,7 @@ def authentication_token_from_email(
             password=password,
             full_name=TEST_FULL_NAME,
         )
-        user = crud_user.user.create(db, obj_in=user_in_create)
+        user = crud_user.user.create(db, obj_in=user_in_create, current_user=current_user_adminuser())
     else:
         user_in_update = UserUpdate(
             username=TEST_USERNAME,
@@ -80,8 +77,25 @@ def authentication_token_from_email(
             password=password,
             full_name=TEST_FULL_NAME,
         )
-        user = crud_user.user.update(db, db_obj=user, obj_in=user_in_update)
+        user = crud_user.user.update(db, db_obj=user, obj_in=user_in_update, current_user=current_user_adminuser())
 
-    return user_authentication_headers(
-        client=client, username=TEST_USERNAME, password=password
+    return user_authentication_headers(client=client, username=TEST_USERNAME, password=password)
+
+
+def current_user_adminuser() -> User:
+    return User(
+        **{
+            "id": 0,
+            "created": datetime.utcnow(),
+            "personal_access_token": None,
+            "username": "test",
+            "full_name": "Glados Test",
+            "email": "test@glados.com",
+            "hashed_password": "not_really_hashed",
+            "is_active": True,
+            "is_superuser": True,
+            "is_adminuser": True,
+            "is_systemuser": False,
+            "is_guestuser": False,
+        }
     )

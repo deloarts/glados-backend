@@ -28,9 +28,7 @@ class DatabaseSchedules(BaseSchedules):
             self._set_status_late()
 
     def _set_status_late(self) -> None:
-        log.info(
-            "Running database schedule: Automatically setting status of late items."
-        )
+        log.info("Running database schedule: Automatically setting status of late items.")
 
         system_user = crud_user.user.get_by_username(db=self.db, username=SYSTEM_USER)
         bought_items = crud_bought_item.bought_item.get_multi(
