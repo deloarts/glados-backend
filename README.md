@@ -3,7 +3,7 @@
 Backend for the glados project.
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
-![version](https://img.shields.io/badge/Version-0.3.2-orange.svg?style=for-the-badge)
+![version](https://img.shields.io/badge/Version-0.4.0-orange.svg?style=for-the-badge)
 
 [![python](https://img.shields.io/badge/Python-3.10-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
@@ -47,9 +47,15 @@ Table of contents:
     - [3.3 pre-commit hooks](#33-pre-commit-hooks)
     - [3.4 api docs](#34-api-docs)
     - [3.5 new revision checklist](#35-new-revision-checklist)
-  - [4 license](#4-license)
-  - [5 changelog](#5-changelog)
-  - [6 to do](#6-to-do)
+  - [4 user levels](#4-user-levels)
+    - [4.1 user](#41-user)
+    - [4.2 superuser](#42-superuser)
+    - [4.3 adminuser](#43-adminuser)
+    - [4.4 guestuser](#44-guestuser)
+    - [4.5 systemuser](#45-systemuser)
+  - [5 license](#5-license)
+  - [6 changelog](#6-changelog)
+  - [7 to do](#7-to-do)
 
 ## 1 installation
 
@@ -261,7 +267,7 @@ git checkout {TAG_NAME}
 python -m pip install -r requirements.txt
 ```
 
-Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.3.2`.
+Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.4.0`.
 
 ### 2.3 update the config file
 
@@ -448,6 +454,7 @@ No license.
 
 ## 6 changelog
 
+**v0.4.0**: Add new permission levels. Add tools. Add config editor.  
 **v0.3.2**: Update env.  
 **v0.3.1**: Add missing status in response schema.  
 **v0.3.0**: Add api for changing items.  
