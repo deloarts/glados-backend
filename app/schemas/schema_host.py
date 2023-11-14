@@ -3,11 +3,15 @@
 """
 
 from datetime import datetime
+from typing import Dict
 from typing import List
 
-from config import Config
 from pydantic import BaseModel
+from utilities.config_editor.bought_items import ConfigBoughtItems
+from utilities.config_editor.bought_items import ConfigBoughtItemsFilter
 from utilities.disc_space import DiscSpace
+
+from config import Config
 
 
 class HostVersion(BaseModel):
@@ -58,3 +62,19 @@ class HostConfigItemsBoughtUnits(BaseModel):
 
     default: str
     values: List[str]
+
+
+class HostConfigItemsBought(ConfigBoughtItems):
+    ...
+
+
+class HostConfigItemsBoughtFilter(ConfigBoughtItemsFilter):
+    ...
+
+
+class HostConfigItemsBoughtFilterAdd(HostConfigItemsBoughtFilter):
+    ...
+
+
+class HostConfigItemsBoughtFilterUpdate(HostConfigItemsBoughtFilterAdd):
+    ...

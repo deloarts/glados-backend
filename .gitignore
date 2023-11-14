@@ -26,6 +26,7 @@ global_modules.txt
 config.yml
 settings.json
 users.json
+config_files/*.json
 
 # Template files
 *.j2

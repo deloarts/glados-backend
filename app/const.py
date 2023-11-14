@@ -25,6 +25,7 @@ API_PAT_V1 = "/api/pat/v1"
 # Paths
 ROOT = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CONFIG = Path(ROOT, "config.yml")
+CONFIG_BOUGHT_ITEMS = Path(ROOT, "config_files/bought_items.json")
 TEMP = Path(ROOT, "temp")
 DB_DEVELOPMENT = Path(ROOT, "database/dev.db")
 DB_PRODUCTION = Path(ROOT, "database/glados.db")
