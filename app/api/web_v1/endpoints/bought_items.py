@@ -31,6 +31,7 @@ from models import model_user
 from models.model_bought_item import BoughtItem
 from schemas import schema_bought_item
 from sqlalchemy.orm import Session
+from multilog import log
 
 router = APIRouter()
 
@@ -82,7 +83,9 @@ def read_bought_items(
     """Retrieve bought items."""
     kwargs = locals()
     kwargs.pop("verified")
-    return crud_bought_item.bought_item.get_multi(**kwargs)
+    items = crud_bought_item.bought_item.get_multi(**kwargs)
+    log.debug(f"Found {len(items)} items with filter {kwargs}")
+    return items
 
 
 @router.get("/excel", response_class=FileResponse)
