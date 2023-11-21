@@ -263,7 +263,16 @@ class CRUDBoughtItem(
 
         # Manipulate data
         data["changed"] = date.today()
-        data["changes"] = get_changelog(changes="Item updated.", db_obj_user=db_obj_user, db_obj_item=db_obj_item)
+
+        # Calculate difference between data (for the changelog)
+        changes: List[str] = []
+        for key, value in db_obj_item.__dict__.items():
+            if key in data and data[key] != value and key != "changed":
+                changes.append(f"  • {key}: {value!r} → {data[key]!r}")
+        changelog = "\n".join(changes)
+        data["changes"] = get_changelog(
+            changes=f"Item updated:\n{changelog}", db_obj_user=db_obj_user, db_obj_item=db_obj_item
+        )
 
         item = super().update(db, db_obj=db_obj_item, obj_in=data)
 
