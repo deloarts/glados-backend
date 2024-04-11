@@ -8,7 +8,8 @@ from app.config import cfg
 from app.crud import crud_bought_item
 from app.schemas.schema_bought_item import BoughtItemCreate
 from tests.utils.user import create_random_user
-from tests.utils.utils import random_lower_string, random_project
+from tests.utils.utils import random_lower_string
+from tests.utils.utils import random_project
 
 # Important note: Throughout the app the BoughtItem model is imported this way, not like
 # this: app.models.model_bought_item ...
@@ -22,6 +23,7 @@ def create_random_item(db: Session) -> BoughtItem:
     user = create_random_user(db)
     item_in = BoughtItemCreate(
         project=random_project(),
+        machine=None,
         quantity=1,
         unit=cfg.items.bought.units.default,
         partnumber=random_lower_string(),

@@ -30,7 +30,7 @@ def random_name() -> str:
 
 
 def random_project() -> str:
-    return f"P{random.randint(1, 99999):05d}"
+    return f"P{random.randint(10000, 99999):05d}"
 
 
 def get_systemuser_token_headers(client: TestClient) -> Dict[str, str]:

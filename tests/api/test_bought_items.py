@@ -6,10 +6,12 @@ from sqlalchemy.orm import Session
 from app.config import cfg
 from app.const import API_WEB_V1
 from tests.utils.bought_item import create_random_item
-from tests.utils.utils import random_lower_string, random_project
+from tests.utils.utils import random_lower_string
+from tests.utils.utils import random_project
 
 item_data = {
     "project": random_project(),
+    "machine": None,
     "quantity": 1,
     "unit": cfg.items.bought.units.default,
     "partnumber": random_lower_string(),
@@ -18,10 +20,7 @@ item_data = {
 }
 
 
-def test_create_item(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     response = client.post(
         f"{API_WEB_V1}/items/bought/",
@@ -42,10 +41,7 @@ def test_create_item(
     assert content["manufacturer"] == data["manufacturer"]
 
 
-def test_create_item_missing_project(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_missing_project(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data.pop("project")
     response = client.post(
@@ -56,10 +52,7 @@ def test_create_item_missing_project(
     assert response.status_code == 422
 
 
-def test_create_item_missing_quantity(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_missing_quantity(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data.pop("quantity")
     response = client.post(
@@ -70,10 +63,7 @@ def test_create_item_missing_quantity(
     assert response.status_code == 422
 
 
-def test_create_item_wrong_quantity(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_wrong_quantity(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data["quantity"] = -1
     response = client.post(
@@ -84,10 +74,7 @@ def test_create_item_wrong_quantity(
     assert response.status_code == 422
 
 
-def test_create_item_missing_unit(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_missing_unit(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data.pop("unit")
     response = client.post(
@@ -99,10 +86,7 @@ def test_create_item_missing_unit(
     assert response.json()["unit"] == cfg.items.bought.units.default
 
 
-def test_create_item_wrong_unit(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_wrong_unit(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data["unit"] = "foo"
     response = client.post(
@@ -113,10 +97,7 @@ def test_create_item_wrong_unit(
     assert response.status_code == 422
 
 
-def test_create_item_missing_partnumber(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_missing_partnumber(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data.pop("partnumber")
     response = client.post(
@@ -127,10 +108,7 @@ def test_create_item_missing_partnumber(
     assert response.status_code == 422
 
 
-def test_create_item_missing_definition(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_missing_definition(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data.pop("definition")
     response = client.post(
@@ -141,10 +119,7 @@ def test_create_item_missing_definition(
     assert response.status_code == 422
 
 
-def test_create_item_missing_manufacturer(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_missing_manufacturer(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data.pop("manufacturer")
     response = client.post(
@@ -155,10 +130,7 @@ def test_create_item_missing_manufacturer(
     assert response.status_code == 422
 
 
-def test_create_item_extra_field(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
-
+def test_create_item_extra_field(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     data = copy.deepcopy(item_data)
     data["some_key"] = "some_value"
 
@@ -170,9 +142,7 @@ def test_create_item_extra_field(
     assert response.status_code == 200
 
 
-def test_read_item(
-    client: TestClient, normal_user_token_headers: dict, db: Session
-) -> None:
+def test_read_item(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     item = create_random_item(db)
     response = client.get(
         f"{API_WEB_V1}/items/bought/{item.id}",

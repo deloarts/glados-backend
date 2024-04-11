@@ -33,6 +33,9 @@ filesystem:
 
 items:
   bought:
+    validation:
+      project: "^(^[P][0-9]{5}?$|MyExceptionOne|MyException2){1}$"
+      machine: "^(^[M][0-9]{5}?$|){1}$"
     status:
       open: "open"
       requested: "requested"
