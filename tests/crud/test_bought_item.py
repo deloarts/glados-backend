@@ -2,9 +2,11 @@ from sqlalchemy.orm import Session
 
 from app.config import cfg
 from app.crud import crud_bought_item
-from app.schemas.schema_bought_item import BoughtItemCreate, BoughtItemUpdate
+from app.schemas.schema_bought_item import BoughtItemCreate
+from app.schemas.schema_bought_item import BoughtItemUpdate
 from tests.utils.user import create_random_user
-from tests.utils.utils import random_lower_string, random_project
+from tests.utils.utils import random_lower_string
+from tests.utils.utils import random_project
 
 
 def test_create_item(db: Session) -> None:
@@ -17,6 +19,7 @@ def test_create_item(db: Session) -> None:
 
     item_in = BoughtItemCreate(
         project=project,
+        machine=None,
         quantity=quantity,
         unit=unit,
         partnumber=partnumber,
@@ -47,6 +50,7 @@ def test_get_item(db: Session) -> None:
 
     item_in = BoughtItemCreate(
         project=project,
+        machine=None,
         quantity=quantity,
         unit=unit,
         partnumber=partnumber,
@@ -83,6 +87,7 @@ def test_update_item(db: Session) -> None:
 
     item_in = BoughtItemCreate(
         project=project,
+        machine=None,
         quantity=quantity,
         unit=unit,
         partnumber=partnumber,
@@ -93,15 +98,14 @@ def test_update_item(db: Session) -> None:
 
     item_update = BoughtItemUpdate(
         project=project,
+        machine=None,
         quantity=quantity,
         unit=unit,
         partnumber=partnumber_2,
         definition=definition,
         manufacturer=manufacturer,
     )
-    item2 = crud_bought_item.bought_item.update(
-        db=db, db_obj_user=user, obj_in=item_update, db_obj_item=item
-    )
+    item2 = crud_bought_item.bought_item.update(db=db, db_obj_user=user, obj_in=item_update, db_obj_item=item)
 
     assert item2.id == item.id
     assert item2.project == item.project
@@ -123,6 +127,7 @@ def test_delete_item(db: Session) -> None:
 
     item_in = BoughtItemCreate(
         project=project,
+        machine=None,
         quantity=quantity,
         unit=unit,
         partnumber=partnumber,
