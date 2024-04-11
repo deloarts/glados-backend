@@ -39,6 +39,12 @@ class ConfigServer:
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
+class ConfigItemsBoughtValidation:
+    project: str | None
+    machine: str | None
+
+
+@dataclass(slots=True, kw_only=True, frozen=True)
 class ConfigItemsBoughtStatus:
     open: str
     requested: str
@@ -93,11 +99,13 @@ class ConfigItemsBoughtOrderBy:
 
 @dataclass(slots=True, kw_only=True)
 class ConfigItemsBought:
+    validation: ConfigItemsBoughtValidation
     status: ConfigItemsBoughtStatus
     units: ConfigItemsBoughtUnits
     order_by: ConfigItemsBoughtOrderBy
 
     def __post_init__(self) -> None:
+        self.validation = ConfigItemsBoughtValidation(**dict(self.validation))  # type: ignore
         self.status = ConfigItemsBoughtStatus(**dict(self.status))  # type: ignore
         self.units = ConfigItemsBoughtUnits(**dict(self.units))  # type: ignore
         self.order_by = ConfigItemsBoughtOrderBy(**dict(self.order_by))  # type: ignore

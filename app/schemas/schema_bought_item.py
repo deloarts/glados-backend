@@ -29,8 +29,8 @@ class BoughtItemCreate(BoughtItemBase):
     high_priority: Optional[bool] = False
     notify_on_delivery: Optional[bool] = False
     group_1: Optional[str] = None
-    project: str = Field(..., min_length=1)
-    machine: Optional[str] = None
+    project: str = Field(..., min_length=1, pattern=cfg.items.bought.validation.project)
+    machine: Optional[str] = Field(pattern=cfg.items.bought.validation.machine)
     quantity: float = Field(..., gt=0)
     unit: Literal[tuple(cfg.items.bought.units.values)] = Field(cfg.items.bought.units.default)  # type: ignore
     partnumber: str = Field(..., min_length=1)
