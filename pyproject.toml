@@ -5,6 +5,7 @@ description = "Backend for the glados project."
 name = "glados"
 readme = "README.md"
 version = "0.4.2"
+packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 alembic = "^1.12.0"

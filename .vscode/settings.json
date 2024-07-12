@@ -37,6 +37,9 @@
         "systemuser",
         "uvicorn"
     ],
+    "python.analysis.extraPaths": [
+        "./app"
+    ],
     "python.testing.pytestArgs": [
         "tests"
     ],
