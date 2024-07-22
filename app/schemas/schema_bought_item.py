@@ -37,6 +37,7 @@ class BoughtItemCreate(BoughtItemBase):
     definition: IncludingString = Field(..., min_length=1)
     supplier: Optional[str] = None
     manufacturer: str = Field(..., min_length=1)
+    weblink: Optional[str] = None
     note_general: Optional[str] = None
     note_supplier: Optional[str] = None
     desired_delivery_date: Optional[date] = None
@@ -71,6 +72,7 @@ class BoughtItem(BoughtItemInDBBase):
     definition: str
     manufacturer: str
     supplier: Optional[str]
+    weblink: Optional[str]
     group_1: Optional[str]
     note_general: Optional[str]
     note_supplier: Optional[str]
