@@ -35,7 +35,11 @@
         "sqlalchemy",
         "starlette",
         "systemuser",
-        "uvicorn"
+        "uvicorn",
+        "weblink"
+    ],
+    "python.analysis.extraPaths": [
+        "./app"
     ],
     "python.testing.pytestArgs": [
         "tests"

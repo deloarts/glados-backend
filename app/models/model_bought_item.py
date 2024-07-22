@@ -51,6 +51,7 @@ class BoughtItem(Base):  # type: ignore
     definition = Column(String, nullable=False)
     supplier = Column(String, nullable=True)
     manufacturer = Column(String, nullable=False)
+    weblink = Column(String, nullable=True)
     note_general = Column(String, nullable=True)
     note_supplier = Column(String, nullable=True)
     desired_delivery_date = Column(Date, nullable=True)
