@@ -29,9 +29,9 @@ from fastapi.responses import FileResponse
 from fastapi.routing import APIRouter
 from models import model_user
 from models.model_bought_item import BoughtItem
+from multilog import log
 from schemas import schema_bought_item
 from sqlalchemy.orm import Session
-from multilog import log
 
 router = APIRouter()
 
@@ -406,6 +406,25 @@ def update_bought_item_supplier(
         db_obj_item=item,
         db_field=BoughtItem.supplier,
         value=supplier,
+    )
+
+
+@router.put("/{item_id}/weblink", response_model=schema_bought_item.BoughtItem)
+def update_bought_item_weblink(
+    *,
+    db: Session = Depends(get_db),
+    item_id: int,
+    weblink: str,
+    current_user: model_user.User = Depends(get_current_active_user),
+) -> Any:
+    """Updates the weblink of an item."""
+    item = crud_bought_item.bought_item.get(db, id=item_id)
+    return crud_bought_item.bought_item.update_field(
+        db,
+        db_obj_user=current_user,
+        db_obj_item=item,
+        db_field=BoughtItem.weblink,
+        value=weblink,
     )
 
 
