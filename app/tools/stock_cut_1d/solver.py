@@ -11,9 +11,9 @@ from typing import Tuple
 
 from const import N_MAX
 from const import N_MAX_PRECISE
-from tools.stock_cut.models.model_job import Job
-from tools.stock_cut.models.model_result import Result
-from tools.stock_cut.models.model_result import SolverType
+from tools.stock_cut_1d.models.model_job import Job
+from tools.stock_cut_1d.models.model_result import Result
+from tools.stock_cut_1d.models.model_result import SolverType
 
 
 def distribute(job: Job) -> Result:
