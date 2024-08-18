@@ -1,9 +1,9 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
+from app.api.v1.schemas.schema_user import UserCreate
+from app.api.v1.schemas.schema_user import UserUpdate
 from app.crud import crud_user
-from app.schemas.schema_user import UserCreate
-from app.schemas.schema_user import UserUpdate
 from app.security.pwd import verify_password
 from tests.utils.user import current_user_adminuser
 from tests.utils.utils import random_email
@@ -12,11 +12,11 @@ from tests.utils.utils import random_name
 from tests.utils.utils import random_username
 
 # Important note: Throughout the app the user model is imported this way, not like
-# this: app.models.model_user ...
-# If you would import the model with `from app.models.model_user import User`,
+# this: app.db.models.model_user ...
+# If you would import the model with `from app.db.models.model_user import User`,
 # this somehow cause it to be seen as 2 different models, despite being the same file,
 # resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from models.model_user import User  # type:ignore isort:skip
+from db.models.model_user import User  # type:ignore isort:skip
 
 
 def test_create_user(db: Session) -> None:

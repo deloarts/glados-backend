@@ -8,6 +8,8 @@ from datetime import date
 from typing import List
 from typing import Optional
 
+from api.v1.schemas import schema_bought_item
+from api.v1.schemas import schema_email_notification
 from config import cfg
 from crud.crud_base import CRUDBase
 from crud.crud_email_notification import email_notification
@@ -15,13 +17,11 @@ from crud.helper import get_changelog
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from multilog import log
-from schemas import schema_bought_item
-from schemas import schema_email_notification
 from sqlalchemy import Column
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
-from models import model_user, model_bought_item  # isort: skip
+from db.models import model_user, model_bought_item  # isort: skip
 
 
 class CRUDBoughtItem(

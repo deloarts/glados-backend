@@ -9,8 +9,8 @@ from config import cfg
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
-from tools.stock_cut.job import Job
-from tools.stock_cut.result import Result
+from tools.stock_cut.models.model_job import Job
+from tools.stock_cut.models.model_result import Result
 from tools.stock_cut.solver import distribute
 
 router = APIRouter()

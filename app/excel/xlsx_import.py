@@ -12,10 +12,10 @@ from typing import TypeVar
 
 from crud import crud_bought_item
 from db.base import Base
+from db.models import model_user
 from fastapi import HTTPException
 from fastapi import UploadFile
 from fastapi.encoders import jsonable_encoder
-from models import model_user
 from multilog import log
 from openpyxl import load_workbook
 from openpyxl.workbook import Workbook

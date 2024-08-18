@@ -8,21 +8,21 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.api.v1.schemas.schema_user import UserCreate
+from app.api.v1.schemas.schema_user import UserUpdate
 from app.const import API_WEB_V1
 from app.crud import crud_user
-from app.schemas.schema_user import UserCreate
-from app.schemas.schema_user import UserUpdate
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
 from tests.utils.utils import random_username
 
 # Important note: Throughout the app the user model is imported this way, not like
-# this: app.models.model_user ...
-# If you would import the model with `from app.models.model_user import User`,
+# this: app.db.models.model_user ...
+# If you would import the model with `from app.db.models.model_user import User`,
 # this somehow cause it to be seen as 2 different models, despite being the same file,
 # resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from models.model_user import User  # type:ignore isort:skip
+from db.models.model_user import User  # type:ignore isort:skip
 
 TEST_USERNAME = "test"
 TEST_MAIL = "test@glados.com"

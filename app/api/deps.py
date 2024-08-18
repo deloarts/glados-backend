@@ -3,12 +3,12 @@
 """
 
 from crud import crud_user
+from db.models import model_user
 from db.session import get_db
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.param_functions import Security
-from models import model_user
 from security.access import api_key_header
 from security.access import get_id_from_access_token
 from security.access import reusable_oauth2

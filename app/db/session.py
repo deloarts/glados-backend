@@ -6,14 +6,14 @@
 
 from typing import Generator
 
+from api.v1.schemas import schema_user
 from config import cfg
 from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION
 from const import SYSTEM_USER
 from crud import crud_user
-from models import model_user
+from db.models import model_user
 from multilog import log
-from schemas import schema_user
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
@@ -46,7 +46,7 @@ class InitDatabase:
         # import all modules here that might define models so that
         # they will be registered properly on the metadata. Otherwise
         # you will have to import them first before calling this init.
-        import models  # pylint: disable=W0611
+        import db.models  # pylint: disable=W0611
 
         # tables should be created with Alembic migrations.
         # if you don't want to use Alembic uncomment the following line and the above

@@ -9,20 +9,19 @@ from typing import Dict
 
 from api import deps
 from api.deps import get_current_active_adminuser
+from api.v1.schemas import schema_host
+from config import cfg
 from const import VERSION
+from db.models import model_user
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
-from models import model_user
 from multilog import log
-from schemas import schema_host
 from utilities.config_editor.bought_items import ConfigBoughtItemsFilter
 from utilities.config_editor.bought_items import bought_item_config
 from utilities.disc_space import get_disc_space
 from utilities.system import get_hostname
 from utilities.system import get_os
-
-from config import cfg
 
 router = APIRouter()
 

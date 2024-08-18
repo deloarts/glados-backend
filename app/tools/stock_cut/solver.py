@@ -1,6 +1,7 @@
 """
     Stock Cutting Solver
 """
+
 import copy
 from itertools import permutations
 from time import perf_counter
@@ -10,9 +11,9 @@ from typing import Tuple
 
 from const import N_MAX
 from const import N_MAX_PRECISE
-from tools.stock_cut.job import Job
-from tools.stock_cut.result import Result
-from tools.stock_cut.result import SolverType
+from tools.stock_cut.models.model_job import Job
+from tools.stock_cut.models.model_result import Result
+from tools.stock_cut.models.model_result import SolverType
 
 
 def distribute(job: Job) -> Result:

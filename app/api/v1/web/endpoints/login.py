@@ -6,16 +6,16 @@ from datetime import timedelta
 from typing import Any
 
 from api.deps import get_current_user
+from api.v1.schemas import schema_token
+from api.v1.schemas import schema_user
 from config import cfg
 from crud import crud_user
+from db.models import model_user
 from db.session import get_db
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from models import model_user
-from schemas import schema_token
-from schemas import schema_user
 from security.access import create_access_token
 from sqlalchemy.orm import Session
 

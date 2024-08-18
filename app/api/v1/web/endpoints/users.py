@@ -10,15 +10,15 @@ from api.deps import get_current_active_adminuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
 from api.deps import verify_token_adminuser
+from api.v1.schemas import schema_user
 from crud import crud_user
+from db.models import model_user
 from db.session import get_db
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Body
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
-from models import model_user
-from schemas import schema_user
 from security.access import create_access_token
 from sqlalchemy.orm import Session
 

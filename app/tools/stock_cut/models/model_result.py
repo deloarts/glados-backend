@@ -7,7 +7,7 @@ from enum import unique
 from typing import List
 
 from pydantic import BaseModel
-from tools.stock_cut.job import Job
+from tools.stock_cut.models.model_job import Job
 
 
 @unique

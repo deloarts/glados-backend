@@ -8,8 +8,8 @@ from typing import List
 from typing import Optional
 
 from crud.crud_base import CRUDBase
-from models import model_api_key
-from schemas import schema_api_key
+from db.models import model_api_key
+from api.v1.schemas import schema_api_key
 from sqlalchemy.orm import Session
 
 

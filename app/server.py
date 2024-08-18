@@ -3,8 +3,8 @@
 """
 
 import uvicorn
-from api.pat_v1 import api_pat
-from api.web_v1 import api_web
+from api.v1.pat import api_pat
+from api.v1.web import api_web
 from config import cfg
 from const import API_PAT_V1
 from const import API_WEB_V1

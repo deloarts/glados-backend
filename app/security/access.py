@@ -7,6 +7,7 @@ from datetime import timedelta
 from typing import Any
 from typing import Optional
 
+from api.v1.schemas import schema_token
 from config import cfg
 from const import SECRET_KEY
 from crud import crud_api_key
@@ -21,7 +22,6 @@ from jose import jwt
 from multilog import log
 from passlib.context import CryptContext
 from pydantic import ValidationError
-from schemas import schema_token
 from sqlalchemy.orm import Session
 
 basic_auth = HTTPBasic(auto_error=False)

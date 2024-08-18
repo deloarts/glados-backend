@@ -10,9 +10,9 @@ from typing import Optional
 from config import cfg
 from crud.crud_base import CRUDBase
 from fastapi import HTTPException
-from models import model_user
+from db.models import model_user
 from multilog import log
-from schemas import schema_user
+from api.v1.schemas import schema_user
 from security.pwd import get_password_hash
 from security.pwd import verify_password
 from sqlalchemy.orm import Session
