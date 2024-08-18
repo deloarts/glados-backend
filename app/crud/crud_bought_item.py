@@ -14,14 +14,14 @@ from config import cfg
 from crud.crud_base import CRUDBase
 from crud.crud_email_notification import email_notification
 from crud.helper import get_changelog
+from db.models import model_bought_item
+from db.models import model_user
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from multilog import log
 from sqlalchemy import Column
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-
-from db.models import model_user, model_bought_item  # isort: skip
 
 
 class CRUDBoughtItem(
