@@ -6,7 +6,7 @@ from typing import Any
 from typing import List
 
 from api import deps
-from api.v1.schemas import schema_api_key
+from api.schemas import schema_api_key
 from crud import crud_api_key
 from db.session import get_db
 from fastapi.exceptions import HTTPException

@@ -10,7 +10,7 @@ from api.deps import get_current_active_adminuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
 from api.deps import verify_token_adminuser
-from api.v1.schemas import schema_user
+from api.schemas import schema_user
 from crud import crud_user
 from db.models import model_user
 from db.session import get_db

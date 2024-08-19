@@ -1,8 +1,8 @@
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
-from app.api.v1.schemas.schema_user import UserCreate
-from app.api.v1.schemas.schema_user import UserUpdate
+from app.api.schemas.schema_user import UserCreate
+from app.api.schemas.schema_user import UserUpdate
 from app.crud import crud_user
 from app.security.pwd import verify_password
 from tests.utils.user import current_user_adminuser

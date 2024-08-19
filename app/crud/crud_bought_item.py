@@ -8,8 +8,8 @@ from datetime import date
 from typing import List
 from typing import Optional
 
-from api.v1.schemas import schema_bought_item
-from api.v1.schemas import schema_email_notification
+from api.schemas import schema_bought_item
+from api.schemas import schema_email_notification
 from config import cfg
 from crud.crud_base import CRUDBase
 from crud.crud_email_notification import email_notification

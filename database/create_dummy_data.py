@@ -13,7 +13,7 @@ from random import randint
 import faker_commerce
 from faker import Faker
 
-from app.api.v1.schemas import schema_bought_item
+from app.api.schemas import schema_bought_item
 from app.crud import crud_bought_item
 from app.crud import crud_user
 from app.db.session import SessionLocal

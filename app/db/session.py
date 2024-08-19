@@ -6,7 +6,7 @@
 
 from typing import Generator
 
-from api.v1.schemas import schema_user
+from api.schemas import schema_user
 from config import cfg
 from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION

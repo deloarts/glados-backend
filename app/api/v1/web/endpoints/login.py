@@ -6,8 +6,8 @@ from datetime import timedelta
 from typing import Any
 
 from api.deps import get_current_user
-from api.v1.schemas import schema_token
-from api.v1.schemas import schema_user
+from api.schemas import schema_token
+from api.schemas import schema_user
 from config import cfg
 from crud import crud_user
 from db.models import model_user

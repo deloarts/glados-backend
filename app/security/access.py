@@ -7,7 +7,7 @@ from datetime import timedelta
 from typing import Any
 from typing import Optional
 
-from api.v1.schemas import schema_token
+from api.schemas import schema_token
 from config import cfg
 from const import SECRET_KEY
 from crud import crud_api_key

@@ -5,7 +5,7 @@
 from typing import Any
 
 from api import deps
-from api.v1.schemas import schema_user
+from api.schemas import schema_user
 from db.models import model_user
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter

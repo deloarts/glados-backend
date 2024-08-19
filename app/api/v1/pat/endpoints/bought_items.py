@@ -9,7 +9,7 @@ from typing import Any
 
 from api.deps import get_current_user_personal_access_token
 from api.deps import verify_personal_access_token
-from api.v1.schemas import schema_bought_item
+from api.schemas import schema_bought_item
 from crud import crud_bought_item
 from db.models import model_user
 from db.session import get_db

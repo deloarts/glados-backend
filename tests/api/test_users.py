@@ -3,7 +3,7 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.api.v1.schemas.schema_user import UserCreate
+from app.api.schemas.schema_user import UserCreate
 from app.config import cfg
 from app.const import API_WEB_V1
 from app.crud import crud_user

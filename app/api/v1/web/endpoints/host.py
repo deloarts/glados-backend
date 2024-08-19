@@ -9,7 +9,7 @@ from typing import Dict
 
 from api import deps
 from api.deps import get_current_active_adminuser
-from api.v1.schemas import schema_host
+from api.schemas import schema_host
 from config import cfg
 from const import VERSION
 from db.models import model_user

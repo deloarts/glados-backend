@@ -5,7 +5,7 @@
 from typing import Any
 
 from api import deps
-from api.v1.schemas import schema_stock_cut_1d
+from api.schemas import schema_stock_cut_1d
 from config import cfg
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends

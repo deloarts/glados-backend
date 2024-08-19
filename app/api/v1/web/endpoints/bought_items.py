@@ -15,7 +15,7 @@ from api.deps import get_current_active_guestuser
 from api.deps import get_current_active_superuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
-from api.v1.schemas import schema_bought_item
+from api.schemas import schema_bought_item
 from config import cfg
 from const import ROOT
 from const import TEMPLATES

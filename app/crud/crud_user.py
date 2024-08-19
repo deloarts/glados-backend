@@ -7,12 +7,12 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 
+from api.schemas import schema_user
 from config import cfg
 from crud.crud_base import CRUDBase
-from fastapi import HTTPException
 from db.models import model_user
+from fastapi import HTTPException
 from multilog import log
-from api.v1.schemas import schema_user
 from security.pwd import get_password_hash
 from security.pwd import verify_password
 from sqlalchemy.orm import Session

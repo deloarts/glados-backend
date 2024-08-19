@@ -5,7 +5,7 @@
 from typing import List
 from typing import Optional
 
-from api.v1.schemas import schema_email_notification
+from api.schemas import schema_email_notification
 from crud.crud_base import CRUDBase
 from db.models import model_email_notification
 from multilog import log
