@@ -41,9 +41,6 @@ class UserInDBBase(UserBase):
     id: int
     created: datetime
 
-    class Config:
-        orm_mode = True
-
 
 class User(UserInDBBase):
     """Additional properties to return via API."""
