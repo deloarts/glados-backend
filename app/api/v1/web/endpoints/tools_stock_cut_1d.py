@@ -6,7 +6,6 @@ from typing import Any
 
 from api import deps
 from api.schemas import schema_stock_cut_1d
-from config import cfg
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
@@ -28,16 +27,16 @@ def post_1d_solve(
     try:
         job.assert_valid()
     except ValueError as e:
-        raise HTTPException(status_code=406, detail=str(e))
+        raise HTTPException(status_code=406, detail=str(e)) from e
 
     try:
         solved: model_result.Result = distribute(job)
     except OverflowError as e:
-        raise HTTPException(status_code=507, detail=str(e))
+        raise HTTPException(status_code=507, detail=str(e)) from e
 
     try:
         solved.assert_valid()
     except ValueError as e:
-        raise HTTPException(status_code=507, detail=str(e))
+        raise HTTPException(status_code=507, detail=str(e)) from e
 
     return solved

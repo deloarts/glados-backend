@@ -10,9 +10,6 @@ from pathlib import Path
 from typing import Any
 from typing import List
 
-from api.deps import get_current_active_adminuser
-from api.deps import get_current_active_guestuser
-from api.deps import get_current_active_superuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
 from api.schemas import schema_bought_item

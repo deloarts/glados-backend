@@ -5,6 +5,7 @@
 # pylint: disable=C0115,R0903
 
 import secrets
+from datetime import UTC
 from datetime import datetime
 
 from dateutil import parser
@@ -28,7 +29,7 @@ class APIKey(Base):  # type: ignore
     expiration_date = Column(DateTime, nullable=False)
 
     def __init__(self, name: str, expiration_date: datetime) -> None:
-        self.created = datetime.utcnow()
+        self.created = datetime.now(UTC)
         self.api_key = secrets.token_urlsafe(32)
 
         self.name = name

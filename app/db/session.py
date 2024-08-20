@@ -11,11 +11,10 @@ from config import cfg
 from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION
 from const import SYSTEM_USER
-from crud import crud_user
+from crud.crud_user import crud_user
 from db.models import model_user
 from multilog import log
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 
 engine = create_engine(
@@ -23,7 +22,6 @@ engine = create_engine(
     connect_args={"check_same_thread": False},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Base = declarative_base()
 
 
 def get_db() -> Generator:
@@ -48,13 +46,8 @@ class InitDatabase:
         # you will have to import them first before calling this init.
         import db.models  # pylint: disable=W0611
 
-        # tables should be created with Alembic migrations.
-        # if you don't want to use Alembic uncomment the following line and the above
-        # line 'Base = declarative_base()'
-        # Base.metadata.create_all(bind=engine)
-
         db = SessionLocal()
-        user = crud_user.user.get_by_email(db, email=cfg.init.mail)
+        user = crud_user.get_by_email(db, email=cfg.init.mail)
         if not user:
             log.info("Admin user not found in database. Creating admin user.")
             user_in = schema_user.UserCreate(
@@ -68,6 +61,7 @@ class InitDatabase:
                 is_systemuser=True,
                 is_guestuser=False,
             )
+
             creator = user_in.model_dump()
             del creator["password"]
             creator["username"] = "Glados Init"
@@ -76,7 +70,7 @@ class InitDatabase:
             creator["hashed_password"] = "not_relevant_because_temp"
             creator["is_systemuser"] = True
 
-            user = crud_user.user.create(
+            user = crud_user.create(
                 db,
                 obj_in=user_in,
                 current_user=model_user.User(**creator),

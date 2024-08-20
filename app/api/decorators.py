@@ -28,18 +28,16 @@ def whitelist(func) -> Any:
     def wrapper_whitelist(*args, request: Request, **kwargs) -> Any:
         client = request.client
         if client is None:
-            raise Exception("Failed fetching IP address of client.")
+            return Response(status_code=status.HTTP_403_FORBIDDEN, content="client IP not fetched")
 
         client_ip = str(client.host)
         whitelisted = [ip_network(net) for net in cfg.server.whitelist]
 
         if any(ip_address(client_ip) in wl_ip for wl_ip in whitelisted):
             log.info(f"client IP {client_ip!r} is in whitelist.")
-            value = func(*args, request=request, **kwargs)
-        else:
-            log.info(f"client IP {client_ip!r} not in whitelist.")
-            value = Response(status_code=status.HTTP_403_FORBIDDEN, content="client not in whitelist")
+            return func(*args, request=request, **kwargs)
 
-        return value
+        log.info(f"client IP {client_ip!r} not in whitelist.")
+        return Response(status_code=status.HTTP_403_FORBIDDEN, content="client not in whitelist")
 
     return wrapper_whitelist

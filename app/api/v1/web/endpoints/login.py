@@ -9,7 +9,7 @@ from api.deps import get_current_user
 from api.schemas import schema_token
 from api.schemas import schema_user
 from config import cfg
-from crud import crud_user
+from crud.crud_user import crud_user
 from db.models import model_user
 from db.session import get_db
 from fastapi.exceptions import HTTPException
@@ -25,11 +25,11 @@ router = APIRouter()
 @router.post("/login/access-token", response_model=schema_token.Token)
 def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
     """OAuth2 compatible token login, get an access token for future requests."""
-    user = crud_user.user.authenticate(db, username=form_data.username, password=form_data.password)
+    user = crud_user.authenticate(db, username=form_data.username, password=form_data.password)
 
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password.")
-    if not crud_user.user.is_active(user):
+    if not crud_user.is_active(user):
         raise HTTPException(status_code=400, detail="Inactive user.")
 
     access_token_expires = timedelta(minutes=cfg.security.expire_minutes)

@@ -116,6 +116,7 @@ def post_host_config_items_bought_filter(
     filter_in: schema_host.HostConfigItemsBoughtFilterAdd,
     current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
+    """Saves the given filter for bought items."""
     if filter_name in bought_item_config.filters:
         raise HTTPException(
             status_code=406,
@@ -138,6 +139,7 @@ def update_host_config_items_bought_filter(
     filter_in: schema_host.HostConfigItemsBoughtFilterAdd,
     current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
+    """Updates the given filter for bought items."""
     if filter_name not in bought_item_config.filters:
         raise HTTPException(
             status_code=404,
@@ -159,6 +161,7 @@ def delete_host_config_items_bought_filter(
     filter_name: str,
     current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
+    """Deletes the given filter for bought items."""
     if filter_name not in bought_item_config.filters:
         raise HTTPException(
             status_code=404,

@@ -14,6 +14,8 @@ from schedules.system_schedules import SystemSchedules
 
 
 def main() -> None:
+    """Application entry point."""
+
     # log.add_stream_handler()
     log.add_file_handler()
     log.info("Application started.")

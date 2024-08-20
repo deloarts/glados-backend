@@ -229,7 +229,7 @@ class Configuration:
             with open(CONFIG, "r", encoding="utf8") as yaml_file:
                 return Config(**yaml.safe_load(yaml_file))
         else:
-            raise Exception("Config file doesn't exist.")
+            raise FileNotFoundError("Config file doesn't exist.")
 
 
 cfg = Configuration.read()

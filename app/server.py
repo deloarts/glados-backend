@@ -33,8 +33,7 @@ pat_api.add_middleware(
     allow_headers=["*"],
 )
 
-description = "The API docs are not available in production."
-
+DESC = "The API docs are not available in production."
 description_debug = f"""
 GLADOS API:
 
@@ -46,7 +45,7 @@ GLADOS API:
 app = FastAPI(
     title="GLADOS",
     version=VERSION,
-    description=description if not cfg.debug else description_debug,
+    description=DESC if not cfg.debug else description_debug,
     servers=[
         {"url": API_WEB_V1, "description": "WEB API"},
         {"url": API_PAT_V1, "description": "Personal Access Token API"},

@@ -2,6 +2,7 @@ import sys
 
 sys.path.append("app")
 
+from datetime import UTC
 from datetime import datetime
 from typing import Dict
 
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.api.schemas.schema_user import UserCreate
 from app.api.schemas.schema_user import UserUpdate
 from app.const import API_WEB_V1
-from app.crud import crud_user
+from app.crud.crud_user import crud_user
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
@@ -50,7 +51,7 @@ def create_random_user(db: Session) -> User:
         password=password,
         full_name=full_name,
     )
-    user = crud_user.user.create(db=db, obj_in=user_in, current_user=current_user_adminuser())
+    user = crud_user.create(db=db, obj_in=user_in, current_user=current_user_adminuser())
     return user
 
 
@@ -61,7 +62,7 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
     If the user doesn't exist it is created first.
     """
     password = random_lower_string()
-    user = crud_user.user.get_by_email(db, email=email)
+    user = crud_user.get_by_email(db, email=email)
     if not user:
         user_in_create = UserCreate(
             username=TEST_USERNAME,
@@ -69,7 +70,7 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
             password=password,
             full_name=TEST_FULL_NAME,
         )
-        user = crud_user.user.create(db, obj_in=user_in_create, current_user=current_user_adminuser())
+        user = crud_user.create(db, obj_in=user_in_create, current_user=current_user_adminuser())
     else:
         user_in_update = UserUpdate(
             username=TEST_USERNAME,
@@ -77,7 +78,7 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
             password=password,
             full_name=TEST_FULL_NAME,
         )
-        user = crud_user.user.update(db, db_obj=user, obj_in=user_in_update, current_user=current_user_adminuser())
+        user = crud_user.update(db, db_obj=user, obj_in=user_in_update, current_user=current_user_adminuser())
 
     return user_authentication_headers(client=client, username=TEST_USERNAME, password=password)
 
@@ -86,7 +87,7 @@ def current_user_adminuser() -> User:
     return User(
         **{
             "id": 0,
-            "created": datetime.utcnow(),
+            "created": datetime.now(UTC),
             "personal_access_token": None,
             "username": "test",
             "full_name": "Glados Test",

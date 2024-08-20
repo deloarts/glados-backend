@@ -2,7 +2,7 @@
     API dependencies.
 """
 
-from crud import crud_user
+from crud.crud_user import crud_user
 from db.models import model_user
 from db.session import get_db
 from fastapi import status
@@ -119,7 +119,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(reusabl
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials.",
         )
-    user = crud_user.user.get(db, id=user_id)
+    user = crud_user.get(db, id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user
@@ -131,7 +131,7 @@ def get_current_active_user(
     """
     Returns the current user if active. Raises a HTTP exception if not.
     """
-    if not crud_user.user.is_active(current_user):
+    if not crud_user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
     return current_user
 
@@ -142,9 +142,9 @@ def get_current_active_superuser(
     """
     Returns the current user if it's an active super user. Raises a HTTP exception if not.
     """
-    if not crud_user.user.is_active(current_user):
+    if not crud_user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
-    if not crud_user.user.is_superuser(current_user):
+    if not crud_user.is_superuser(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
     return current_user
 
@@ -155,9 +155,9 @@ def get_current_active_adminuser(
     """
     Returns the current user if it's an active admin user. Raises a HTTP exception if not.
     """
-    if not crud_user.user.is_active(current_user):
+    if not crud_user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
-    if not crud_user.user.is_adminuser(current_user):
+    if not crud_user.is_adminuser(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
     return current_user
 
@@ -168,9 +168,9 @@ def get_current_active_guestuser(
     """
     Returns the current user if it's an active guest user. Raises a HTTP exception if not.
     """
-    if not crud_user.user.is_active(current_user):
+    if not crud_user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
-    if not crud_user.user.is_guestuser(current_user):
+    if not crud_user.is_guestuser(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
     return current_user
 
@@ -190,7 +190,7 @@ def get_current_user_personal_access_token(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials.",
         )
-    user = crud_user.user.get(db, id=user_id)
+    user = crud_user.get(db, id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user

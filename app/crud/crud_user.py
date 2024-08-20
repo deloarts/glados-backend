@@ -2,6 +2,7 @@
     Create-Read-Update-Delete: User
 """
 
+from datetime import UTC
 from datetime import datetime
 from typing import Any
 from typing import Dict
@@ -44,7 +45,7 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
             model_user.User: The user model.
         """
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
-        data["created"] = datetime.utcnow()
+        data["created"] = datetime.now(UTC)
         data["hashed_password"] = get_password_hash(obj_in.password)
         del data["password"]
 
@@ -180,4 +181,4 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         return bool(user.is_systemuser)
 
 
-user = CRUDUser(model_user.User)
+crud_user = CRUDUser(model_user.User)

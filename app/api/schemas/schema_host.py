@@ -3,15 +3,13 @@
 """
 
 from datetime import datetime
-from typing import Dict
 from typing import List
 
+from config import Config
 from pydantic import BaseModel
 from utilities.config_editor.bought_items import ConfigBoughtItems
 from utilities.config_editor.bought_items import ConfigBoughtItemsFilter
 from utilities.disc_space import DiscSpace
-
-from config import Config
 
 
 class HostVersion(BaseModel):
@@ -65,16 +63,16 @@ class HostConfigItemsBoughtUnits(BaseModel):
 
 
 class HostConfigItemsBought(ConfigBoughtItems):
-    ...
+    """Bought item config."""
 
 
 class HostConfigItemsBoughtFilter(ConfigBoughtItemsFilter):
-    ...
+    """Bought item db filter keys."""
 
 
 class HostConfigItemsBoughtFilterAdd(HostConfigItemsBoughtFilter):
-    ...
+    """Bought item db filter object on creation."""
 
 
 class HostConfigItemsBoughtFilterUpdate(HostConfigItemsBoughtFilterAdd):
-    ...
+    """Bought item db filter object on update."""

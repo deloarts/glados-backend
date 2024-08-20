@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.api.schemas.schema_user import UserCreate
 from app.api.schemas.schema_user import UserUpdate
-from app.crud import crud_user
+from app.crud.crud_user import crud_user
 from app.security.pwd import verify_password
 from tests.utils.user import current_user_adminuser
 from tests.utils.utils import random_email
@@ -25,7 +25,7 @@ def test_create_user(db: Session) -> None:
     email = random_email()
     password = random_lower_string()
     user_in = UserCreate(username=username, full_name=full_name, email=email, password=password)
-    user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
     assert user.email == email
     assert user.username == username
     assert user.full_name == full_name
@@ -41,8 +41,8 @@ def test_authenticate_user(db: Session) -> None:
     email = random_email()
     password = random_lower_string()
     user_in = UserCreate(username=username, full_name=full_name, email=email, password=password)
-    user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    authenticated_user = crud_user.user.authenticate(db, username=username, password=password)
+    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+    authenticated_user = crud_user.authenticate(db, username=username, password=password)
     assert authenticated_user
     assert user.email == authenticated_user.email
 
@@ -50,7 +50,7 @@ def test_authenticate_user(db: Session) -> None:
 def test_not_authenticate_user(db: Session) -> None:
     username = random_username()
     password = random_lower_string()
-    user = crud_user.user.authenticate(db, username=username, password=password)
+    user = crud_user.authenticate(db, username=username, password=password)
     assert user is None
 
 
@@ -60,8 +60,8 @@ def test_check_if_user_is_active(db: Session) -> None:
     email = random_email()
     password = random_lower_string()
     user_in = UserCreate(username=username, full_name=full_name, email=email, password=password)
-    user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    is_active = crud_user.user.is_active(user)
+    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+    is_active = crud_user.is_active(user)
     assert is_active is True
 
 
@@ -77,8 +77,8 @@ def test_check_if_user_is_inactive(db: Session) -> None:
         password=password,
         is_active=False,
     )
-    user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    is_active = crud_user.user.is_active(user)
+    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+    is_active = crud_user.is_active(user)
     assert is_active is False
 
 
@@ -94,9 +94,9 @@ def test_check_if_user_is_superuser(db: Session) -> None:
         password=password,
         is_superuser=True,
     )
-    user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    is_superuser = crud_user.user.is_superuser(user)
-    is_active = crud_user.user.is_active(user)
+    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+    is_superuser = crud_user.is_superuser(user)
+    is_active = crud_user.is_active(user)
     assert is_superuser is True
     assert is_active is True
 
@@ -113,10 +113,10 @@ def test_check_if_user_is_adminuser(db: Session) -> None:
         password=password,
         is_adminuser=True,
     )
-    user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    is_adminuser = crud_user.user.is_adminuser(user)
-    is_superuser = crud_user.user.is_superuser(user)
-    is_active = crud_user.user.is_active(user)
+    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+    is_adminuser = crud_user.is_adminuser(user)
+    is_superuser = crud_user.is_superuser(user)
+    is_active = crud_user.is_active(user)
     assert is_adminuser is True
     assert is_superuser is True
     assert is_active is True
@@ -134,11 +134,11 @@ def test_check_if_user_is_adminuser(db: Session) -> None:
 #         password=password,
 #         is_systemuser=True,
 #     )
-#     user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-#     is_systemuser = crud_user.user.is_systemuser(user)
-#     is_adminuser = crud_user.user.is_adminuser(user)
-#     is_superuser = crud_user.user.is_superuser(user)
-#     is_active = crud_user.user.is_active(user)
+#     user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+#     is_systemuser = crud_user.is_systemuser(user)
+#     is_adminuser = crud_user.is_adminuser(user)
+#     is_superuser = crud_user.is_superuser(user)
+#     is_active = crud_user.is_active(user)
 #     assert is_systemuser is True
 #     assert is_superuser is True
 #     assert is_adminuser is False
@@ -157,8 +157,8 @@ def test_get_user(db: Session) -> None:
         password=password,
         is_superuser=True,
     )
-    user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    user_2 = crud_user.user.get(db, id=user.id)
+    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+    user_2 = crud_user.get(db, id=user.id)
     assert user_2
     assert user.email == user_2.email
     assert jsonable_encoder(user) == jsonable_encoder(user_2)
@@ -176,7 +176,7 @@ def test_update_user(db: Session) -> None:
         password=password,
         is_superuser=True,
     )
-    user = crud_user.user.create(db, obj_in=user_in, current_user=current_user_adminuser())
+    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
     new_password = random_lower_string()
     user_in_update = UserUpdate(
         username=username,
@@ -185,8 +185,8 @@ def test_update_user(db: Session) -> None:
         password=new_password,
         is_superuser=True,
     )
-    crud_user.user.update(db, db_obj=user, obj_in=user_in_update, current_user=current_user_adminuser())
-    user_2 = crud_user.user.get(db, id=user.id)
+    crud_user.update(db, db_obj=user, obj_in=user_in_update, current_user=current_user_adminuser())
+    user_2 = crud_user.get(db, id=user.id)
     assert user_2
     assert user.email == user_2.email
     assert verify_password(new_password, user_2.hashed_password)
