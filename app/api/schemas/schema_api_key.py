@@ -2,7 +2,6 @@
     DB api key schema.
 """
 
-
 from datetime import datetime
 from typing import Optional
 
@@ -32,9 +31,6 @@ class APIKeyInDBBase(APIKeyBase):
     id: int
     api_key: str
     created: datetime
-
-    class Config:
-        orm_mode = True
 
 
 class APIKey(APIKeyInDBBase):

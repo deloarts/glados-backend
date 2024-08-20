@@ -2,15 +2,17 @@
     Authentication & Security.
 """
 
+from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
 from typing import Any
 from typing import Optional
 
+from api.schemas import schema_token
 from config import cfg
 from const import SECRET_KEY
 from crud import crud_api_key
-from crud import crud_user
+from crud.crud_user import crud_user
 from db.session import get_db
 from fastapi.param_functions import Depends
 from fastapi.param_functions import Security
@@ -19,9 +21,7 @@ from fastapi.security.http import HTTPBasic
 from fastapi.security.oauth2 import OAuth2PasswordBearer
 from jose import jwt
 from multilog import log
-from passlib.context import CryptContext
 from pydantic import ValidationError
-from schemas import schema_token
 from sqlalchemy.orm import Session
 
 basic_auth = HTTPBasic(auto_error=False)
@@ -53,9 +53,9 @@ def create_access_token(subject: str | Any, expires_delta: Optional[timedelta] =
         str: A jwt encoded access token.
     """
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=cfg.security.expire_minutes)
+        expire = datetime.now(UTC) + timedelta(minutes=cfg.security.expire_minutes)
 
     to_encode = {"exp": expire, "sub": str(subject)}
     encoded_jwt = jwt.encode(to_encode, get_secret_key(), algorithm=cfg.security.algorithm)
@@ -115,7 +115,7 @@ def validate_personal_access_token(
     """
     user_id = get_id_from_access_token(token)
     if user_id is not None:
-        user = crud_user.user.get(db, id=user_id)
+        user = crud_user.get(db, id=user_id)
         return bool(user is not None and user.is_active and user.personal_access_token == token)
     return False
 
@@ -135,7 +135,7 @@ def validate_access_token(db: Session = Depends(get_db), token: str = Depends(re
     """
     user_id = get_id_from_access_token(token)
     if user_id is not None:
-        user = crud_user.user.get(db, id=user_id)
+        user = crud_user.get(db, id=user_id)
         return bool(user is not None and user.is_active)
     return False
 
@@ -147,9 +147,9 @@ def validate_access_token_superuser(db: Session = Depends(get_db), token: str = 
     """
     user_id = get_id_from_access_token(token)
     if user_id is not None:
-        user = crud_user.user.get(db, id=user_id)
+        user = crud_user.get(db, id=user_id)
         if user is not None:
-            if crud_user.user.is_active(user) and crud_user.user.is_superuser(user):
+            if crud_user.is_active(user) and crud_user.is_superuser(user):
                 return True
     return False
 
@@ -161,9 +161,9 @@ def validate_access_token_adminuser(db: Session = Depends(get_db), token: str = 
     """
     user_id = get_id_from_access_token(token)
     if user_id is not None:
-        user = crud_user.user.get(db, id=user_id)
+        user = crud_user.get(db, id=user_id)
         if user is not None:
-            if crud_user.user.is_active(user) and crud_user.user.is_adminuser(user):
+            if crud_user.is_active(user) and crud_user.is_adminuser(user):
                 return True
     return False
 
@@ -175,8 +175,8 @@ def validate_access_token_guestuser(db: Session = Depends(get_db), token: str = 
     """
     user_id = get_id_from_access_token(token)
     if user_id is not None:
-        user = crud_user.user.get(db, id=user_id)
+        user = crud_user.get(db, id=user_id)
         if user is not None:
-            if crud_user.user.is_active(user) and crud_user.user.is_guestuser(user):
+            if crud_user.is_active(user) and crud_user.is_guestuser(user):
                 return True
     return False

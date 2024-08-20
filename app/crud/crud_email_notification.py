@@ -5,10 +5,10 @@
 from typing import List
 from typing import Optional
 
+from api.schemas import schema_email_notification
 from crud.crud_base import CRUDBase
-from models import model_email_notification
+from db.models import model_email_notification
 from multilog import log
-from schemas import schema_email_notification
 from sqlalchemy.orm import Session
 
 

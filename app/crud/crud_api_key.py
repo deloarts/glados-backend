@@ -7,9 +7,9 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from api.schemas import schema_api_key
 from crud.crud_base import CRUDBase
-from models import model_api_key
-from schemas import schema_api_key
+from db.models import model_api_key
 from sqlalchemy.orm import Session
 
 

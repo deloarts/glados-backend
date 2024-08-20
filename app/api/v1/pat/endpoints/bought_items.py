@@ -9,13 +9,13 @@ from typing import Any
 
 from api.deps import get_current_user_personal_access_token
 from api.deps import verify_personal_access_token
+from api.schemas import schema_bought_item
 from crud import crud_bought_item
+from db.models import model_user
 from db.session import get_db
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
-from models import model_user
-from schemas import schema_bought_item
 from sqlalchemy.orm import Session
 
 router = APIRouter()

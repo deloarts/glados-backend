@@ -3,8 +3,8 @@
 """
 
 import uvicorn
-from api.pat_v1 import api_pat
-from api.web_v1 import api_web
+from api.v1.pat import api_pat
+from api.v1.web import api_web
 from config import cfg
 from const import API_PAT_V1
 from const import API_WEB_V1
@@ -33,8 +33,7 @@ pat_api.add_middleware(
     allow_headers=["*"],
 )
 
-description = "The API docs are not available in production."
-
+DESC = "The API docs are not available in production."
 description_debug = f"""
 GLADOS API:
 
@@ -46,7 +45,7 @@ GLADOS API:
 app = FastAPI(
     title="GLADOS",
     version=VERSION,
-    description=description if not cfg.debug else description_debug,
+    description=DESC if not cfg.debug else description_debug,
     servers=[
         {"url": API_WEB_V1, "description": "WEB API"},
         {"url": API_PAT_V1, "description": "Personal Access Token API"},

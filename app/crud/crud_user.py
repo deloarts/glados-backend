@@ -2,17 +2,18 @@
     Create-Read-Update-Delete: User
 """
 
+from datetime import UTC
 from datetime import datetime
 from typing import Any
 from typing import Dict
 from typing import Optional
 
+from api.schemas import schema_user
 from config import cfg
 from crud.crud_base import CRUDBase
+from db.models import model_user
 from fastapi import HTTPException
-from models import model_user
 from multilog import log
-from schemas import schema_user
 from security.pwd import get_password_hash
 from security.pwd import verify_password
 from sqlalchemy.orm import Session
@@ -44,7 +45,7 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
             model_user.User: The user model.
         """
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
-        data["created"] = datetime.utcnow()
+        data["created"] = datetime.now(UTC)
         data["hashed_password"] = get_password_hash(obj_in.password)
         del data["password"]
 
@@ -180,4 +181,4 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         return bool(user.is_systemuser)
 
 
-user = CRUDUser(model_user.User)
+crud_user = CRUDUser(model_user.User)

@@ -55,9 +55,6 @@ class BoughtItemInDBBase(BoughtItemBase):
     created: date
     creator_id: int
 
-    class Config:
-        orm_mode = True
-
 
 class BoughtItem(BoughtItemInDBBase):
     """Additional properties to return to api."""

@@ -13,12 +13,13 @@ from random import randint
 import faker_commerce
 from faker import Faker
 
-from app.crud import crud_bought_item, crud_user
+from app.api.schemas import schema_bought_item
+from app.crud import crud_bought_item
+from app.crud.crud_user import crud_user
 from app.db.session import SessionLocal
-from app.schemas import schema_bought_item
 
 db = SessionLocal()
-crud_user = crud_user.user.get_by_email(db, email=cfg.init.mail)
+crud_user = crud_user.get_by_email(db, email=cfg.init.mail)
 
 fake = Faker()
 fake.add_provider(faker_commerce.Provider)

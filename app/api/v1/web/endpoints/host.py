@@ -9,20 +9,19 @@ from typing import Dict
 
 from api import deps
 from api.deps import get_current_active_adminuser
+from api.schemas import schema_host
+from config import cfg
 from const import VERSION
+from db.models import model_user
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
-from models import model_user
 from multilog import log
-from schemas import schema_host
 from utilities.config_editor.bought_items import ConfigBoughtItemsFilter
 from utilities.config_editor.bought_items import bought_item_config
 from utilities.disc_space import get_disc_space
 from utilities.system import get_hostname
 from utilities.system import get_os
-
-from config import cfg
 
 router = APIRouter()
 
@@ -117,6 +116,7 @@ def post_host_config_items_bought_filter(
     filter_in: schema_host.HostConfigItemsBoughtFilterAdd,
     current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
+    """Saves the given filter for bought items."""
     if filter_name in bought_item_config.filters:
         raise HTTPException(
             status_code=406,
@@ -139,6 +139,7 @@ def update_host_config_items_bought_filter(
     filter_in: schema_host.HostConfigItemsBoughtFilterAdd,
     current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
+    """Updates the given filter for bought items."""
     if filter_name not in bought_item_config.filters:
         raise HTTPException(
             status_code=404,
@@ -160,6 +161,7 @@ def delete_host_config_items_bought_filter(
     filter_name: str,
     current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
+    """Deletes the given filter for bought items."""
     if filter_name not in bought_item_config.filters:
         raise HTTPException(
             status_code=404,

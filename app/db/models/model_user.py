@@ -19,7 +19,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
 if TYPE_CHECKING:
-    from models.model_bought_item import BoughtItem  # noqa: F401
+    from db.models.model_bought_item import BoughtItem  # noqa: F401
 
 
 class User(Base):  # type: ignore
@@ -42,4 +42,4 @@ class User(Base):  # type: ignore
     is_systemuser = Column(Boolean, nullable=False, default=False, server_default=false())
 
     # relations
-    bought_items = relationship("models.model_bought_item.BoughtItem", back_populates="creator")
+    bought_items = relationship("db.models.model_bought_item.BoughtItem", back_populates="creator")

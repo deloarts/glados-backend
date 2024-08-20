@@ -5,7 +5,8 @@ from datetime import datetime
 from typing import List
 from typing import Optional
 
-from models import model_user, model_bought_item  # isort:skip
+from db.models import model_bought_item
+from db.models import model_user
 
 
 def get_changelog(

@@ -5,13 +5,13 @@
 from typing import Any
 
 from api import deps
-from api.worker import gather_logs
-from api.worker import read_logfile
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from starlette.requests import Request
+from utilities.log_files import gather_logs
+from utilities.log_files import read_logfile
 
 router = APIRouter()
 

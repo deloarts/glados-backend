@@ -2,7 +2,6 @@
     Stock Cutting Solver: Job model
 """
 
-
 from typing import Iterator
 from typing import List
 

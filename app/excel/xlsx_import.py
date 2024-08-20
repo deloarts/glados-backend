@@ -12,10 +12,10 @@ from typing import TypeVar
 
 from crud import crud_bought_item
 from db.base import Base
+from db.models import model_user
 from fastapi import HTTPException
 from fastapi import UploadFile
 from fastapi.encoders import jsonable_encoder
-from models import model_user
 from multilog import log
 from openpyxl import load_workbook
 from openpyxl.workbook import Workbook
@@ -80,7 +80,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             self.ws = self.wb.worksheets[0]
         except Exception as e:
             log.error(f"Failed to load workbook from user {self.db_obj_user.username}: {e}")
-            raise HTTPException(status_code=422, detail=[str(e)])
+            raise HTTPException(status_code=422, detail=[str(e)]) from e
 
     def _get_header_row(self) -> int:
         """Return the header row with EXCEL index (index starts by 1)

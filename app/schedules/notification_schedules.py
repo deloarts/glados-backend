@@ -1,13 +1,14 @@
 """
     Handles files schedules.
 """
+
 from pathlib import Path
 
 from config import cfg
 from const import TEMPLATES
 from crud.crud_bought_item import bought_item
 from crud.crud_email_notification import email_notification
-from crud.crud_user import user
+from crud.crud_user import crud_user
 from fastapi.encoders import jsonable_encoder
 from mail import Mail
 from mail import Receiver
@@ -45,7 +46,7 @@ class NotificationSchedules(BaseSchedules):
         log.debug(f"Notification receivers are {receiver_ids}.")
 
         for receiver_id in receiver_ids:
-            current_user = user.get(db=self.db, id=receiver_id)
+            current_user = crud_user.get(db=self.db, id=receiver_id)
             current_items = []
             pending_notifications = email_notification.get_by_receiver_id(self.db, receiver_id=receiver_id)
             if not current_user or not pending_notifications:

@@ -21,7 +21,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
 if TYPE_CHECKING:
-    from models.model_user import User  # noqa: F401
+    from db.models.model_user import User  # noqa: F401
 
 
 class BoughtItem(Base):  # type: ignore
@@ -69,4 +69,4 @@ class BoughtItem(Base):  # type: ignore
 
     # relations
     creator_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    creator = relationship("models.model_user.User", back_populates="bought_items")
+    creator = relationship("db.models.model_user.User", back_populates="bought_items")

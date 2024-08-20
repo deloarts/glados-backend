@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 
+from app.api.schemas.schema_bought_item import BoughtItemCreate
+from app.api.schemas.schema_bought_item import BoughtItemUpdate
 from app.config import cfg
 from app.crud import crud_bought_item
-from app.schemas.schema_bought_item import BoughtItemCreate
-from app.schemas.schema_bought_item import BoughtItemUpdate
 from tests.utils.user import create_random_user
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_project
