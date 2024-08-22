@@ -93,6 +93,7 @@ In the following chapters you'll find a description on how to create an alias fo
 
 ```bash
 sudo apt update -y
+sudo apt install gcc pkg-config libcairo2-dev -y
 ```
 
 #### 1.3.1 install python
