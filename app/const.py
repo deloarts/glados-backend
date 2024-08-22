@@ -33,6 +33,9 @@ LOGS = Path(ROOT, "logs")
 UPLOADS = Path(ROOT, "uploads")
 TEMPLATES = Path(ROOT, "templates")
 
-# Tools/Stock Cut
+# Tools/Stock Cut 1D
 N_MAX_PRECISE = 9  # 10 takes ~30s, 9 only 1.2s
 N_MAX = 500  # around 1 million with n^2
+
+# Tool/Stock Cut 2D
+SOLVER_TIMEOUT = 10  # seconds
