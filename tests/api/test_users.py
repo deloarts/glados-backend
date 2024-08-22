@@ -1,12 +1,12 @@
 from typing import Dict
 
-from api.schemas.user import UserCreateSchema
-from crud.user import crud_user
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.api.schemas.user import UserCreateSchema
 from app.config import cfg
 from app.const import API_WEB_V1
+from app.crud.user import crud_user
 from tests.utils.user import TEST_MAIL
 from tests.utils.user import current_user_adminuser
 from tests.utils.utils import random_email

@@ -1,29 +1,19 @@
-import sys
-
-sys.path.append("app")
-
 from datetime import UTC
 from datetime import datetime
 from typing import Dict
 
-from api.schemas.user import UserCreateSchema
-from api.schemas.user import UserUpdateSchema
-from crud.user import crud_user
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.api.schemas.user import UserCreateSchema
+from app.api.schemas.user import UserUpdateSchema
 from app.const import API_WEB_V1
+from app.crud.user import crud_user
+from app.db.models import UserModel
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
 from tests.utils.utils import random_username
-
-# Important note: Throughout the app the user model is imported this way, not like
-# this: app.db.models import UserModel
-# If you would import the model with `from app.db.models import UserModel`,
-# this somehow cause it to be seen as 2 different models, despite being the same file,
-# resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from db.models import UserModel  # isort:skip
 
 TEST_USERNAME = "test"
 TEST_MAIL = "test@glados.com"

@@ -1,22 +1,12 @@
-import sys
-
-sys.path.append("app")
-
-from api.schemas.bought_item import BoughtItemCreateSchema
-from crud.bought_item import crud_bought_item
 from sqlalchemy.orm import Session
 
+from app.api.schemas.bought_item import BoughtItemCreateSchema
 from app.config import cfg
+from app.crud.bought_item import crud_bought_item
+from app.db.models import BoughtItemModel
 from tests.utils.user import create_random_user
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_project
-
-# Important note: Throughout the app the BoughtItem model is imported this way, not like
-# this: app.db.models.bought_item ...
-# If you would import the model with `from app.db.models.bought_item import BoughtItemModel`,
-# this somehow cause it to be seen as 2 different models, despite being the same file,
-# resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from db.models import BoughtItemModel  # isort:skip
 
 
 def create_random_item(db: Session) -> BoughtItemModel:

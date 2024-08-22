@@ -1,9 +1,9 @@
-from api.schemas.user import UserCreateSchema
-from api.schemas.user import UserUpdateSchema
-from crud.user import crud_user
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
+from app.api.schemas.user import UserCreateSchema
+from app.api.schemas.user import UserUpdateSchema
+from app.crud.user import crud_user
 from app.security.pwd import verify_password
 from tests.utils.user import current_user_adminuser
 from tests.utils.utils import random_email
