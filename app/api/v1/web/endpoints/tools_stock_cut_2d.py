@@ -6,8 +6,8 @@ from typing import Any
 from typing import Literal
 
 from api import deps
-from api.schemas.schema_stock_cut_2d import JobSchema
-from api.schemas.schema_stock_cut_2d import ResultSchema
+from api.schemas.stock_cut_2d import StockCut2DJobSchema
+from api.schemas.stock_cut_2d import StockCut2DResultSchema
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.responses import FileResponse
@@ -20,9 +20,9 @@ from tools.stock_cut_2d.solver import Solver
 router = APIRouter()
 
 
-@router.post("/2d/solve", response_model=ResultSchema)
+@router.post("/2d/solve", response_model=StockCut2DResultSchema)
 def post_2d_solve(
-    job_in: JobSchema,
+    job_in: StockCut2DJobSchema,
     verified: bool = Depends(deps.verify_token),
 ) -> Any:
     """Solves the two dimensional stock cutting problem. Returns the result of the solver."""
@@ -38,7 +38,7 @@ def post_2d_solve(
 
 @router.post("/2d/generate", response_class=FileResponse)
 def post_2d_generate(
-    result_in: ResultSchema,
+    result_in: StockCut2DResultSchema,
     output_format: OutputFormat,
     verified: bool = Depends(deps.verify_token),
 ) -> Any:

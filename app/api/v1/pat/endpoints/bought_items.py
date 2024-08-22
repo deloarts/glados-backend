@@ -9,7 +9,8 @@ from typing import Any
 
 from api.deps import get_current_user_personal_access_token
 from api.deps import verify_personal_access_token
-from api.schemas import schema_bought_item
+from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemSchema
 from crud import crud_bought_item
 from db.models import model_user
 from db.session import get_db
@@ -21,7 +22,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/{item_id}", response_model=schema_bought_item.BoughtItem)
+@router.get("/{item_id}", response_model=BoughtItemSchema)
 def read_bought_item_by_id(
     item_id: int,
     verified: bool = Depends(verify_personal_access_token),
@@ -37,11 +38,11 @@ def read_bought_item_by_id(
     return item
 
 
-@router.post("/", response_model=schema_bought_item.BoughtItem)
+@router.post("/", response_model=BoughtItemSchema)
 def create_bought_item(
     *,
     db: Session = Depends(get_db),
-    obj_in: schema_bought_item.BoughtItemCreate,
+    obj_in: BoughtItemCreateSchema,
     current_user: model_user.User = Depends(get_current_user_personal_access_token),
 ) -> Any:
     """Create new bought item."""

@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
-class UserBase(BaseModel):
+class UserBaseSchema(BaseModel):
     """Shared properties."""
 
     username: str = Field(..., min_length=1)
@@ -22,33 +22,33 @@ class UserBase(BaseModel):
     is_guestuser: Optional[bool] = False
 
 
-class UserCreate(UserBase):
+class UserCreateSchema(UserBaseSchema):
     """Properties to receive via API on creation."""
 
     is_systemuser: Optional[bool] = False
     password: str = Field(..., min_length=cfg.security.min_pw_len)
 
 
-class UserUpdate(UserBase):
+class UserUpdateSchema(UserBaseSchema):
     """Properties to receive via API on update."""
 
     password: Optional[str] = Field(None, min_length=cfg.security.min_pw_len)
 
 
-class UserInDBBase(UserBase):
+class UserInDBBaseSchema(UserBaseSchema):
     """Properties stored in DB."""
 
     id: int
     created: datetime
 
 
-class User(UserInDBBase):
+class UserSchema(UserInDBBaseSchema):
     """Additional properties to return via API."""
 
     is_systemuser: bool
 
 
-class UserInDB(UserInDBBase):
+class UserInDBSchema(UserInDBBaseSchema):
     """Additional properties stored in DB."""
 
     hashed_password: str

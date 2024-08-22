@@ -1,7 +1,7 @@
+from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemUpdateSchema
 from sqlalchemy.orm import Session
 
-from app.api.schemas.schema_bought_item import BoughtItemCreate
-from app.api.schemas.schema_bought_item import BoughtItemUpdate
 from app.config import cfg
 from app.crud import crud_bought_item
 from tests.utils.user import create_random_user
@@ -17,7 +17,7 @@ def test_create_item(db: Session) -> None:
     definition = random_lower_string()
     manufacturer = random_lower_string()
 
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -48,7 +48,7 @@ def test_get_item(db: Session) -> None:
     definition = random_lower_string()
     manufacturer = random_lower_string()
 
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -85,7 +85,7 @@ def test_update_item(db: Session) -> None:
 
     user = create_random_user(db)
 
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -96,7 +96,7 @@ def test_update_item(db: Session) -> None:
     )
     item = crud_bought_item.bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
 
-    item_update = BoughtItemUpdate(
+    item_update = BoughtItemUpdateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -125,7 +125,7 @@ def test_delete_item(db: Session) -> None:
     definition = random_lower_string()
     manufacturer = random_lower_string()
 
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=project,
         machine=None,
         quantity=quantity,

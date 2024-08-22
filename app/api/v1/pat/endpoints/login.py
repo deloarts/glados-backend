@@ -5,7 +5,7 @@
 from typing import Any
 
 from api import deps
-from api.schemas import schema_user
+from api.schemas.user import UserSchema
 from db.models import model_user
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
@@ -13,7 +13,7 @@ from fastapi.routing import APIRouter
 router = APIRouter()
 
 
-@router.post("/login/test-personal-access-token", response_model=schema_user.User)
+@router.post("/login/test-personal-access-token", response_model=UserSchema)
 def test_personal_access_token(
     current_user: model_user.User = Depends(deps.get_current_user_personal_access_token),
 ) -> Any:

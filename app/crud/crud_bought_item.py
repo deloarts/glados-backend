@@ -8,8 +8,10 @@ from datetime import date
 from typing import List
 from typing import Optional
 
-from api.schemas import schema_bought_item
-from api.schemas import schema_email_notification
+from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemSchema
+from api.schemas.bought_item import BoughtItemUpdateSchema
+from api.schemas.email_notification import EmailNotificationCreateSchema
 from config import cfg
 from crud.crud_base import CRUDBase
 from crud.crud_email_notification import email_notification
@@ -27,8 +29,8 @@ from sqlalchemy.sql import text
 class CRUDBoughtItem(
     CRUDBase[
         model_bought_item.BoughtItem,
-        schema_bought_item.BoughtItemCreate,
-        schema_bought_item.BoughtItemUpdate,
+        BoughtItemCreateSchema,
+        BoughtItemUpdateSchema,
     ]
 ):
     """CRUDBoughtItem class. Descendent of the CRUDBase class."""
@@ -184,7 +186,7 @@ class CRUDBoughtItem(
         db: Session,
         *,
         db_obj_user: model_user.User,
-        obj_in: schema_bought_item.BoughtItemCreate,
+        obj_in: BoughtItemCreateSchema,
     ) -> model_bought_item.BoughtItem:
         """Creates a new bought item.
 
@@ -221,7 +223,7 @@ class CRUDBoughtItem(
         *,
         db_obj_user: model_user.User,
         db_obj_item: model_bought_item.BoughtItem | None,
-        obj_in: schema_bought_item.BoughtItemUpdate,  # | Dict[str, Any],
+        obj_in: BoughtItemUpdateSchema,
     ) -> model_bought_item.BoughtItem:
         """Updates a bought item.
 
@@ -358,7 +360,7 @@ class CRUDBoughtItem(
 
         # Add notification
         if status == cfg.items.bought.status.late:
-            notification = schema_email_notification.EmailNotificationCreate(
+            notification = EmailNotificationCreateSchema(
                 reason="late",
                 receiver_id=db_obj_item.creator_id,
                 bought_item_id=db_obj_item.id,
@@ -366,7 +368,7 @@ class CRUDBoughtItem(
             email_notification.create(db=db, obj_in=notification)
 
         if db_obj_item.notify_on_delivery and status == cfg.items.bought.status.delivered:
-            notification = schema_email_notification.EmailNotificationCreate(
+            notification = EmailNotificationCreateSchema(
                 reason="delivered",
                 receiver_id=db_obj_item.creator_id,
                 bought_item_id=db_obj_item.id,

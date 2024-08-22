@@ -5,7 +5,8 @@
 from typing import Any
 
 from api import deps
-from api.schemas import schema_stock_cut_1d
+from api.schemas.stock_cut_1d import StockCut1DJobSchema
+from api.schemas.stock_cut_1d import StockCut1DResultSchema
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
@@ -16,9 +17,9 @@ from tools.stock_cut_1d.solver import distribute
 router = APIRouter()
 
 
-@router.post("/1d/solve", response_model=schema_stock_cut_1d.Result)
+@router.post("/1d/solve", response_model=StockCut1DResultSchema)
 def post_1d_solve(
-    job_in: schema_stock_cut_1d.Job,
+    job_in: StockCut1DJobSchema,
     verified: bool = Depends(deps.verify_token),
 ) -> Any:
     """Solves the one dimensional stock cutting problem."""

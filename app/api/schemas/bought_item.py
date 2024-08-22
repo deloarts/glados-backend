@@ -19,11 +19,11 @@ from pydantic import Field
 IncludingString = Annotated[str, BeforeValidator(lambda s: str(s) if s is not None else None)]
 
 
-class BoughtItemBase(BaseModel):
+class BoughtItemBaseSchema(BaseModel):
     """Shared properties."""
 
 
-class BoughtItemCreate(BoughtItemBase):
+class BoughtItemCreateSchema(BoughtItemBaseSchema):
     """Properties to receive via API on creation from "BoughtItem"."""
 
     high_priority: Optional[bool] = False
@@ -43,11 +43,11 @@ class BoughtItemCreate(BoughtItemBase):
     desired_delivery_date: Optional[date] = None
 
 
-class BoughtItemUpdate(BoughtItemCreate):
+class BoughtItemUpdateSchema(BoughtItemCreateSchema):
     """Properties to receive via API on update from "BoughtItem"."""
 
 
-class BoughtItemInDBBase(BoughtItemBase):
+class BoughtItemInDBBaseSchema(BoughtItemBaseSchema):
     """Properties stored in DB."""
 
     id: int
@@ -56,7 +56,7 @@ class BoughtItemInDBBase(BoughtItemBase):
     creator_id: int
 
 
-class BoughtItem(BoughtItemInDBBase):
+class BoughtItemSchema(BoughtItemInDBBaseSchema):
     """Additional properties to return to api."""
 
     high_priority: bool
@@ -84,13 +84,13 @@ class BoughtItem(BoughtItemInDBBase):
     storage_place: Optional[str]
 
 
-class BoughtItemInDB(BoughtItemInDBBase):
+class BoughtItemInDBSchema(BoughtItemInDBBaseSchema):
     """Additional properties stored in DB."""
 
     changes: List[str]
 
 
-class BoughtItemExcelExport(BoughtItemBase):
+class BoughtItemExcelExportSchema(BoughtItemBaseSchema):
     """Additional properties for creating the excel export."""
 
     id: int

@@ -7,14 +7,14 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class Token(BaseModel):
+class TokenSchema(BaseModel):
     """OAuth2 token schema."""
 
     access_token: str
     token_type: str
 
 
-class TokenPayload(BaseModel):
+class TokenPayloadSchema(BaseModel):
     """OAuth2 token payload schema."""
 
     sub: Optional[int] = None

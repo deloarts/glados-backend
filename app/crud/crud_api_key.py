@@ -7,13 +7,14 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from api.schemas import schema_api_key
+from api.schemas.api_key import APIKeyCreateSchema
+from api.schemas.api_key import APIKeyUpdateSchema
 from crud.crud_base import CRUDBase
 from db.models import model_api_key
 from sqlalchemy.orm import Session
 
 
-class CRUDAPIKey(CRUDBase[model_api_key.APIKey, schema_api_key.APIKeyCreate, schema_api_key.APIKeyUpdate]):
+class CRUDAPIKey(CRUDBase[model_api_key.APIKey, APIKeyCreateSchema, APIKeyUpdateSchema]):
     """CRUDAPIKey class. Descendent of the CRUDBase class."""
 
     def get(self, db: Session, id: Any) -> Optional[model_api_key.APIKey]:  # pylint: disable=W0622
@@ -68,7 +69,7 @@ class CRUDAPIKey(CRUDBase[model_api_key.APIKey, schema_api_key.APIKeyCreate, sch
             db.query(model_api_key.APIKey).filter(model_api_key.APIKey.deleted is True).offset(skip).limit(limit).all()
         )
 
-    def create(self, db: Session, *, obj_in: schema_api_key.APIKeyCreate) -> model_api_key.APIKey:
+    def create(self, db: Session, *, obj_in: APIKeyCreateSchema) -> model_api_key.APIKey:
         """
         Creates a new api key.
         """
@@ -76,7 +77,7 @@ class CRUDAPIKey(CRUDBase[model_api_key.APIKey, schema_api_key.APIKeyCreate, sch
         return db_obj
 
     def update(
-        self, db: Session, *, db_obj: model_api_key.APIKey, obj_in: schema_api_key.APIKeyUpdate | Dict[str, Any]
+        self, db: Session, *, db_obj: model_api_key.APIKey, obj_in: APIKeyUpdateSchema | Dict[str, Any]
     ) -> model_api_key.APIKey:
         """
         Updates an api key.

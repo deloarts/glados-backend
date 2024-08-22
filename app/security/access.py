@@ -8,7 +8,7 @@ from datetime import timedelta
 from typing import Any
 from typing import Optional
 
-from api.schemas import schema_token
+from api.schemas.token import TokenPayloadSchema
 from config import cfg
 from const import SECRET_KEY
 from crud import crud_api_key
@@ -75,7 +75,7 @@ def get_id_from_access_token(token: str) -> Optional[int]:
         return None
     try:
         payload = jwt.decode(token, get_secret_key(), algorithms=[cfg.security.algorithm])
-        token_data = schema_token.TokenPayload(**payload)
+        token_data = TokenPayloadSchema(**payload)
     except (ValidationError, Exception):
         return None
     return token_data.sub  # a.k.a the id

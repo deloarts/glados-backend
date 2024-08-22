@@ -9,7 +9,14 @@ from typing import Dict
 
 from api import deps
 from api.deps import get_current_active_adminuser
-from api.schemas import schema_host
+from api.schemas.host import HostConfigItemsBoughtFilterAddSchema
+from api.schemas.host import HostConfigItemsBoughtFilterSchema
+from api.schemas.host import HostConfigItemsBoughtStatusSchema
+from api.schemas.host import HostConfigItemsBoughtUnitsSchema
+from api.schemas.host import HostConfigSchema
+from api.schemas.host import HostInfoSchema
+from api.schemas.host import HostTimeSchema
+from api.schemas.host import HostVersionSchema
 from config import cfg
 from const import VERSION
 from db.models import model_user
@@ -17,7 +24,6 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from multilog import log
-from utilities.config_editor.bought_items import ConfigBoughtItemsFilter
 from utilities.config_editor.bought_items import bought_item_config
 from utilities.disc_space import get_disc_space
 from utilities.system import get_hostname
@@ -26,19 +32,19 @@ from utilities.system import get_os
 router = APIRouter()
 
 
-@router.get("/version", response_model=schema_host.HostVersion)
+@router.get("/version", response_model=HostVersionSchema)
 def get_host_version(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns server version."""
     return {"version": VERSION}
 
 
-@router.get("/time", response_model=schema_host.HostTime)
+@router.get("/time", response_model=HostTimeSchema)
 def get_host_time(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns server time."""
     return {"now": datetime.now(), "timezone": cfg.locale.tz}
 
 
-@router.get("/info", response_model=schema_host.HostInfo)
+@router.get("/info", response_model=HostInfoSchema)
 def get_host_info(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
@@ -52,7 +58,7 @@ def get_host_info(
     }
 
 
-@router.get("/config", response_model=schema_host.HostConfig)
+@router.get("/config", response_model=HostConfigSchema)
 def get_host_config(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
@@ -65,7 +71,7 @@ def get_host_config(
 
 @router.get(
     "/config/items/bought/status",
-    response_model=schema_host.HostConfigItemsBoughtStatus,
+    response_model=HostConfigItemsBoughtStatusSchema,
 )
 def get_host_config_items_bought_status(
     verified: bool = Depends(deps.verify_token),
@@ -76,7 +82,7 @@ def get_host_config_items_bought_status(
 
 @router.get(
     "/config/items/bought/units",
-    response_model=schema_host.HostConfigItemsBoughtUnits,
+    response_model=HostConfigItemsBoughtUnitsSchema,
 )
 def get_host_config_items_bought_units(
     verified: bool = Depends(deps.verify_token),
@@ -87,7 +93,7 @@ def get_host_config_items_bought_units(
 
 @router.get(
     "/config/items/bought/filters",
-    response_model=Dict[str, ConfigBoughtItemsFilter],
+    response_model=HostConfigItemsBoughtFilterSchema,
 )
 def get_host_config_items_bought_filter(
     verified: bool = Depends(deps.verify_token),
@@ -98,22 +104,22 @@ def get_host_config_items_bought_filter(
 
 @router.get(
     "/config/items/bought/filters/default",
-    response_model=ConfigBoughtItemsFilter,
+    response_model=HostConfigItemsBoughtFilterSchema,
 )
 def get_host_config_items_bought_filter_default(
     verified: bool = Depends(deps.verify_token),
 ) -> Any:
     """Returns the default bought items filter."""
-    return ConfigBoughtItemsFilter()
+    return HostConfigItemsBoughtFilterSchema()
 
 
 @router.post(
     "/config/items/bought/filters/{filter_name}",
-    response_model=Dict[str, ConfigBoughtItemsFilter],
+    response_model=HostConfigItemsBoughtFilterSchema,
 )
 def post_host_config_items_bought_filter(
     filter_name: str,
-    filter_in: schema_host.HostConfigItemsBoughtFilterAdd,
+    filter_in: HostConfigItemsBoughtFilterAddSchema,
     current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
     """Saves the given filter for bought items."""
@@ -132,11 +138,11 @@ def post_host_config_items_bought_filter(
 
 @router.put(
     "/config/items/bought/filters/{filter_name}",
-    response_model=Dict[str, ConfigBoughtItemsFilter],
+    response_model=HostConfigItemsBoughtFilterSchema,
 )
 def update_host_config_items_bought_filter(
     filter_name: str,
-    filter_in: schema_host.HostConfigItemsBoughtFilterAdd,
+    filter_in: HostConfigItemsBoughtFilterAddSchema,
     current_user: model_user.User = Depends(get_current_active_adminuser),
 ) -> Any:
     """Updates the given filter for bought items."""
@@ -155,7 +161,7 @@ def update_host_config_items_bought_filter(
 
 @router.delete(
     "/config/items/bought/filters/{filter_name}",
-    response_model=Dict[str, ConfigBoughtItemsFilter],
+    response_model=HostConfigItemsBoughtFilterSchema,
 )
 def delete_host_config_items_bought_filter(
     filter_name: str,

@@ -12,7 +12,10 @@ from typing import List
 
 from api.deps import get_current_active_user
 from api.deps import verify_token
-from api.schemas import schema_bought_item
+from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemExcelExportSchema
+from api.schemas.bought_item import BoughtItemSchema
+from api.schemas.bought_item import BoughtItemUpdateSchema
 from config import cfg
 from const import ROOT
 from const import TEMPLATES
@@ -33,7 +36,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schema_bought_item.BoughtItem])
+@router.get("/", response_model=List[BoughtItemSchema])
 def read_bought_items(
     db: Session = Depends(get_db),
     skip: int | None = None,
@@ -134,7 +137,7 @@ def read_bought_items_excel(
     kwargs.pop("verified")
 
     data = crud_bought_item.bought_item.get_multi(**kwargs)
-    xlsx = ExportExcel(data=data, schema=schema_bought_item.BoughtItemExcelExport)
+    xlsx = ExportExcel(data=data, schema=BoughtItemExcelExportSchema)
     path = xlsx.save()
 
     if not path.exists():
@@ -167,7 +170,7 @@ def read_bought_items_excel_template(
     )
 
 
-@router.get("/{item_id}", response_model=schema_bought_item.BoughtItem)
+@router.get("/{item_id}", response_model=BoughtItemSchema)
 def read_bought_item_by_id(
     item_id: int,
     verified: bool = Depends(verify_token),
@@ -199,18 +202,18 @@ def read_bought_item_changelog_by_id(
     return item.changes
 
 
-@router.post("/", response_model=schema_bought_item.BoughtItem)
+@router.post("/", response_model=BoughtItemSchema)
 def create_bought_item(
     *,
     db: Session = Depends(get_db),
-    obj_in: schema_bought_item.BoughtItemCreate,
+    obj_in: BoughtItemCreateSchema,
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Create new bought item."""
     return crud_bought_item.bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)
 
 
-@router.post("/excel", response_model=List[schema_bought_item.BoughtItem])
+@router.post("/excel", response_model=List[BoughtItemSchema])
 def create_bought_items_from_excel(
     *,
     db: Session = Depends(get_db),
@@ -221,19 +224,19 @@ def create_bought_items_from_excel(
     xlsx = ImportExcel(
         db=db,
         model=BoughtItem,
-        schema=schema_bought_item.BoughtItemCreate,
+        schema=BoughtItemCreateSchema,
         db_obj_user=current_user,
         file=file,
     )
     return xlsx.load()
 
 
-@router.put("/{item_id}", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}", response_model=BoughtItemSchema)
 def update_bought_item(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    obj_in: schema_bought_item.BoughtItemUpdate,
+    obj_in: BoughtItemUpdateSchema,
     current_user: model_user.User = Depends(get_current_active_user),
 ) -> Any:
     """Update a bought item."""
@@ -241,7 +244,7 @@ def update_bought_item(
     return crud_bought_item.bought_item.update(db, db_obj_user=current_user, db_obj_item=item, obj_in=obj_in)
 
 
-@router.put("/{item_id}/status", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/status", response_model=BoughtItemSchema)
 def update_bought_item_status(
     *,
     db: Session = Depends(get_db),
@@ -254,7 +257,7 @@ def update_bought_item_status(
     return crud_bought_item.bought_item.update_status(db, db_obj_user=current_user, db_obj_item=item, status=status)
 
 
-@router.put("/{item_id}/group-1", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/group-1", response_model=BoughtItemSchema)
 def update_bought_item_group_1(
     *,
     db: Session = Depends(get_db),
@@ -273,7 +276,7 @@ def update_bought_item_group_1(
     )
 
 
-@router.put("/{item_id}/project", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/project", response_model=BoughtItemSchema)
 def update_bought_item_project(
     *,
     db: Session = Depends(get_db),
@@ -292,7 +295,7 @@ def update_bought_item_project(
     )
 
 
-@router.put("/{item_id}/machine", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/machine", response_model=BoughtItemSchema)
 def update_bought_item_machine(
     *,
     db: Session = Depends(get_db),
@@ -311,7 +314,7 @@ def update_bought_item_machine(
     )
 
 
-@router.put("/{item_id}/quantity", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/quantity", response_model=BoughtItemSchema)
 def update_bought_item_quantity(
     *,
     db: Session = Depends(get_db),
@@ -330,7 +333,7 @@ def update_bought_item_quantity(
     )
 
 
-@router.put("/{item_id}/partnumber", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/partnumber", response_model=BoughtItemSchema)
 def update_bought_item_partnumber(
     *,
     db: Session = Depends(get_db),
@@ -349,7 +352,7 @@ def update_bought_item_partnumber(
     )
 
 
-@router.put("/{item_id}/definition", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/definition", response_model=BoughtItemSchema)
 def update_bought_item_definition(
     *,
     db: Session = Depends(get_db),
@@ -368,7 +371,7 @@ def update_bought_item_definition(
     )
 
 
-@router.put("/{item_id}/manufacturer", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/manufacturer", response_model=BoughtItemSchema)
 def update_bought_item_manufacturer(
     *,
     db: Session = Depends(get_db),
@@ -387,7 +390,7 @@ def update_bought_item_manufacturer(
     )
 
 
-@router.put("/{item_id}/supplier", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/supplier", response_model=BoughtItemSchema)
 def update_bought_item_supplier(
     *,
     db: Session = Depends(get_db),
@@ -406,7 +409,7 @@ def update_bought_item_supplier(
     )
 
 
-@router.put("/{item_id}/weblink", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/weblink", response_model=BoughtItemSchema)
 def update_bought_item_weblink(
     *,
     db: Session = Depends(get_db),
@@ -425,7 +428,7 @@ def update_bought_item_weblink(
     )
 
 
-@router.put("/{item_id}/note-general", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/note-general", response_model=BoughtItemSchema)
 def update_bought_item_note_general(
     *,
     db: Session = Depends(get_db),
@@ -444,7 +447,7 @@ def update_bought_item_note_general(
     )
 
 
-@router.put("/{item_id}/note-supplier", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/note-supplier", response_model=BoughtItemSchema)
 def update_bought_item_note_supplier(
     *,
     db: Session = Depends(get_db),
@@ -463,7 +466,7 @@ def update_bought_item_note_supplier(
     )
 
 
-@router.put("/{item_id}/desired-delivery-date", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/desired-delivery-date", response_model=BoughtItemSchema)
 def update_bought_item_desired_delivery_date(
     *,
     db: Session = Depends(get_db),
@@ -482,7 +485,7 @@ def update_bought_item_desired_delivery_date(
     )
 
 
-@router.put("/{item_id}/expected-delivery-date", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/expected-delivery-date", response_model=BoughtItemSchema)
 def update_bought_item_expected_delivery_date(
     *,
     db: Session = Depends(get_db),
@@ -501,7 +504,7 @@ def update_bought_item_expected_delivery_date(
     )
 
 
-@router.put("/{item_id}/storage", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/storage", response_model=BoughtItemSchema)
 def update_bought_item_storage(
     *,
     db: Session = Depends(get_db),
@@ -520,7 +523,7 @@ def update_bought_item_storage(
     )
 
 
-@router.delete("/{item_id}", response_model=schema_bought_item.BoughtItem)
+@router.delete("/{item_id}", response_model=BoughtItemSchema)
 def delete_bought_item(
     *,
     db: Session = Depends(get_db),

@@ -6,7 +6,8 @@ from typing import Any
 from typing import List
 
 from api import deps
-from api.schemas import schema_api_key
+from api.schemas.api_key import APIKeyCreateSchema
+from api.schemas.api_key import APIKeySchema
 from crud import crud_api_key
 from db.session import get_db
 from fastapi.exceptions import HTTPException
@@ -17,7 +18,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schema_api_key.APIKey])
+@router.get("/", response_model=List[APIKeySchema])
 def read_api_keys(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -29,7 +30,7 @@ def read_api_keys(
     return api_keys
 
 
-@router.get("/{api_key_id}", response_model=schema_api_key.APIKey)
+@router.get("/{api_key_id}", response_model=APIKeySchema)
 def read_api_key_by_id(
     api_key_id: int,
     db: Session = Depends(get_db),
@@ -45,7 +46,7 @@ def read_api_key_by_id(
     return api_key
 
 
-@router.get("/deleted-keys/", response_model=List[schema_api_key.APIKey])
+@router.get("/deleted-keys/", response_model=List[APIKeySchema])
 def read_deleted_api_keys(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -57,7 +58,7 @@ def read_deleted_api_keys(
     return deleted_api_keys
 
 
-@router.get("/deleted-keys/{api_key_id}", response_model=schema_api_key.APIKey)
+@router.get("/deleted-keys/{api_key_id}", response_model=APIKeySchema)
 def read_deleted_api_key_by_id(
     api_key_id: int,
     db: Session = Depends(get_db),
@@ -73,23 +74,23 @@ def read_deleted_api_key_by_id(
     return deleted_api_key
 
 
-@router.post("/", response_model=schema_api_key.APIKey)
+@router.post("/", response_model=APIKeySchema)
 def create_api_key(
     *,
     db: Session = Depends(get_db),
-    data_in: schema_api_key.APIKeyCreate,
+    data_in: APIKeyCreateSchema,
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Create an new api key."""
     return crud_api_key.api_key.create(db, obj_in=data_in)
 
 
-# @router.put("/{api_key_id}", response_model=schema_api_key.APIKey)
+# @router.put("/{api_key_id}", response_model=APIKeySchema)
 # def update_api_key(
 #     *,
 #     db: Session = Depends(get_db),
 #     api_key_id: int,
-#     data_in: schema_api_key.APIKeyUpdate,
+#     data_in: APIKeyUpdateSchema,
 #     verified: bool = Depends(deps.verify_token_adminuser),
 # ) -> Any:
 #     """
@@ -105,7 +106,7 @@ def create_api_key(
 #     return api_key
 
 
-@router.delete("/{api_key_id}", response_model=schema_api_key.APIKey)
+@router.delete("/{api_key_id}", response_model=APIKeySchema)
 def delete_api_key(
     *,
     db: Session = Depends(get_db),

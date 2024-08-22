@@ -5,7 +5,8 @@
 from typing import List
 from typing import Optional
 
-from api.schemas import schema_email_notification
+from api.schemas.email_notification import EmailNotificationCreateSchema
+from api.schemas.email_notification import EmailNotificationUpdateSchema
 from crud.crud_base import CRUDBase
 from db.models import model_email_notification
 from multilog import log
@@ -15,8 +16,8 @@ from sqlalchemy.orm import Session
 class CRUDEmailNotification(
     CRUDBase[
         model_email_notification.EmailNotification,
-        schema_email_notification.EmailNotificationCreate,
-        schema_email_notification.EmailNotificationUpdate,
+        EmailNotificationCreateSchema,
+        EmailNotificationUpdateSchema,
     ]
 ):
     """CRUDEmailNotification class. Descendent of the CRUDBase class."""
@@ -40,7 +41,7 @@ class CRUDEmailNotification(
             return []
 
     def create(
-        self, db: Session, *, obj_in: schema_email_notification.EmailNotificationCreate
+        self, db: Session, *, obj_in: EmailNotificationCreateSchema
     ) -> model_email_notification.EmailNotification:
         """Creates a new email notification by the given schema."""
         db_obj = super().create(db, obj_in=obj_in)

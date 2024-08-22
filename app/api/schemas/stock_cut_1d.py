@@ -10,7 +10,7 @@ from tools.stock_cut_1d.models.model_job import TargetSize
 from tools.stock_cut_1d.models.model_result import SolverType
 
 
-class Job(BaseModel):
+class StockCut1DJobSchema(BaseModel):
     """Job schema for the stock cutting problem."""
 
     max_length: int = Field(..., gt=0)
@@ -18,10 +18,10 @@ class Job(BaseModel):
     target_sizes: List[TargetSize] = Field(default_factory=list)
 
 
-class Result(BaseModel):
+class StockCut1DResultSchema(BaseModel):
     """Result schema for the stock cutting problem."""
 
-    job: Job
+    job: StockCut1DJobSchema
     solver_type: SolverType
     time_us: int
     lengths: List[List[int]]

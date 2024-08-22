@@ -2,9 +2,9 @@ import sys
 
 sys.path.append("app")
 
+from api.schemas.bought_item import BoughtItemCreateSchema
 from sqlalchemy.orm import Session
 
-from app.api.schemas.schema_bought_item import BoughtItemCreate
 from app.config import cfg
 from app.crud import crud_bought_item
 from tests.utils.user import create_random_user
@@ -21,7 +21,7 @@ from db.models.model_bought_item import BoughtItem  # type:ignore isort:skip
 
 def create_random_item(db: Session) -> BoughtItem:
     user = create_random_user(db)
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=random_project(),
         machine=None,
         quantity=1,

@@ -6,9 +6,9 @@ from tools.stock_cut_2d.models import JobModel
 from tools.stock_cut_2d.models import ResultModel
 
 
-class JobSchema(JobModel):
+class StockCut2DJobSchema(JobModel):
     ...
 
 
-class ResultSchema(ResultModel):
+class StockCut2DResultSchema(ResultModel):
     ...

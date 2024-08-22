@@ -6,7 +6,7 @@
 
 from typing import Generator
 
-from api.schemas import schema_user
+from api.schemas.user import UserCreateSchema
 from config import cfg
 from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION
@@ -50,7 +50,7 @@ class InitDatabase:
         user = crud_user.get_by_email(db, email=cfg.init.mail)
         if not user:
             log.info("Admin user not found in database. Creating admin user.")
-            user_in = schema_user.UserCreate(
+            user_in = UserCreateSchema(
                 username=SYSTEM_USER,
                 email=cfg.init.mail,
                 password=cfg.init.password,

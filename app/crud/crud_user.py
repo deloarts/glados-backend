@@ -8,7 +8,7 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 
-from api.schemas import schema_user
+from api.schemas.user import UserCreateSchema, UserUpdateSchema
 from config import cfg
 from crud.crud_base import CRUDBase
 from db.models import model_user
@@ -19,7 +19,7 @@ from security.pwd import verify_password
 from sqlalchemy.orm import Session
 
 
-class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.UserUpdate]):
+class CRUDUser(CRUDBase[model_user.User, UserCreateSchema, UserUpdateSchema]):
     """CRUDUser class. Descendent of the CRUDBase class."""
 
     def get_by_id(self, db: Session, *, id: int) -> Optional[model_user.User]:
@@ -34,12 +34,12 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         """Returns a user by the email."""
         return db.query(model_user.User).filter(model_user.User.email == email).first()
 
-    def create(self, db: Session, *, current_user: model_user.User, obj_in: schema_user.UserCreate) -> model_user.User:
+    def create(self, db: Session, *, current_user: model_user.User, obj_in: UserCreateSchema) -> model_user.User:
         """Creates a user.
 
         Args:
             db (Session): The database session.
-            obj_in (schema_user.UserCreate): The creation schema.
+            obj_in (UserCreateSchema): The creation schema.
 
         Returns:
             model_user.User: The user model.
@@ -83,14 +83,14 @@ class CRUDUser(CRUDBase[model_user.User, schema_user.UserCreate, schema_user.Use
         *,
         current_user: model_user.User,
         db_obj: model_user.User,
-        obj_in: schema_user.UserUpdate | Dict[str, Any],
+        obj_in: UserUpdateSchema | Dict[str, Any],
     ) -> model_user.User:
         """Updates a user.
 
         Args:
             db (Session): The database session.
             db_obj (model_user.User): The user model.
-            obj_in (schema_user.UserUpdate | Dict[str, Any]): The update schema.
+            obj_in (UserUpdateSchema | Dict[str, Any]): The update schema.
 
         Raises:
             HTTPException: Raised if the password change doesn't match the security standard.

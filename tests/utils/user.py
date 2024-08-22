@@ -6,11 +6,11 @@ from datetime import UTC
 from datetime import datetime
 from typing import Dict
 
+from api.schemas.user import UserCreateSchema
+from api.schemas.user import UserUpdateSchema
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.api.schemas.schema_user import UserCreate
-from app.api.schemas.schema_user import UserUpdate
 from app.const import API_WEB_V1
 from app.crud.crud_user import crud_user
 from tests.utils.utils import random_email
@@ -45,7 +45,7 @@ def create_random_user(db: Session) -> User:
     password = random_lower_string()
     username = random_username()
     full_name = random_name()
-    user_in = UserCreate(
+    user_in = UserCreateSchema(
         username=username,
         email=email,  # type: ignore
         password=password,
@@ -64,7 +64,7 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
     password = random_lower_string()
     user = crud_user.get_by_email(db, email=email)
     if not user:
-        user_in_create = UserCreate(
+        user_in_create = UserCreateSchema(
             username=TEST_USERNAME,
             email=email,
             password=password,
@@ -72,7 +72,7 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
         )
         user = crud_user.create(db, obj_in=user_in_create, current_user=current_user_adminuser())
     else:
-        user_in_update = UserUpdate(
+        user_in_update = UserUpdateSchema(
             username=TEST_USERNAME,
             email=email,
             password=password,

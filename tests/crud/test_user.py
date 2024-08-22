@@ -1,8 +1,8 @@
+from api.schemas.user import UserCreateSchema
+from api.schemas.user import UserUpdateSchema
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
-from app.api.schemas.schema_user import UserCreate
-from app.api.schemas.schema_user import UserUpdate
 from app.crud.crud_user import crud_user
 from app.security.pwd import verify_password
 from tests.utils.user import current_user_adminuser
@@ -24,7 +24,7 @@ def test_create_user(db: Session) -> None:
     full_name = random_name()
     email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(username=username, full_name=full_name, email=email, password=password)
+    user_in = UserCreateSchema(username=username, full_name=full_name, email=email, password=password)
     user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
     assert user.email == email
     assert user.username == username
@@ -40,7 +40,7 @@ def test_authenticate_user(db: Session) -> None:
     full_name = random_name()
     email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(username=username, full_name=full_name, email=email, password=password)
+    user_in = UserCreateSchema(username=username, full_name=full_name, email=email, password=password)
     user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
     authenticated_user = crud_user.authenticate(db, username=username, password=password)
     assert authenticated_user
@@ -59,7 +59,7 @@ def test_check_if_user_is_active(db: Session) -> None:
     full_name = random_name()
     email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(username=username, full_name=full_name, email=email, password=password)
+    user_in = UserCreateSchema(username=username, full_name=full_name, email=email, password=password)
     user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
     is_active = crud_user.is_active(user)
     assert is_active is True
@@ -70,7 +70,7 @@ def test_check_if_user_is_inactive(db: Session) -> None:
     full_name = random_name()
     email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(
+    user_in = UserCreateSchema(
         username=username,
         full_name=full_name,
         email=email,
@@ -87,7 +87,7 @@ def test_check_if_user_is_superuser(db: Session) -> None:
     full_name = random_name()
     email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(
+    user_in = UserCreateSchema(
         username=username,
         full_name=full_name,
         email=email,
@@ -106,7 +106,7 @@ def test_check_if_user_is_adminuser(db: Session) -> None:
     full_name = random_name()
     email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(
+    user_in = UserCreateSchema(
         username=username,
         full_name=full_name,
         email=email,
@@ -127,7 +127,7 @@ def test_check_if_user_is_adminuser(db: Session) -> None:
 #     full_name = random_name()
 #     email = random_email()
 #     password = random_lower_string()
-#     user_in = UserCreate(
+#     user_in = UserCreateSchema(
 #         username=username,
 #         full_name=full_name,
 #         email=email,
@@ -150,7 +150,7 @@ def test_get_user(db: Session) -> None:
     full_name = random_name()
     email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(
+    user_in = UserCreateSchema(
         username=username,
         full_name=full_name,
         email=email,
@@ -169,7 +169,7 @@ def test_update_user(db: Session) -> None:
     full_name = random_name()
     email = random_email()
     password = random_lower_string()
-    user_in = UserCreate(
+    user_in = UserCreateSchema(
         username=username,
         full_name=full_name,
         email=email,
@@ -178,7 +178,7 @@ def test_update_user(db: Session) -> None:
     )
     user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
     new_password = random_lower_string()
-    user_in_update = UserUpdate(
+    user_in_update = UserUpdateSchema(
         username=username,
         full_name=full_name,
         email=email,
