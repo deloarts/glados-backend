@@ -10,7 +10,7 @@ from api.schemas.token import TokenSchema
 from api.schemas.user import UserSchema
 from config import cfg
 from crud.crud_user import crud_user
-from db.models import model_user
+from db.models import UserModel
 from db.session import get_db
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -40,6 +40,6 @@ def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordR
 
 
 @router.post("/login/test-token", response_model=UserSchema)
-def test_token(current_user: model_user.User = Depends(get_current_user)) -> Any:
+def test_token(current_user: UserModel = Depends(get_current_user)) -> Any:
     """Test access token."""
     return current_user

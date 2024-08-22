@@ -3,7 +3,8 @@
 from logging.config import fileConfig
 
 from config import cfg
-from const import DB_DEVELOPMENT, DB_PRODUCTION
+from const import DB_DEVELOPMENT
+from const import DB_PRODUCTION
 
 from alembic import context
 
@@ -12,19 +13,17 @@ from alembic import context
 # so that alembic recognizes them.
 from sqlalchemy import engine_from_config, pool  # isort:skip
 
-from models.model_user import User  # isort:skip
-from models.model_bought_item import BoughtItem  # isort:skip
-from models.model_api_key import APIKey  # isort:skip
-from models.model_email_notification import EmailNotification  # isort:skip
+from db.models import UserModel  # isort:skip
+from db.models import BoughtItemModel  # isort:skip
+from db.models import APIKeyModel  # isort:skip
+from db.models import EmailNotificationModel  # isort:skip
 
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 section = config.config_ini_section
-config.set_section_option(
-    section, "DB_PATH", str(DB_DEVELOPMENT) if cfg.debug else str(DB_PRODUCTION)
-)
+config.set_section_option(section, "DB_PATH", str(DB_DEVELOPMENT) if cfg.debug else str(DB_PRODUCTION))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

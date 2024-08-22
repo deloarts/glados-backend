@@ -12,7 +12,7 @@ from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION
 from const import SYSTEM_USER
 from crud.crud_user import crud_user
-from db.models import model_user
+from db.models import UserModel
 from multilog import log
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -73,5 +73,5 @@ class InitDatabase:
             user = crud_user.create(
                 db,
                 obj_in=user_in,
-                current_user=model_user.User(**creator),
+                current_user=UserModel(**creator),
             )

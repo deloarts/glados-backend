@@ -19,7 +19,7 @@ from tests.utils.utils import random_username
 # If you would import the model with `from app.db.models.model_user import User`,
 # this somehow cause it to be seen as 2 different models, despite being the same file,
 # resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from db.models.model_user import User  # type:ignore isort:skip
+from db.models.user import User  # type:ignore isort:skip
 
 
 def test_get_users_systemuser_init(client: TestClient, systemuser_token_headers: Dict[str, str]) -> None:

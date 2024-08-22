@@ -16,7 +16,7 @@ from tests.utils.utils import random_project
 # If you would import the model with `from app.db.models.model_bought_item import BoughtItem`,
 # this somehow cause it to be seen as 2 different models, despite being the same file,
 # resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from db.models.model_bought_item import BoughtItem  # type:ignore isort:skip
+from db.models.bought_item import BoughtItem  # type:ignore isort:skip
 
 
 def create_random_item(db: Session) -> BoughtItem:

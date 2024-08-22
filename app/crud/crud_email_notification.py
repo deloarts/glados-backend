@@ -8,41 +8,37 @@ from typing import Optional
 from api.schemas.email_notification import EmailNotificationCreateSchema
 from api.schemas.email_notification import EmailNotificationUpdateSchema
 from crud.crud_base import CRUDBase
-from db.models import model_email_notification
+from db.models.email_notification import EmailNotificationModel
 from multilog import log
 from sqlalchemy.orm import Session
 
 
 class CRUDEmailNotification(
     CRUDBase[
-        model_email_notification.EmailNotification,
+        EmailNotificationModel,
         EmailNotificationCreateSchema,
         EmailNotificationUpdateSchema,
     ]
 ):
     """CRUDEmailNotification class. Descendent of the CRUDBase class."""
 
-    def get_all(self, db: Session) -> Optional[List[model_email_notification.EmailNotification]]:
+    def get_all(self, db: Session) -> Optional[List[EmailNotificationModel]]:
         """Returns all pending email notifications."""
-        return db.query(model_email_notification.EmailNotification).all()
+        return db.query(EmailNotificationModel).all()
 
-    def get_by_receiver_id(
-        self, db: Session, *, receiver_id: int
-    ) -> Optional[List[model_email_notification.EmailNotification]]:
+    def get_by_receiver_id(self, db: Session, *, receiver_id: int) -> Optional[List[EmailNotificationModel]]:
         """Returns all pending email notifications for a specific user."""
-        return db.query(model_email_notification.EmailNotification).filter_by(receiver_id=receiver_id).all()
+        return db.query(EmailNotificationModel).filter_by(receiver_id=receiver_id).all()
 
     def get_distinct_receiver_ids(self, db: Session) -> Optional[List[int]]:
         """Returns a list of all distinct user ids."""
-        query = db.query(model_email_notification.EmailNotification.receiver_id).distinct().all()
+        query = db.query(EmailNotificationModel.receiver_id).distinct().all()
         try:
             return [item[0] for item in query]
         except:
             return []
 
-    def create(
-        self, db: Session, *, obj_in: EmailNotificationCreateSchema
-    ) -> model_email_notification.EmailNotification:
+    def create(self, db: Session, *, obj_in: EmailNotificationCreateSchema) -> EmailNotificationModel:
         """Creates a new email notification by the given schema."""
         db_obj = super().create(db, obj_in=obj_in)
         log.info(
@@ -51,16 +47,11 @@ class CRUDEmailNotification(
         )
         return db_obj
 
-    def delete(
-        self,
-        db: Session,
-        *,
-        id: int,  # pylint: disable=W0622
-    ) -> Optional[model_email_notification.EmailNotification]:
+    def delete(self, db: Session, *, id: int) -> Optional[EmailNotificationModel]:
         """Deletes an email notification by its id."""
         db_obj = super().delete(db, id=id)
         log.info(f"Deleted email notification with ID={id}.")
         return db_obj
 
 
-email_notification = CRUDEmailNotification(model_email_notification.EmailNotification)
+email_notification = CRUDEmailNotification(EmailNotificationModel)

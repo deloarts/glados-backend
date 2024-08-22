@@ -20,8 +20,8 @@ from config import cfg
 from const import ROOT
 from const import TEMPLATES
 from crud import crud_bought_item
-from db.models import model_user
-from db.models.model_bought_item import BoughtItem
+from db.models import BoughtItemModel
+from db.models import UserModel
 from db.session import get_db
 from excel.xlsx_export import ExportExcel
 from excel.xlsx_import import ImportExcel
@@ -153,9 +153,7 @@ def read_bought_items_excel(
 
 
 @router.get("/excel-template", response_class=FileResponse)
-def read_bought_items_excel_template(
-    verified: bool = Depends(verify_token),
-) -> Any:
+def read_bought_items_excel_template(verified: bool = Depends(verify_token)) -> Any:
     """Retrieve the excel template for the excel import."""
     path = Path(ROOT, TEMPLATES, cfg.templates.bought_item_excel_import)
     if not path.exists():
@@ -171,11 +169,7 @@ def read_bought_items_excel_template(
 
 
 @router.get("/{item_id}", response_model=BoughtItemSchema)
-def read_bought_item_by_id(
-    item_id: int,
-    verified: bool = Depends(verify_token),
-    db: Session = Depends(get_db),
-) -> Any:
+def read_bought_item_by_id(item_id: int, verified: bool = Depends(verify_token), db: Session = Depends(get_db)) -> Any:
     """Get a specific bought item by db id."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
     if not item:
@@ -188,9 +182,7 @@ def read_bought_item_by_id(
 
 @router.get("/{item_id}/changelog", response_model=List[str])
 def read_bought_item_changelog_by_id(
-    item_id: int,
-    verified: bool = Depends(verify_token),
-    db: Session = Depends(get_db),
+    item_id: int, verified: bool = Depends(verify_token), db: Session = Depends(get_db)
 ) -> Any:
     """Get a specific bought item by db id."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -207,7 +199,7 @@ def create_bought_item(
     *,
     db: Session = Depends(get_db),
     obj_in: BoughtItemCreateSchema,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Create new bought item."""
     return crud_bought_item.bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)
@@ -215,15 +207,12 @@ def create_bought_item(
 
 @router.post("/excel", response_model=List[BoughtItemSchema])
 def create_bought_items_from_excel(
-    *,
-    db: Session = Depends(get_db),
-    file: UploadFile,
-    current_user: model_user.User = Depends(get_current_active_user),
+    *, db: Session = Depends(get_db), file: UploadFile, current_user: UserModel = Depends(get_current_active_user)
 ) -> Any:
     """Create new bought items from an excel file."""
     xlsx = ImportExcel(
         db=db,
-        model=BoughtItem,
+        model=BoughtItemModel,
         schema=BoughtItemCreateSchema,
         db_obj_user=current_user,
         file=file,
@@ -237,7 +226,7 @@ def update_bought_item(
     db: Session = Depends(get_db),
     item_id: int,
     obj_in: BoughtItemUpdateSchema,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Update a bought item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -250,7 +239,7 @@ def update_bought_item_status(
     db: Session = Depends(get_db),
     item_id: int,
     status: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the status of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -263,7 +252,7 @@ def update_bought_item_group_1(
     db: Session = Depends(get_db),
     item_id: int,
     group: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the group of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -271,7 +260,7 @@ def update_bought_item_group_1(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.group_1,
+        db_field=BoughtItemModel.group_1,
         value=group,
     )
 
@@ -282,7 +271,7 @@ def update_bought_item_project(
     db: Session = Depends(get_db),
     item_id: int,
     project: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the project of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -290,7 +279,7 @@ def update_bought_item_project(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.project,
+        db_field=BoughtItemModel.project,
         value=project,
     )
 
@@ -301,7 +290,7 @@ def update_bought_item_machine(
     db: Session = Depends(get_db),
     item_id: int,
     machine: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the machine of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -309,7 +298,7 @@ def update_bought_item_machine(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.machine,
+        db_field=BoughtItemModel.machine,
         value=machine,
     )
 
@@ -320,7 +309,7 @@ def update_bought_item_quantity(
     db: Session = Depends(get_db),
     item_id: int,
     quantity: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the quantity of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -328,7 +317,7 @@ def update_bought_item_quantity(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.quantity,
+        db_field=BoughtItemModel.quantity,
         value=quantity,
     )
 
@@ -339,7 +328,7 @@ def update_bought_item_partnumber(
     db: Session = Depends(get_db),
     item_id: int,
     partnumber: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the partnumber of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -347,7 +336,7 @@ def update_bought_item_partnumber(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.partnumber,
+        db_field=BoughtItemModel.partnumber,
         value=partnumber,
     )
 
@@ -358,7 +347,7 @@ def update_bought_item_definition(
     db: Session = Depends(get_db),
     item_id: int,
     definition: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the definition of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -366,7 +355,7 @@ def update_bought_item_definition(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.definition,
+        db_field=BoughtItemModel.definition,
         value=definition,
     )
 
@@ -377,7 +366,7 @@ def update_bought_item_manufacturer(
     db: Session = Depends(get_db),
     item_id: int,
     manufacturer: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the manufacturer of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -385,7 +374,7 @@ def update_bought_item_manufacturer(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.manufacturer,
+        db_field=BoughtItemModel.manufacturer,
         value=manufacturer,
     )
 
@@ -396,7 +385,7 @@ def update_bought_item_supplier(
     db: Session = Depends(get_db),
     item_id: int,
     supplier: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the supplier of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -404,7 +393,7 @@ def update_bought_item_supplier(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.supplier,
+        db_field=BoughtItemModel.supplier,
         value=supplier,
     )
 
@@ -415,7 +404,7 @@ def update_bought_item_weblink(
     db: Session = Depends(get_db),
     item_id: int,
     weblink: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the weblink of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -423,7 +412,7 @@ def update_bought_item_weblink(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.weblink,
+        db_field=BoughtItemModel.weblink,
         value=weblink,
     )
 
@@ -434,7 +423,7 @@ def update_bought_item_note_general(
     db: Session = Depends(get_db),
     item_id: int,
     note: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the general note of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -442,7 +431,7 @@ def update_bought_item_note_general(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.note_general,
+        db_field=BoughtItemModel.note_general,
         value=note,
     )
 
@@ -453,7 +442,7 @@ def update_bought_item_note_supplier(
     db: Session = Depends(get_db),
     item_id: int,
     note: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the supplier note of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -461,7 +450,7 @@ def update_bought_item_note_supplier(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.note_supplier,
+        db_field=BoughtItemModel.note_supplier,
         value=note,
     )
 
@@ -472,7 +461,7 @@ def update_bought_item_desired_delivery_date(
     db: Session = Depends(get_db),
     item_id: int,
     date: datetime.date,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the desired delivery date of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -480,7 +469,7 @@ def update_bought_item_desired_delivery_date(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.desired_delivery_date,
+        db_field=BoughtItemModel.desired_delivery_date,
         value=date,
     )
 
@@ -491,7 +480,7 @@ def update_bought_item_expected_delivery_date(
     db: Session = Depends(get_db),
     item_id: int,
     date: datetime.date,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the expected delivery date of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -499,7 +488,7 @@ def update_bought_item_expected_delivery_date(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.expected_delivery_date,
+        db_field=BoughtItemModel.expected_delivery_date,
         value=date,
     )
 
@@ -510,7 +499,7 @@ def update_bought_item_storage(
     db: Session = Depends(get_db),
     item_id: int,
     storage_place: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the storage of an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)
@@ -518,7 +507,7 @@ def update_bought_item_storage(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.storage_place,
+        db_field=BoughtItemModel.storage_place,
         value=storage_place,
     )
 
@@ -528,7 +517,7 @@ def delete_bought_item(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Delete an item."""
     item = crud_bought_item.bought_item.get(db, id=item_id)

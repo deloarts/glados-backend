@@ -12,7 +12,7 @@ from typing import TypeVar
 
 from crud import crud_bought_item
 from db.base import Base
-from db.models import model_user
+from db.models import UserModel
 from fastapi import HTTPException
 from fastapi import UploadFile
 from fastapi.encoders import jsonable_encoder
@@ -37,7 +37,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
         db: Session,
         model: Type[ModelType],
         schema: Type[CreateSchemaType],
-        db_obj_user: model_user.User,
+        db_obj_user: UserModel,
         file: UploadFile,
     ) -> None:
         """Inits the class.

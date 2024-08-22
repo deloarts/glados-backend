@@ -11,12 +11,12 @@ from typing import Tuple
 
 from const import N_MAX
 from const import N_MAX_PRECISE
-from tools.stock_cut_1d.models.model_job import Job
-from tools.stock_cut_1d.models.model_result import Result
-from tools.stock_cut_1d.models.model_result import SolverType
+from tools.stock_cut_1d.common import SolverType
+from tools.stock_cut_1d.models import JobModel
+from tools.stock_cut_1d.models import ResultModel
 
 
-def distribute(job: Job) -> Result:
+def distribute(job: JobModel) -> ResultModel:
     """Distributes the job to a suiting solver.
 
     Args:
@@ -44,10 +44,10 @@ def distribute(job: Job) -> Result:
 
     time_us = int((perf_counter() - time) * 1000 * 1000)
 
-    return Result(job=job, solver_type=solver_type, time_us=time_us, lengths=lengths)
+    return ResultModel(job=job, solver_type=solver_type, time_us=time_us, lengths=lengths)
 
 
-def _solve_bruteforce(job: Job) -> List[List[int]]:
+def _solve_bruteforce(job: JobModel) -> List[List[int]]:
     """Solves the job using brute force approach.
     This method is CPU-bound, O(n!).
 
@@ -114,7 +114,7 @@ def _split_combination(combination: Tuple[int], max_length: int, cut_width: int)
     return stocks, trimmings
 
 
-def _solve_FFD(job: Job) -> List[List[int]]:
+def _solve_FFD(job: JobModel) -> List[List[int]]:
     """Solves the problem using ffd.
 
     Args:

@@ -12,7 +12,7 @@ from api.deps import verify_personal_access_token
 from api.schemas.bought_item import BoughtItemCreateSchema
 from api.schemas.bought_item import BoughtItemSchema
 from crud import crud_bought_item
-from db.models import model_user
+from db.models import UserModel
 from db.session import get_db
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -43,7 +43,7 @@ def create_bought_item(
     *,
     db: Session = Depends(get_db),
     obj_in: BoughtItemCreateSchema,
-    current_user: model_user.User = Depends(get_current_user_personal_access_token),
+    current_user: UserModel = Depends(get_current_user_personal_access_token),
 ) -> Any:
     """Create new bought item."""
     return crud_bought_item.bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)

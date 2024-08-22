@@ -19,10 +19,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
 if TYPE_CHECKING:
-    from db.models.model_bought_item import BoughtItem  # noqa: F401
+    from db.models.bought_item import BoughtItemModel  # noqa: F401
 
 
-class User(Base):  # type: ignore
+class UserModel(Base):  # type: ignore
     # __table_args__ = {"extend_existing": True}
 
     # data handled by the server

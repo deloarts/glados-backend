@@ -10,10 +10,11 @@ from api.deps import get_current_active_adminuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
 from api.schemas.user import UserCreateSchema
+from api.schemas.user import UserInDBSchema
 from api.schemas.user import UserSchema
 from api.schemas.user import UserUpdateSchema
 from crud.crud_user import crud_user
-from db.models import model_user
+from db.models import UserModel
 from db.session import get_db
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -29,7 +30,7 @@ def read_users(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    verified: model_user.User = Depends(verify_token),
+    verified: UserModel = Depends(verify_token),
 ) -> Any:
     """Retrieve all users."""
     return crud_user.get_multi(db, skip=skip, limit=limit)
@@ -40,7 +41,7 @@ def create_user(
     *,
     db: Session = Depends(get_db),
     user_in: UserCreateSchema,
-    current_user: model_user.User = Depends(get_current_active_adminuser),
+    current_user: UserModel = Depends(get_current_active_adminuser),
 ) -> Any:
     """Create new user."""
     user = crud_user.get_by_email(db, email=user_in.email) or crud_user.get_by_username(db, username=user_in.username)
@@ -57,7 +58,7 @@ def update_user_me(
     *,
     db: Session = Depends(get_db),
     user_in: UserUpdateSchema,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Update own user."""
 
@@ -82,7 +83,7 @@ def update_user_me(
 @router.get("/me", response_model=UserSchema)
 def read_user_me(
     db: Session = Depends(get_db),
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Get current user."""
     return current_user
@@ -91,7 +92,7 @@ def read_user_me(
 @router.get("/{user_id}", response_model=UserSchema)
 def read_user_by_id(
     user_id: int,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ) -> Any:
     """Get a specific user by id."""
@@ -112,7 +113,7 @@ def update_user(
     db: Session = Depends(get_db),
     user_id: int,
     user_in: UserUpdateSchema,
-    current_user: model_user.User = Depends(get_current_active_adminuser),
+    current_user: UserModel = Depends(get_current_active_adminuser),
 ) -> Any:
     """Update a user."""
     user = crud_user.get(db, id=user_id)
@@ -145,7 +146,7 @@ def update_user_personal_access_token(
     *,
     db: Session = Depends(get_db),
     expires_in_minutes: int,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the personal access token of an user."""
     if current_user.is_guestuser:

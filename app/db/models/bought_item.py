@@ -21,10 +21,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
 if TYPE_CHECKING:
-    from db.models.model_user import User  # noqa: F401
+    from db.models.user import UserModel  # noqa: F401
 
 
-class BoughtItem(Base):  # type: ignore
+class BoughtItemModel(Base):  # type: ignore
     # data handled by the server
     id = Column(
         Integer,
