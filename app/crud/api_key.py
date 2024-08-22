@@ -9,8 +9,8 @@ from typing import Optional
 
 from api.schemas.api_key import APIKeyCreateSchema
 from api.schemas.api_key import APIKeyUpdateSchema
-from crud.crud_base import CRUDBase
-from db.models.api_key import APIKeyModel
+from crud.base import CRUDBase
+from db.models import APIKeyModel
 from sqlalchemy.orm import Session
 
 
@@ -91,4 +91,4 @@ class CRUDAPIKey(CRUDBase[APIKeyModel, APIKeyCreateSchema, APIKeyUpdateSchema]):
         return obj
 
 
-api_key = CRUDAPIKey(APIKeyModel)
+crud_api_key = CRUDAPIKey(APIKeyModel)

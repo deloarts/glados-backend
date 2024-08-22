@@ -2,7 +2,7 @@
     API dependencies.
 """
 
-from crud.crud_user import crud_user
+from crud.user import crud_user
 from db.models import UserModel
 from db.session import get_db
 from fastapi import status

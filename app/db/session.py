@@ -11,7 +11,7 @@ from config import cfg
 from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION
 from const import SYSTEM_USER
-from crud.crud_user import crud_user
+from crud.user import crud_user
 from db.models import UserModel
 from multilog import log
 from sqlalchemy import create_engine

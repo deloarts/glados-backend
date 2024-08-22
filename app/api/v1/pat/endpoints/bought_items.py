@@ -11,7 +11,7 @@ from api.deps import get_current_user_personal_access_token
 from api.deps import verify_personal_access_token
 from api.schemas.bought_item import BoughtItemCreateSchema
 from api.schemas.bought_item import BoughtItemSchema
-from crud import crud_bought_item
+from crud.bought_item import crud_bought_item
 from db.models import UserModel
 from db.session import get_db
 from fastapi.exceptions import HTTPException
@@ -29,7 +29,7 @@ def read_bought_item_by_id(
     db: Session = Depends(get_db),
 ) -> Any:
     """Get a specific bought item by db id."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
+    item = crud_bought_item.get(db, id=item_id)
     if not item:
         raise HTTPException(
             status_code=404,
@@ -46,4 +46,4 @@ def create_bought_item(
     current_user: UserModel = Depends(get_current_user_personal_access_token),
 ) -> Any:
     """Create new bought item."""
-    return crud_bought_item.bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)
+    return crud_bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)

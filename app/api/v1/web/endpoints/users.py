@@ -13,7 +13,7 @@ from api.schemas.user import UserCreateSchema
 from api.schemas.user import UserInDBSchema
 from api.schemas.user import UserSchema
 from api.schemas.user import UserUpdateSchema
-from crud.crud_user import crud_user
+from crud.user import crud_user
 from db.models import UserModel
 from db.session import get_db
 from fastapi.exceptions import HTTPException

@@ -11,8 +11,8 @@ from typing import Optional
 from api.schemas.token import TokenPayloadSchema
 from config import cfg
 from const import SECRET_KEY
-from crud import crud_api_key
-from crud.crud_user import crud_user
+from crud.api_key import crud_api_key
+from crud.user import crud_user
 from db.session import get_db
 from fastapi.param_functions import Depends
 from fastapi.param_functions import Security
@@ -87,7 +87,7 @@ def validate_api_key(api_key: str = Security(api_key_header), db: Session = Depe
         log.warning("Authorized using debug api key")
         return True
 
-    key_in_db = crud_api_key.api_key.get_by_api_key(db, key=api_key)
+    key_in_db = crud_api_key.get_by_api_key(db, key=api_key)
     return bool(key_in_db)
 
 

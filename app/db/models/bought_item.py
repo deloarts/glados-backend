@@ -16,15 +16,20 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import PickleType
 from sqlalchemy import String
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
 if TYPE_CHECKING:
-    from db.models.user import UserModel  # noqa: F401
+    from db.models import UserModel  # noqa: F401
 
 
-class BoughtItemModel(Base):  # type: ignore
+class BoughtItemModel(Base):
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "boughtitem"
+
     # data handled by the server
     id = Column(
         Integer,
@@ -69,4 +74,4 @@ class BoughtItemModel(Base):  # type: ignore
 
     # relations
     creator_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    creator = relationship("db.models.model_user.User", back_populates="bought_items")
+    creator = relationship("db.models.user.UserModel", back_populates="bought_items")

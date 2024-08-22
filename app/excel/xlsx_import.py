@@ -10,7 +10,7 @@ from typing import List
 from typing import Type
 from typing import TypeVar
 
-from crud import crud_bought_item
+from crud.bought_item import crud_bought_item
 from db.base import Base
 from db.models import UserModel
 from fastapi import HTTPException
@@ -46,7 +46,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             db (Session): The database session.
             model (Type[ModelType]): The model to import.
             schema (Type[CreateSchemaType]): The schema for the import.
-            db_obj_user (model_user.User): The user who imports the data.
+            db_obj_user (UserModel): The user who imports the data.
             file (UploadFile): The uploaded excel file.
         """
         self.db = db
@@ -180,7 +180,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
         items = []
         for obj_in in db_objs_in:
             items.append(
-                crud_bought_item.bought_item.create(
+                crud_bought_item.create(
                     self.db, db_obj_user=self.db_obj_user, obj_in=obj_in  # type:ignore
                 )
             )

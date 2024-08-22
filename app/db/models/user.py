@@ -15,14 +15,19 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import String
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
 if TYPE_CHECKING:
-    from db.models.bought_item import BoughtItemModel  # noqa: F401
+    from db.models import BoughtItemModel  # noqa: F401
 
 
-class UserModel(Base):  # type: ignore
+class UserModel(Base):
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "user"
+
     # __table_args__ = {"extend_existing": True}
 
     # data handled by the server
@@ -42,4 +47,4 @@ class UserModel(Base):  # type: ignore
     is_systemuser = Column(Boolean, nullable=False, default=False, server_default=false())
 
     # relations
-    bought_items = relationship("db.models.model_bought_item.BoughtItem", back_populates="creator")
+    bought_items = relationship("db.models.bought_item.BoughtItemModel", back_populates="creator")

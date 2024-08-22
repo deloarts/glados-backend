@@ -11,7 +11,7 @@ from typing import Optional
 from api.schemas.user import UserCreateSchema
 from api.schemas.user import UserUpdateSchema
 from config import cfg
-from crud.crud_base import CRUDBase
+from crud.base import CRUDBase
 from db.models import UserModel
 from fastapi import HTTPException
 from multilog import log
@@ -36,14 +36,14 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         return db.query(UserModel).filter(UserModel.email == email).first()
 
     def create(self, db: Session, *, current_user: UserModel, obj_in: UserCreateSchema) -> UserModel:
-        """Creates a user.
+        """Creates a UserModel.
 
         Args:
             db (Session): The database session.
             obj_in (UserCreateSchema): The creation schema.
 
         Returns:
-            UserModel: The user model.
+            User: The user model.
         """
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["created"] = datetime.now(UTC)
@@ -81,11 +81,11 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
     def update(
         self, db: Session, *, current_user: UserModel, db_obj: UserModel, obj_in: UserUpdateSchema | Dict[str, Any]
     ) -> UserModel:
-        """Updates a user.
+        """Updates a UserModel.
 
         Args:
             db (Session): The database session.
-            db_obj (model_UserModel): The user model.
+            db_obj (UserModel): The user model.
             obj_in (UserUpdateSchema | Dict[str, Any]): The update schema.
 
         Raises:
@@ -93,7 +93,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
 
 
         Returns:
-            model_UserModel: The user model.
+            User: The user model.
         """
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
@@ -114,7 +114,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             if db_obj.id != current_user.id:
                 raise HTTPException(
                     status_code=403,
-                    detail="The systemuser cannot be edited by another user.",
+                    detail="The systemuser cannot be edited by another UserModel.",
                 )
             data["is_active"] = True
             data["is_superuser"] = True
@@ -138,7 +138,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         return user
 
     def authenticate(self, db: Session, *, username: str, password: str) -> Optional[UserModel]:
-        """Authenticates a user.
+        """Authenticates a UserModel.
 
         Args:
             db (Session): The database session.
@@ -146,7 +146,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             password (str): The password of the user to authenticate.
 
         Returns:
-            Optional[model_UserModel]: The user model if the credentials are valid, \
+            Optional[User]: The user model if the credentials are valid, \
                 otherwise None.
         """
         user = self.get_by_username(db, username=username)
@@ -161,19 +161,19 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         return bool(user.is_active)
 
     def is_superuser(self, user: UserModel) -> bool:
-        """Checks if a user is a superuser."""
+        """Checks if a user is a superUserModel."""
         return bool(user.is_superuser)
 
     def is_adminuser(self, user: UserModel) -> bool:
-        """Checks if a user is a admin user."""
+        """Checks if a user is a admin UserModel."""
         return bool(user.is_adminuser)
 
     def is_guestuser(self, user: UserModel) -> bool:
-        """Checks if a user is a guest user."""
+        """Checks if a user is a guest UserModel."""
         return bool(user.is_guestuser)
 
     def is_systemuser(self, user: UserModel) -> bool:
-        """Checks if a user is a systemuser."""
+        """Checks if a user is a systemUserModel."""
         return bool(user.is_systemuser)
 
 

@@ -9,7 +9,7 @@ from api.deps import get_current_user
 from api.schemas.token import TokenSchema
 from api.schemas.user import UserSchema
 from config import cfg
-from crud.crud_user import crud_user
+from crud.user import crud_user
 from db.models import UserModel
 from db.session import get_db
 from fastapi.exceptions import HTTPException

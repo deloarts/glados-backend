@@ -8,7 +8,7 @@ from typing import List
 from api import deps
 from api.schemas.api_key import APIKeyCreateSchema
 from api.schemas.api_key import APIKeySchema
-from crud import crud_api_key
+from crud.api_key import crud_api_key
 from db.session import get_db
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -26,7 +26,7 @@ def read_api_keys(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Retrieve api keys."""
-    api_keys = crud_api_key.api_key.get_multi(db, skip=skip, limit=limit)
+    api_keys = crud_api_key.get_multi(db, skip=skip, limit=limit)
     return api_keys
 
 
@@ -37,7 +37,7 @@ def read_api_key_by_id(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Get a specific api key by id."""
-    api_key = crud_api_key.api_key.get(db, id=api_key_id)
+    api_key = crud_api_key.get(db, id=api_key_id)
     if not api_key:
         raise HTTPException(
             status_code=404,
@@ -54,7 +54,7 @@ def read_deleted_api_keys(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Retrieve deleted api keys."""
-    deleted_api_keys = crud_api_key.api_key.get_deleted_multi(db, skip=skip, limit=limit)
+    deleted_api_keys = crud_api_key.get_deleted_multi(db, skip=skip, limit=limit)
     return deleted_api_keys
 
 
@@ -65,7 +65,7 @@ def read_deleted_api_key_by_id(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Get a specific deleted api key by id."""
-    deleted_api_key = crud_api_key.api_key.get_deleted(db, id=api_key_id)
+    deleted_api_key = crud_api_key.get_deleted(db, id=api_key_id)
     if not deleted_api_key:
         raise HTTPException(
             status_code=404,
@@ -82,7 +82,7 @@ def create_api_key(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Create an new api key."""
-    return crud_api_key.api_key.create(db, obj_in=data_in)
+    return crud_api_key.create(db, obj_in=data_in)
 
 
 # @router.put("/{api_key_id}", response_model=APIKeySchema)
@@ -96,13 +96,13 @@ def create_api_key(
 #     """
 #     Update an api key.
 #     """
-#     api_key = crud_api_key.api_key.get(db, id=api_key_id)
+#     api_key = crud_crud_api_key.get(db, id=api_key_id)
 #     if not api_key:
 #         raise HTTPException(
 #             status_code=404,
 #             detail="An api key with this id does not exist in the system",
 #         )
-#     api_key = crud_api_key.api_key.update(db, db_obj=api_key, obj_in=data_in)
+#     api_key = crud_crud_api_key.update(db, db_obj=api_key, obj_in=data_in)
 #     return api_key
 
 
@@ -114,11 +114,11 @@ def delete_api_key(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Deletes an api key."""
-    api_key = crud_api_key.api_key.get(db, id=api_key_id)
+    api_key = crud_api_key.get(db, id=api_key_id)
     if not api_key:
         raise HTTPException(
             status_code=404,
             detail="An api key with this id does not exist in the system",
         )
-    api_key = crud_api_key.api_key.delete(db, id=api_key_id)
+    api_key = crud_api_key.delete(db, id=api_key_id)
     return api_key

@@ -7,8 +7,8 @@ from typing import Optional
 
 from api.schemas.email_notification import EmailNotificationCreateSchema
 from api.schemas.email_notification import EmailNotificationUpdateSchema
-from crud.crud_base import CRUDBase
-from db.models.email_notification import EmailNotificationModel
+from crud.base import CRUDBase
+from db.models import EmailNotificationModel
 from multilog import log
 from sqlalchemy.orm import Session
 
@@ -54,4 +54,4 @@ class CRUDEmailNotification(
         return db_obj
 
 
-email_notification = CRUDEmailNotification(EmailNotificationModel)
+crud_email_notification = CRUDEmailNotification(EmailNotificationModel)

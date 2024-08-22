@@ -9,13 +9,11 @@ from typing import List
 from typing import Optional
 
 from api.schemas.bought_item import BoughtItemCreateSchema
-from api.schemas.bought_item import BoughtItemSchema
 from api.schemas.bought_item import BoughtItemUpdateSchema
 from api.schemas.email_notification import EmailNotificationCreateSchema
 from config import cfg
-from crud.crud_base import CRUDBase
-from crud.crud_email_notification import email_notification
-from crud.helper import get_changelog
+from crud.base import CRUDBase
+from crud.email_notification import crud_email_notification
 from db.models import BoughtItemModel
 from db.models import UserModel
 from fastapi.encoders import jsonable_encoder
@@ -24,6 +22,7 @@ from multilog import log
 from sqlalchemy import Column
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
+from utilities.helper import get_changelog
 
 
 class CRUDBoughtItem(
@@ -190,7 +189,7 @@ class CRUDBoughtItem(
             obj_in (BoughtItemCreateSchema): The creation schema.
 
         Returns:
-            BoughtItemModel: The new bought item model.
+            BoughtItem: The new bought item model.
         """
         if db_obj_user.is_guestuser:
             raise HTTPException(status_code=403, detail="A guest user cannot create items.")
@@ -203,7 +202,7 @@ class CRUDBoughtItem(
         data["creator_id"] = db_obj_user.id
         data["changes"] = get_changelog(changes="Item created.", db_obj_user=db_obj_user)
 
-        db_obj = BoughtItemModel(**data)  # type: ignore
+        db_obj = BoughtItemModel(**data)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
@@ -224,7 +223,7 @@ class CRUDBoughtItem(
         Args:
             db (Session): The database session.
             db_obj_user (UserModel): The user model who updates the item.
-            db_obj_item (BoughtItemModel): The model of the item to update.
+            db_obj_item (BoughtItem): The model of the item to update.
             obj_in (BoughtItemUpdateSchema): The update data.
 
         Raises:
@@ -233,7 +232,7 @@ class CRUDBoughtItem(
             HTTPException: Raised if a normal user tries to edit an item of another user.
 
         Returns:
-            BoughtItemModel: The updated bought item data model.
+            BoughtItem: The updated bought item data model.
         """
         if not db_obj_item:
             raise HTTPException(status_code=404, detail="The item does not exist.")
@@ -282,7 +281,7 @@ class CRUDBoughtItem(
         Args:
             db (Session): The database session.
             db_obj_user (UserModel): The user model who updates the status.
-            db_obj_item (BoughtItemModel): The bought item model.
+            db_obj_item (BoughtItem): The bought item model.
             status (str): The new status.
 
         Raises:
@@ -291,7 +290,7 @@ class CRUDBoughtItem(
             HTTPException: Raised if the status is unknown.
 
         Returns:
-            BoughtItemModel: The bought item model of the updated field.
+            BoughtItem: The bought item model of the updated field.
         """
         if not db_obj_item:
             raise HTTPException(status_code=404, detail="The item does not exist.")
@@ -353,7 +352,7 @@ class CRUDBoughtItem(
                 receiver_id=db_obj_item.creator_id,
                 bought_item_id=db_obj_item.id,
             )
-            email_notification.create(db=db, obj_in=notification)
+            crud_email_notification.create(db=db, obj_in=notification)
 
         if db_obj_item.notify_on_delivery and status == cfg.items.bought.status.delivered:
             notification = EmailNotificationCreateSchema(
@@ -361,7 +360,7 @@ class CRUDBoughtItem(
                 receiver_id=db_obj_item.creator_id,
                 bought_item_id=db_obj_item.id,
             )
-            email_notification.create(db=db, obj_in=notification)
+            crud_email_notification.create(db=db, obj_in=notification)
 
         item = return_obj
         log.info(
@@ -384,7 +383,7 @@ class CRUDBoughtItem(
         Args:
             db (Session): The database session.
             db_obj_user (UserModel): The user who updates the item.
-            db_obj_item (BoughtItemModel | None): The item to update.
+            db_obj_item (BoughtItem | None): The item to update.
             db_field (Column): The database column.
 
             value (bool | int | float | str | date): The value to write to the column.
@@ -393,7 +392,7 @@ class CRUDBoughtItem(
             HTTPException: Raised if the given item doesn't exist.
 
         Returns:
-            BoughtItemModel: Returns the updated item.
+            BoughtItem: Returns the updated item.
         """
         if not db_obj_item:
             raise HTTPException(status_code=404, detail="The item with this id does not exist.")
@@ -450,7 +449,7 @@ class CRUDBoughtItem(
         Args:
             db (Session): The database session.
             db_obj_user (UserModel): The user who updates the item.
-            db_obj_item (BoughtItemModel | None): The item to update.
+            db_obj_item (BoughtItem | None): The item to update.
             db_field (Column): The database column.
 
             value (bool | int | float | str | date): The value to write to the column.
@@ -460,7 +459,7 @@ class CRUDBoughtItem(
             HTTPException: Raised if the given item doesn't exist.
 
         Returns:
-            BoughtItemModel: Returns the updated item.
+            BoughtItem: Returns the updated item.
         """
         if db_obj_user.is_guestuser:
             raise HTTPException(status_code=403, detail="A guest user cannot change items.")
@@ -483,7 +482,7 @@ class CRUDBoughtItem(
         Args:
             db (Session): The database session.
             db_obj_user (UserModel): The user who deletes the item.
-            db_obj_item (BoughtItemModel | None): The item to delete.
+            db_obj_item (BoughtItem | None): The item to delete.
 
         Raises:
             HTTPException: Raised if the item doesn't exist.
@@ -492,7 +491,7 @@ class CRUDBoughtItem(
             HTTPException: Raised if a normal user tries to delete a planned item.
 
         Returns:
-            Optional[BoughtItemModel]: The as deleted marked item.
+            Optional[BoughtItem]: The as deleted marked item.
         """
         if db_obj_user.is_guestuser:
             raise HTTPException(status_code=403, detail="A guest user cannot delete items.")
@@ -528,4 +527,4 @@ class CRUDBoughtItem(
         return item
 
 
-bought_item = CRUDBoughtItem(BoughtItemModel)
+crud_bought_item = CRUDBoughtItem(BoughtItemModel)

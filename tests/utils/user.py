@@ -8,22 +8,22 @@ from typing import Dict
 
 from api.schemas.user import UserCreateSchema
 from api.schemas.user import UserUpdateSchema
+from crud.user import crud_user
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.const import API_WEB_V1
-from app.crud.crud_user import crud_user
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
 from tests.utils.utils import random_username
 
 # Important note: Throughout the app the user model is imported this way, not like
-# this: app.db.models.model_user ...
-# If you would import the model with `from app.db.models.model_user import User`,
+# this: app.db.models import UserModel
+# If you would import the model with `from app.db.models import UserModel`,
 # this somehow cause it to be seen as 2 different models, despite being the same file,
 # resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from db.models.user import User  # type:ignore isort:skip
+from db.models import UserModel  # isort:skip
 
 TEST_USERNAME = "test"
 TEST_MAIL = "test@glados.com"
@@ -40,7 +40,7 @@ def user_authentication_headers(*, client: TestClient, username: str, password: 
     return headers
 
 
-def create_random_user(db: Session) -> User:
+def create_random_user(db: Session) -> UserModel:
     email = random_email()
     password = random_lower_string()
     username = random_username()
@@ -83,8 +83,8 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
     return user_authentication_headers(client=client, username=TEST_USERNAME, password=password)
 
 
-def current_user_adminuser() -> User:
-    return User(
+def current_user_adminuser() -> UserModel:
+    return UserModel(
         **{
             "id": 0,
             "created": datetime.now(UTC),

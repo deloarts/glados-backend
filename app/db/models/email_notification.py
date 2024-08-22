@@ -9,8 +9,14 @@ from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import String
 
+from sqlalchemy.ext.declarative import declared_attr
 
-class EmailNotificationModel(Base):  # type: ignore
+
+class EmailNotificationModel(Base):
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "emailnotification"
+
     # data handled by the server
     id = Column(Integer, primary_key=True, index=True, unique=True, nullable=False)
 

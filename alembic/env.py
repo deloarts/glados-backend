@@ -13,10 +13,10 @@ from alembic import context
 # so that alembic recognizes them.
 from sqlalchemy import engine_from_config, pool  # isort:skip
 
-from db.models import UserModel  # isort:skip
-from db.models import BoughtItemModel  # isort:skip
-from db.models import APIKeyModel  # isort:skip
-from db.models import EmailNotificationModel  # isort:skip
+from db.models.user import UserModel  # isort:skip
+from db.models.bought_item import BoughtItemModel  # isort:skip
+from db.models.api_key import APIKeyModel  # isort:skip
+from db.models.email_notification import EmailNotificationModel  # isort:skip
 
 
 # this is the Alembic Config object, which provides
