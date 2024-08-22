@@ -13,10 +13,13 @@ from alembic import context
 # so that alembic recognizes them.
 from sqlalchemy import engine_from_config, pool  # isort:skip
 
-from db.models.user import UserModel  # isort:skip
-from db.models.bought_item import BoughtItemModel  # isort:skip
-from db.models.api_key import APIKeyModel  # isort:skip
-from db.models.email_notification import EmailNotificationModel  # isort:skip
+# For alembic to recognize the models correctly, they must be imported with their native name.
+# This is the class name from the model itself.
+# Do not import the models like this: UserModel, BoughtItemModel, ...
+from db.models.user import User  # isort:skip
+from db.models.bought_item import BoughtItem  # isort:skip
+from db.models.api_key import APIKey  # isort:skip
+from db.models.email_notification import EmailNotification  # isort:skip
 
 
 # this is the Alembic Config object, which provides

@@ -15,11 +15,6 @@ class Base:
     id: Any
     __name__: str
 
-
-@as_declarative()
-class AutomaticBase(Base):
-    """Declarative db base class with automatic table naming."""
-
     @declared_attr
     def __tablename__(cls) -> str:
         return cls.__name__.lower()

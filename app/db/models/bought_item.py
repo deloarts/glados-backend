@@ -16,20 +16,18 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy import PickleType
 from sqlalchemy import String
-from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
+# For correct relations between the models, they must be imported with their native name.
+# This is the class name from the model itself.
+# Do not import the models like this: UserModel, BoughtItemModel, ...
 if TYPE_CHECKING:
-    from db.models import UserModel  # noqa: F401
+    from db.models.user import User  # noqa: F401
 
 
-class BoughtItemModel(Base):
-    @declared_attr
-    def __tablename__(cls) -> str:
-        return "boughtitem"
-
+class BoughtItem(Base):
     # data handled by the server
     id = Column(
         Integer,
@@ -74,4 +72,4 @@ class BoughtItemModel(Base):
 
     # relations
     creator_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    creator = relationship("db.models.user.UserModel", back_populates="bought_items")
+    creator = relationship("db.models.user.User", back_populates="bought_items")
