@@ -14,13 +14,6 @@ from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
 from tests.utils.utils import random_username
 
-# Important note: Throughout the app the user model is imported this way, not like
-# this: app.db.models.user ...
-# If you would import the model with `from app.db.models.user import UserModel`,
-# this somehow cause it to be seen as 2 different models, despite being the same file,
-# resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from db.models import UserModel  # isort:skip
-
 
 def test_get_users_systemuser_init(client: TestClient, systemuser_token_headers: Dict[str, str]) -> None:
     r = client.get(f"{API_WEB_V1}/users/me", headers=systemuser_token_headers)
