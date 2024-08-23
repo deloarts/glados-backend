@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 
-from app.api.schemas.schema_bought_item import BoughtItemCreate
-from app.api.schemas.schema_bought_item import BoughtItemUpdate
+from app.api.schemas.bought_item import BoughtItemCreateSchema
+from app.api.schemas.bought_item import BoughtItemUpdateSchema
 from app.config import cfg
-from app.crud import crud_bought_item
+from app.crud.bought_item import crud_bought_item
 from tests.utils.user import create_random_user
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_project
@@ -17,7 +17,7 @@ def test_create_item(db: Session) -> None:
     definition = random_lower_string()
     manufacturer = random_lower_string()
 
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -27,7 +27,7 @@ def test_create_item(db: Session) -> None:
         manufacturer=manufacturer,
     )
     user = create_random_user(db)
-    item = crud_bought_item.bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
+    item = crud_bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
 
     assert item.project == project
     assert item.quantity == quantity
@@ -48,7 +48,7 @@ def test_get_item(db: Session) -> None:
     definition = random_lower_string()
     manufacturer = random_lower_string()
 
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -58,8 +58,8 @@ def test_get_item(db: Session) -> None:
         manufacturer=manufacturer,
     )
     user = create_random_user(db)
-    item = crud_bought_item.bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
-    stored_item = crud_bought_item.bought_item.get(db=db, id=item.id)
+    item = crud_bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
+    stored_item = crud_bought_item.get(db=db, id=item.id)
     assert stored_item
 
     assert item.project == stored_item.project
@@ -85,7 +85,7 @@ def test_update_item(db: Session) -> None:
 
     user = create_random_user(db)
 
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -94,9 +94,9 @@ def test_update_item(db: Session) -> None:
         definition=definition,
         manufacturer=manufacturer,
     )
-    item = crud_bought_item.bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
+    item = crud_bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
 
-    item_update = BoughtItemUpdate(
+    item_update = BoughtItemUpdateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -105,7 +105,7 @@ def test_update_item(db: Session) -> None:
         definition=definition,
         manufacturer=manufacturer,
     )
-    item2 = crud_bought_item.bought_item.update(db=db, db_obj_user=user, obj_in=item_update, db_obj_item=item)
+    item2 = crud_bought_item.update(db=db, db_obj_user=user, obj_in=item_update, db_obj_item=item)
 
     assert item2.id == item.id
     assert item2.project == item.project
@@ -125,7 +125,7 @@ def test_delete_item(db: Session) -> None:
     definition = random_lower_string()
     manufacturer = random_lower_string()
 
-    item_in = BoughtItemCreate(
+    item_in = BoughtItemCreateSchema(
         project=project,
         machine=None,
         quantity=quantity,
@@ -135,8 +135,8 @@ def test_delete_item(db: Session) -> None:
         manufacturer=manufacturer,
     )
     user = create_random_user(db)
-    item = crud_bought_item.bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
-    crud_bought_item.bought_item.delete(db=db, db_obj_user=user, db_obj_item=item)
-    item3 = crud_bought_item.bought_item.get(db=db, id=item.id)
+    item = crud_bought_item.create(db=db, db_obj_user=user, obj_in=item_in)
+    crud_bought_item.delete(db=db, db_obj_user=user, db_obj_item=item)
+    item3 = crud_bought_item.get(db=db, id=item.id)
     assert item3
     assert item3.deleted is True

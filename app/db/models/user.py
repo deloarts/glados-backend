@@ -18,11 +18,14 @@ from sqlalchemy import String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
+# For correct relations between the models, they must be imported with their native name.
+# This is the class name from the model itself.
+# Do not import the models like this: UserModel, BoughtItemModel, ...
 if TYPE_CHECKING:
-    from db.models.model_bought_item import BoughtItem  # noqa: F401
+    from db.models.bought_item import BoughtItem  # noqa: F401
 
 
-class User(Base):  # type: ignore
+class User(Base):
     # __table_args__ = {"extend_existing": True}
 
     # data handled by the server
@@ -42,4 +45,4 @@ class User(Base):  # type: ignore
     is_systemuser = Column(Boolean, nullable=False, default=False, server_default=false())
 
     # relations
-    bought_items = relationship("db.models.model_bought_item.BoughtItem", back_populates="creator")
+    bought_items = relationship("db.models.bought_item.BoughtItem", back_populates="creator")

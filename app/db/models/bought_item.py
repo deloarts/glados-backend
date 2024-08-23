@@ -20,11 +20,14 @@ from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
+# For correct relations between the models, they must be imported with their native name.
+# This is the class name from the model itself.
+# Do not import the models like this: UserModel, BoughtItemModel, ...
 if TYPE_CHECKING:
-    from db.models.model_user import User  # noqa: F401
+    from db.models.user import User  # noqa: F401
 
 
-class BoughtItem(Base):  # type: ignore
+class BoughtItem(Base):
     # data handled by the server
     id = Column(
         Integer,
@@ -69,4 +72,4 @@ class BoughtItem(Base):  # type: ignore
 
     # relations
     creator_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    creator = relationship("db.models.model_user.User", back_populates="bought_items")
+    creator = relationship("db.models.user.User", back_populates="bought_items")

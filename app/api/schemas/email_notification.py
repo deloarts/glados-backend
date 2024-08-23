@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from pydantic import Field
 
 
-class EmailNotificationBase(BaseModel):
+class EmailNotificationBaseSchema(BaseModel):
     """Shared properties."""
 
     reason: Literal["delivered", "late"] = Field(...)
@@ -16,23 +16,23 @@ class EmailNotificationBase(BaseModel):
     bought_item_id: int = Field(..., gt=0)
 
 
-class EmailNotificationCreate(EmailNotificationBase):
+class EmailNotificationCreateSchema(EmailNotificationBaseSchema):
     """Properties to receive via API on creation."""
 
 
-class EmailNotificationUpdate(EmailNotificationBase):
+class EmailNotificationUpdateSchema(EmailNotificationBaseSchema):
     """Properties to receive via API on update."""
 
 
-class EmailNotificationInDBBase(EmailNotificationBase):
+class EmailNotificationInDBBaseSchema(EmailNotificationBaseSchema):
     """Database properties."""
 
     id: int
 
 
-class EmailNotification(EmailNotificationBase):
+class EmailNotificationSchema(EmailNotificationBaseSchema):
     """Additional properties to return via API."""
 
 
-class EmailNotificationInDB(EmailNotificationBase):
+class EmailNotificationInDBSchema(EmailNotificationBaseSchema):
     """Additional properties stored in DB."""

@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("app")
-
 from datetime import UTC
 from datetime import datetime
 from typing import Dict
@@ -9,21 +5,15 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.api.schemas.schema_user import UserCreate
-from app.api.schemas.schema_user import UserUpdate
+from app.api.schemas.user import UserCreateSchema
+from app.api.schemas.user import UserUpdateSchema
 from app.const import API_WEB_V1
-from app.crud.crud_user import crud_user
+from app.crud.user import crud_user
+from app.db.models import UserModel
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
 from tests.utils.utils import random_username
-
-# Important note: Throughout the app the user model is imported this way, not like
-# this: app.db.models.model_user ...
-# If you would import the model with `from app.db.models.model_user import User`,
-# this somehow cause it to be seen as 2 different models, despite being the same file,
-# resulting the pytest discovery to fail, and also to mess with the metadata instance.
-from db.models.model_user import User  # type:ignore isort:skip
 
 TEST_USERNAME = "test"
 TEST_MAIL = "test@glados.com"
@@ -40,12 +30,12 @@ def user_authentication_headers(*, client: TestClient, username: str, password: 
     return headers
 
 
-def create_random_user(db: Session) -> User:
+def create_random_user(db: Session) -> UserModel:
     email = random_email()
     password = random_lower_string()
     username = random_username()
     full_name = random_name()
-    user_in = UserCreate(
+    user_in = UserCreateSchema(
         username=username,
         email=email,  # type: ignore
         password=password,
@@ -64,7 +54,7 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
     password = random_lower_string()
     user = crud_user.get_by_email(db, email=email)
     if not user:
-        user_in_create = UserCreate(
+        user_in_create = UserCreateSchema(
             username=TEST_USERNAME,
             email=email,
             password=password,
@@ -72,7 +62,7 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
         )
         user = crud_user.create(db, obj_in=user_in_create, current_user=current_user_adminuser())
     else:
-        user_in_update = UserUpdate(
+        user_in_update = UserUpdateSchema(
             username=TEST_USERNAME,
             email=email,
             password=password,
@@ -83,8 +73,8 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
     return user_authentication_headers(client=client, username=TEST_USERNAME, password=password)
 
 
-def current_user_adminuser() -> User:
-    return User(
+def current_user_adminuser() -> UserModel:
+    return UserModel(
         **{
             "id": 0,
             "created": datetime.now(UTC),

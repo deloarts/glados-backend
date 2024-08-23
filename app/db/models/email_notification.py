@@ -10,7 +10,7 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 
 
-class EmailNotification(Base):  # type: ignore
+class EmailNotification(Base):
     # data handled by the server
     id = Column(Integer, primary_key=True, index=True, unique=True, nullable=False)
 

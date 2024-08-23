@@ -12,27 +12,27 @@ from utilities.config_editor.bought_items import ConfigBoughtItemsFilter
 from utilities.disc_space import DiscSpace
 
 
-class HostVersion(BaseModel):
+class HostVersionSchema(BaseModel):
     """Host version schema."""
 
     version: str
 
 
-class HostTime(BaseModel):
+class HostTimeSchema(BaseModel):
     """Host time schema."""
 
     now: datetime
     timezone: str
 
 
-class HostConfig(BaseModel):
+class HostConfigSchema(BaseModel):
     """Host configuration schema."""
 
     now: datetime
     config: Config
 
 
-class HostInfo(BaseModel):
+class HostInfoSchema(BaseModel):
     """Host configuration schema."""
 
     now: datetime
@@ -42,7 +42,7 @@ class HostInfo(BaseModel):
     disc_space: DiscSpace
 
 
-class HostConfigItemsBoughtStatus(BaseModel):
+class HostConfigItemsBoughtStatusSchema(BaseModel):
     """Bought item status schema."""
 
     open: str
@@ -55,24 +55,24 @@ class HostConfigItemsBoughtStatus(BaseModel):
     lost: str
 
 
-class HostConfigItemsBoughtUnits(BaseModel):
+class HostConfigItemsBoughtUnitsSchema(BaseModel):
     """Bought item units schema."""
 
     default: str
     values: List[str]
 
 
-class HostConfigItemsBought(ConfigBoughtItems):
+class HostConfigItemsBoughtSchema(ConfigBoughtItems):
     """Bought item config."""
 
 
-class HostConfigItemsBoughtFilter(ConfigBoughtItemsFilter):
+class HostConfigItemsBoughtFilterSchema(ConfigBoughtItemsFilter):
     """Bought item db filter keys."""
 
 
-class HostConfigItemsBoughtFilterAdd(HostConfigItemsBoughtFilter):
+class HostConfigItemsBoughtFilterAddSchema(HostConfigItemsBoughtFilterSchema):
     """Bought item db filter object on creation."""
 
 
-class HostConfigItemsBoughtFilterUpdate(HostConfigItemsBoughtFilterAdd):
+class HostConfigItemsBoughtFilterUpdateSchema(HostConfigItemsBoughtFilterAddSchema):
     """Bought item db filter object on update."""

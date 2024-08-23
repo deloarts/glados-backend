@@ -6,11 +6,11 @@ from datetime import timedelta
 from typing import Any
 
 from api.deps import get_current_user
-from api.schemas import schema_token
-from api.schemas import schema_user
+from api.schemas.token import TokenSchema
+from api.schemas.user import UserSchema
 from config import cfg
-from crud.crud_user import crud_user
-from db.models import model_user
+from crud.user import crud_user
+from db.models import UserModel
 from db.session import get_db
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.post("/login/access-token", response_model=schema_token.Token)
+@router.post("/login/access-token", response_model=TokenSchema)
 def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
     """OAuth2 compatible token login, get an access token for future requests."""
     user = crud_user.authenticate(db, username=form_data.username, password=form_data.password)
@@ -39,7 +39,7 @@ def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordR
     }
 
 
-@router.post("/login/test-token", response_model=schema_user.User)
-def test_token(current_user: model_user.User = Depends(get_current_user)) -> Any:
+@router.post("/login/test-token", response_model=UserSchema)
+def test_token(current_user: UserModel = Depends(get_current_user)) -> Any:
     """Test access token."""
     return current_user

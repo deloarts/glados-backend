@@ -17,7 +17,7 @@ from sqlalchemy import Integer
 from sqlalchemy import String
 
 
-class APIKey(Base):  # type: ignore
+class APIKey(Base):
     # data handled by the server:
     id = Column(Integer, primary_key=True, index=True, unique=True, nullable=False)
     api_key = Column(String, unique=True, nullable=False)

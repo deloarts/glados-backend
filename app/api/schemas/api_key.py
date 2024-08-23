@@ -8,24 +8,24 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class APIKeyBase(BaseModel):
+class APIKeyBaseSchema(BaseModel):
     """Shared properties."""
 
     name: str
     expiration_date: Optional[datetime]
 
 
-class APIKeyCreate(APIKeyBase):
+class APIKeyCreateSchema(APIKeyBaseSchema):
     """Properties to receive via API on creation."""
 
     expiration_date: datetime
 
 
-class APIKeyUpdate(APIKeyBase):
+class APIKeyUpdateSchema(APIKeyBaseSchema):
     """Properties to receive via API on update."""
 
 
-class APIKeyInDBBase(APIKeyBase):
+class APIKeyInDBBaseSchema(APIKeyBaseSchema):
     """Database properties."""
 
     id: int
@@ -33,11 +33,11 @@ class APIKeyInDBBase(APIKeyBase):
     created: datetime
 
 
-class APIKey(APIKeyInDBBase):
+class APIKeySchema(APIKeyInDBBaseSchema):
     """Additional properties to return via API."""
 
 
-class APIKeyInDB(APIKeyInDBBase):
+class APIKeyInDBSchema(APIKeyInDBBaseSchema):
     """Additional properties stored in DB."""
 
     deleted: bool

@@ -11,11 +11,11 @@ if not cfg.debug:
 from random import randint
 
 import faker_commerce
+from api.schemas.bought_item import BoughtItemCreateSchema
+from crud.bought_item import crud_bought_item
+from crud.user import crud_user
 from faker import Faker
 
-from app.api.schemas import schema_bought_item
-from app.crud import crud_bought_item
-from app.crud.crud_user import crud_user
 from app.db.session import SessionLocal
 
 db = SessionLocal()
@@ -39,7 +39,7 @@ if crud_user:
             partnumber = f"{name} - {definition} - {manufacturer}"
             quantity = randint(1, 100)
 
-            data_in = schema_bought_item.BoughtItemCreate(  # type: ignore
+            data_in = BoughtItemCreateSchema(  # type: ignore
                 project=project,
                 quantity=quantity,
                 unit=cfg.items.bought.units.default,
@@ -47,7 +47,7 @@ if crud_user:
                 definition=definition,
                 manufacturer=manufacturer,
             )
-            item = crud_bought_item.bought_item.create(db, db_obj_user=crud_user, obj_in=data_in)
+            item = crud_bought_item.create(db, db_obj_user=crud_user, obj_in=data_in)
             count += 1
 
             print(f"{count}/{projects * items}: Created item {partnumber!r}")

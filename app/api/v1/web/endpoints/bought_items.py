@@ -12,13 +12,16 @@ from typing import List
 
 from api.deps import get_current_active_user
 from api.deps import verify_token
-from api.schemas import schema_bought_item
+from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemExcelExportSchema
+from api.schemas.bought_item import BoughtItemSchema
+from api.schemas.bought_item import BoughtItemUpdateSchema
 from config import cfg
 from const import ROOT
 from const import TEMPLATES
-from crud import crud_bought_item
-from db.models import model_user
-from db.models.model_bought_item import BoughtItem
+from crud.bought_item import crud_bought_item
+from db.models import BoughtItemModel
+from db.models import UserModel
 from db.session import get_db
 from excel.xlsx_export import ExportExcel
 from excel.xlsx_import import ImportExcel
@@ -33,7 +36,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schema_bought_item.BoughtItem])
+@router.get("/", response_model=List[BoughtItemSchema])
 def read_bought_items(
     db: Session = Depends(get_db),
     skip: int | None = None,
@@ -80,7 +83,7 @@ def read_bought_items(
     """Retrieve bought items."""
     kwargs = locals()
     kwargs.pop("verified")
-    items = crud_bought_item.bought_item.get_multi(**kwargs)
+    items = crud_bought_item.get_multi(**kwargs)
     log.debug(f"Found {len(items)} items with filter {kwargs}")
     return items
 
@@ -133,8 +136,8 @@ def read_bought_items_excel(
     kwargs = locals()
     kwargs.pop("verified")
 
-    data = crud_bought_item.bought_item.get_multi(**kwargs)
-    xlsx = ExportExcel(data=data, schema=schema_bought_item.BoughtItemExcelExport)
+    data = crud_bought_item.get_multi(**kwargs)
+    xlsx = ExportExcel(data=data, schema=BoughtItemExcelExportSchema)
     path = xlsx.save()
 
     if not path.exists():
@@ -150,9 +153,7 @@ def read_bought_items_excel(
 
 
 @router.get("/excel-template", response_class=FileResponse)
-def read_bought_items_excel_template(
-    verified: bool = Depends(verify_token),
-) -> Any:
+def read_bought_items_excel_template(verified: bool = Depends(verify_token)) -> Any:
     """Retrieve the excel template for the excel import."""
     path = Path(ROOT, TEMPLATES, cfg.templates.bought_item_excel_import)
     if not path.exists():
@@ -167,14 +168,10 @@ def read_bought_items_excel_template(
     )
 
 
-@router.get("/{item_id}", response_model=schema_bought_item.BoughtItem)
-def read_bought_item_by_id(
-    item_id: int,
-    verified: bool = Depends(verify_token),
-    db: Session = Depends(get_db),
-) -> Any:
+@router.get("/{item_id}", response_model=BoughtItemSchema)
+def read_bought_item_by_id(item_id: int, verified: bool = Depends(verify_token), db: Session = Depends(get_db)) -> Any:
     """Get a specific bought item by db id."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
+    item = crud_bought_item.get(db, id=item_id)
     if not item:
         raise HTTPException(
             status_code=404,
@@ -185,12 +182,10 @@ def read_bought_item_by_id(
 
 @router.get("/{item_id}/changelog", response_model=List[str])
 def read_bought_item_changelog_by_id(
-    item_id: int,
-    verified: bool = Depends(verify_token),
-    db: Session = Depends(get_db),
+    item_id: int, verified: bool = Depends(verify_token), db: Session = Depends(get_db)
 ) -> Any:
     """Get a specific bought item by db id."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
+    item = crud_bought_item.get(db, id=item_id)
     if not item:
         raise HTTPException(
             status_code=404,
@@ -199,334 +194,331 @@ def read_bought_item_changelog_by_id(
     return item.changes
 
 
-@router.post("/", response_model=schema_bought_item.BoughtItem)
+@router.post("/", response_model=BoughtItemSchema)
 def create_bought_item(
     *,
     db: Session = Depends(get_db),
-    obj_in: schema_bought_item.BoughtItemCreate,
-    current_user: model_user.User = Depends(get_current_active_user),
+    obj_in: BoughtItemCreateSchema,
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Create new bought item."""
-    return crud_bought_item.bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)
+    return crud_bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)
 
 
-@router.post("/excel", response_model=List[schema_bought_item.BoughtItem])
+@router.post("/excel", response_model=List[BoughtItemSchema])
 def create_bought_items_from_excel(
-    *,
-    db: Session = Depends(get_db),
-    file: UploadFile,
-    current_user: model_user.User = Depends(get_current_active_user),
+    *, db: Session = Depends(get_db), file: UploadFile, current_user: UserModel = Depends(get_current_active_user)
 ) -> Any:
     """Create new bought items from an excel file."""
     xlsx = ImportExcel(
         db=db,
-        model=BoughtItem,
-        schema=schema_bought_item.BoughtItemCreate,
+        model=BoughtItemModel,
+        schema=BoughtItemCreateSchema,
         db_obj_user=current_user,
         file=file,
     )
     return xlsx.load()
 
 
-@router.put("/{item_id}", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}", response_model=BoughtItemSchema)
 def update_bought_item(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    obj_in: schema_bought_item.BoughtItemUpdate,
-    current_user: model_user.User = Depends(get_current_active_user),
+    obj_in: BoughtItemUpdateSchema,
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Update a bought item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update(db, db_obj_user=current_user, db_obj_item=item, obj_in=obj_in)
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update(db, db_obj_user=current_user, db_obj_item=item, obj_in=obj_in)
 
 
-@router.put("/{item_id}/status", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/status", response_model=BoughtItemSchema)
 def update_bought_item_status(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     status: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the status of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_status(db, db_obj_user=current_user, db_obj_item=item, status=status)
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_status(db, db_obj_user=current_user, db_obj_item=item, status=status)
 
 
-@router.put("/{item_id}/group-1", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/group-1", response_model=BoughtItemSchema)
 def update_bought_item_group_1(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     group: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the group of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.group_1,
+        db_field=BoughtItemModel.group_1,
         value=group,
     )
 
 
-@router.put("/{item_id}/project", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/project", response_model=BoughtItemSchema)
 def update_bought_item_project(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     project: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the project of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_required_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_required_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.project,
+        db_field=BoughtItemModel.project,
         value=project,
     )
 
 
-@router.put("/{item_id}/machine", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/machine", response_model=BoughtItemSchema)
 def update_bought_item_machine(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     machine: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the machine of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.machine,
+        db_field=BoughtItemModel.machine,
         value=machine,
     )
 
 
-@router.put("/{item_id}/quantity", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/quantity", response_model=BoughtItemSchema)
 def update_bought_item_quantity(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     quantity: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the quantity of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_required_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_required_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.quantity,
+        db_field=BoughtItemModel.quantity,
         value=quantity,
     )
 
 
-@router.put("/{item_id}/partnumber", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/partnumber", response_model=BoughtItemSchema)
 def update_bought_item_partnumber(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     partnumber: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the partnumber of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_required_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_required_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.partnumber,
+        db_field=BoughtItemModel.partnumber,
         value=partnumber,
     )
 
 
-@router.put("/{item_id}/definition", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/definition", response_model=BoughtItemSchema)
 def update_bought_item_definition(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     definition: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the definition of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_required_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_required_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.definition,
+        db_field=BoughtItemModel.definition,
         value=definition,
     )
 
 
-@router.put("/{item_id}/manufacturer", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/manufacturer", response_model=BoughtItemSchema)
 def update_bought_item_manufacturer(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     manufacturer: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the manufacturer of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_required_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_required_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.manufacturer,
+        db_field=BoughtItemModel.manufacturer,
         value=manufacturer,
     )
 
 
-@router.put("/{item_id}/supplier", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/supplier", response_model=BoughtItemSchema)
 def update_bought_item_supplier(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     supplier: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the supplier of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.supplier,
+        db_field=BoughtItemModel.supplier,
         value=supplier,
     )
 
 
-@router.put("/{item_id}/weblink", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/weblink", response_model=BoughtItemSchema)
 def update_bought_item_weblink(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     weblink: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the weblink of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.weblink,
+        db_field=BoughtItemModel.weblink,
         value=weblink,
     )
 
 
-@router.put("/{item_id}/note-general", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/note-general", response_model=BoughtItemSchema)
 def update_bought_item_note_general(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     note: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the general note of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.note_general,
+        db_field=BoughtItemModel.note_general,
         value=note,
     )
 
 
-@router.put("/{item_id}/note-supplier", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/note-supplier", response_model=BoughtItemSchema)
 def update_bought_item_note_supplier(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     note: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the supplier note of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.note_supplier,
+        db_field=BoughtItemModel.note_supplier,
         value=note,
     )
 
 
-@router.put("/{item_id}/desired-delivery-date", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/desired-delivery-date", response_model=BoughtItemSchema)
 def update_bought_item_desired_delivery_date(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     date: datetime.date,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the desired delivery date of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.desired_delivery_date,
+        db_field=BoughtItemModel.desired_delivery_date,
         value=date,
     )
 
 
-@router.put("/{item_id}/expected-delivery-date", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/expected-delivery-date", response_model=BoughtItemSchema)
 def update_bought_item_expected_delivery_date(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     date: datetime.date,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the expected delivery date of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.expected_delivery_date,
+        db_field=BoughtItemModel.expected_delivery_date,
         value=date,
     )
 
 
-@router.put("/{item_id}/storage", response_model=schema_bought_item.BoughtItem)
+@router.put("/{item_id}/storage", response_model=BoughtItemSchema)
 def update_bought_item_storage(
     *,
     db: Session = Depends(get_db),
     item_id: int,
     storage_place: str,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the storage of an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.update_field(
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.update_field(
         db,
         db_obj_user=current_user,
         db_obj_item=item,
-        db_field=BoughtItem.storage_place,
+        db_field=BoughtItemModel.storage_place,
         value=storage_place,
     )
 
 
-@router.delete("/{item_id}", response_model=schema_bought_item.BoughtItem)
+@router.delete("/{item_id}", response_model=BoughtItemSchema)
 def delete_bought_item(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    current_user: model_user.User = Depends(get_current_active_user),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Delete an item."""
-    item = crud_bought_item.bought_item.get(db, id=item_id)
-    return crud_bought_item.bought_item.delete(db, db_obj_item=item, db_obj_user=current_user)
+    item = crud_bought_item.get(db, id=item_id)
+    return crud_bought_item.delete(db, db_obj_item=item, db_obj_user=current_user)

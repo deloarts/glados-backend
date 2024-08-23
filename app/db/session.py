@@ -6,13 +6,13 @@
 
 from typing import Generator
 
-from api.schemas import schema_user
+from api.schemas.user import UserCreateSchema
 from config import cfg
 from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION
 from const import SYSTEM_USER
-from crud.crud_user import crud_user
-from db.models import model_user
+from crud.user import crud_user
+from db.models import UserModel
 from multilog import log
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -50,7 +50,7 @@ class InitDatabase:
         user = crud_user.get_by_email(db, email=cfg.init.mail)
         if not user:
             log.info("Admin user not found in database. Creating admin user.")
-            user_in = schema_user.UserCreate(
+            user_in = UserCreateSchema(
                 username=SYSTEM_USER,
                 email=cfg.init.mail,
                 password=cfg.init.password,
@@ -73,5 +73,5 @@ class InitDatabase:
             user = crud_user.create(
                 db,
                 obj_in=user_in,
-                current_user=model_user.User(**creator),
+                current_user=UserModel(**creator),
             )
