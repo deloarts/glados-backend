@@ -4,6 +4,7 @@
 
 from datetime import datetime
 from typing import Any
+from typing import Dict
 
 from api import deps
 from api.deps import get_current_active_adminuser
@@ -75,7 +76,7 @@ def get_host_config_items_bought_units(verified: bool = Depends(deps.verify_toke
     return cfg.items.bought.units
 
 
-@router.get("/config/items/bought/filters", response_model=HostConfigItemsBoughtFilterSchema)
+@router.get("/config/items/bought/filters", response_model=Dict[str, HostConfigItemsBoughtFilterSchema])
 def get_host_config_items_bought_filter(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns available bought items filters."""
     return bought_item_config.filters
@@ -87,7 +88,7 @@ def get_host_config_items_bought_filter_default(verified: bool = Depends(deps.ve
     return HostConfigItemsBoughtFilterSchema()
 
 
-@router.post("/config/items/bought/filters/{filter_name}", response_model=HostConfigItemsBoughtFilterSchema)
+@router.post("/config/items/bought/filters/{filter_name}", response_model=Dict[str, HostConfigItemsBoughtFilterSchema])
 def post_host_config_items_bought_filter(
     filter_name: str,
     filter_in: HostConfigItemsBoughtFilterAddSchema,
@@ -107,7 +108,7 @@ def post_host_config_items_bought_filter(
     return bought_item_config.filters
 
 
-@router.put("/config/items/bought/filters/{filter_name}", response_model=HostConfigItemsBoughtFilterSchema)
+@router.put("/config/items/bought/filters/{filter_name}", response_model=Dict[str, HostConfigItemsBoughtFilterSchema])
 def update_host_config_items_bought_filter(
     filter_name: str,
     filter_in: HostConfigItemsBoughtFilterAddSchema,
@@ -127,7 +128,9 @@ def update_host_config_items_bought_filter(
     return bought_item_config.filters
 
 
-@router.delete("/config/items/bought/filters/{filter_name}", response_model=HostConfigItemsBoughtFilterSchema)
+@router.delete(
+    "/config/items/bought/filters/{filter_name}", response_model=Dict[str, HostConfigItemsBoughtFilterSchema]
+)
 def delete_host_config_items_bought_filter(
     filter_name: str, current_user: UserModel = Depends(get_current_active_adminuser)
 ) -> Any:
