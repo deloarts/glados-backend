@@ -4,13 +4,10 @@
 
 import atexit
 import json
-import os
 from dataclasses import asdict
 from dataclasses import dataclass
 from dataclasses import field
-from dataclasses import fields
 from typing import Dict
-from typing import List
 
 from const import CONFIG_BOUGHT_ITEMS
 from multilog import log

@@ -18,6 +18,9 @@ global_modules.txt
 # Database
 *.db
 
+# Temp files
+temp/
+
 # Log files
 *.log
 *.log.*

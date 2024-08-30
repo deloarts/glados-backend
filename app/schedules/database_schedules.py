@@ -6,8 +6,8 @@ from datetime import date
 
 from config import cfg
 from const import SYSTEM_USER
-from crud import crud_bought_item
-from crud import crud_user
+from crud.bought_item import crud_bought_item
+from crud.user import crud_user
 from multilog import log
 from schedules.base_schedules import BaseSchedules
 
@@ -30,14 +30,14 @@ class DatabaseSchedules(BaseSchedules):
     def _set_status_late(self) -> None:
         log.info("Running database schedule: Automatically setting status of late items.")
 
-        system_user = crud_user.user.get_by_username(db=self.db, username=SYSTEM_USER)
-        bought_items = crud_bought_item.bought_item.get_multi(
+        system_user = crud_user.get_by_username(db=self.db, username=SYSTEM_USER)
+        bought_items = crud_bought_item.get_multi(
             db=self.db,
             status=cfg.items.bought.status.ordered,
             expected_to=date.today(),
         )
         for bought_item in bought_items:
-            crud_bought_item.bought_item.update_status(
+            crud_bought_item.update_status(
                 db=self.db,
                 db_obj_user=system_user,  # type: ignore
                 db_obj_item=bought_item,

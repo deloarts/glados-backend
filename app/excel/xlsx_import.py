@@ -10,12 +10,12 @@ from typing import List
 from typing import Type
 from typing import TypeVar
 
-from crud import crud_bought_item
+from crud.bought_item import crud_bought_item
 from db.base import Base
+from db.models import UserModel
 from fastapi import HTTPException
 from fastapi import UploadFile
 from fastapi.encoders import jsonable_encoder
-from models import model_user
 from multilog import log
 from openpyxl import load_workbook
 from openpyxl.workbook import Workbook
@@ -37,7 +37,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
         db: Session,
         model: Type[ModelType],
         schema: Type[CreateSchemaType],
-        db_obj_user: model_user.User,
+        db_obj_user: UserModel,
         file: UploadFile,
     ) -> None:
         """Inits the class.
@@ -46,7 +46,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             db (Session): The database session.
             model (Type[ModelType]): The model to import.
             schema (Type[CreateSchemaType]): The schema for the import.
-            db_obj_user (model_user.User): The user who imports the data.
+            db_obj_user (UserModel): The user who imports the data.
             file (UploadFile): The uploaded excel file.
         """
         self.db = db
@@ -80,7 +80,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             self.ws = self.wb.worksheets[0]
         except Exception as e:
             log.error(f"Failed to load workbook from user {self.db_obj_user.username}: {e}")
-            raise HTTPException(status_code=422, detail=[str(e)])
+            raise HTTPException(status_code=422, detail=[str(e)]) from e
 
     def _get_header_row(self) -> int:
         """Return the header row with EXCEL index (index starts by 1)
@@ -180,7 +180,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
         items = []
         for obj_in in db_objs_in:
             items.append(
-                crud_bought_item.bought_item.create(
+                crud_bought_item.create(
                     self.db, db_obj_user=self.db_obj_user, obj_in=obj_in  # type:ignore
                 )
             )

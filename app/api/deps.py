@@ -2,13 +2,13 @@
     API dependencies.
 """
 
-from crud import crud_user
+from crud.user import crud_user
+from db.models import UserModel
 from db.session import get_db
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.param_functions import Security
-from models import model_user
 from security.access import api_key_header
 from security.access import get_id_from_access_token
 from security.access import reusable_oauth2
@@ -106,7 +106,7 @@ def verify_api_key(
     )
 
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> model_user.User:
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)) -> UserModel:
     """
     Verifies the current user by its access token. Returns the user if valid.
     Raises a HTTP exception if not.
@@ -119,58 +119,58 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(reusabl
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials.",
         )
-    user = crud_user.user.get(db, id=user_id)
+    user = crud_user.get(db, id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user
 
 
 def get_current_active_user(
-    current_user: model_user.User = Depends(get_current_user),
-) -> model_user.User:
+    current_user: UserModel = Depends(get_current_user),
+) -> UserModel:
     """
     Returns the current user if active. Raises a HTTP exception if not.
     """
-    if not crud_user.user.is_active(current_user):
+    if not crud_user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
     return current_user
 
 
 def get_current_active_superuser(
-    current_user: model_user.User = Depends(get_current_user),
-) -> model_user.User:
+    current_user: UserModel = Depends(get_current_user),
+) -> UserModel:
     """
     Returns the current user if it's an active super user. Raises a HTTP exception if not.
     """
-    if not crud_user.user.is_active(current_user):
+    if not crud_user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
-    if not crud_user.user.is_superuser(current_user):
+    if not crud_user.is_superuser(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
     return current_user
 
 
 def get_current_active_adminuser(
-    current_user: model_user.User = Depends(get_current_user),
-) -> model_user.User:
+    current_user: UserModel = Depends(get_current_user),
+) -> UserModel:
     """
     Returns the current user if it's an active admin user. Raises a HTTP exception if not.
     """
-    if not crud_user.user.is_active(current_user):
+    if not crud_user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
-    if not crud_user.user.is_adminuser(current_user):
+    if not crud_user.is_adminuser(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
     return current_user
 
 
 def get_current_active_guestuser(
-    current_user: model_user.User = Depends(get_current_user),
-) -> model_user.User:
+    current_user: UserModel = Depends(get_current_user),
+) -> UserModel:
     """
     Returns the current user if it's an active guest user. Raises a HTTP exception if not.
     """
-    if not crud_user.user.is_active(current_user):
+    if not crud_user.is_active(current_user):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user.")
-    if not crud_user.user.is_guestuser(current_user):
+    if not crud_user.is_guestuser(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough privileges.")
     return current_user
 
@@ -179,7 +179,7 @@ def get_current_user_personal_access_token(
     db: Session = Depends(get_db),
     token: str = Security(api_key_header),
     verified: bool = Depends(verify_personal_access_token),
-) -> model_user.User:
+) -> UserModel:
     """
     Verifies the current user by its personal access token. Returns the user if valid.
     Raises a HTTP exception if not.
@@ -190,7 +190,7 @@ def get_current_user_personal_access_token(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials.",
         )
-    user = crud_user.user.get(db, id=user_id)
+    user = crud_user.get(db, id=user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user

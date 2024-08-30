@@ -1,13 +1,14 @@
 """
     Handles files schedules.
 """
+
 from pathlib import Path
 
 from config import cfg
 from const import TEMPLATES
-from crud.crud_bought_item import bought_item
-from crud.crud_email_notification import email_notification
-from crud.crud_user import user
+from crud.bought_item import crud_bought_item
+from crud.email_notification import crud_email_notification
+from crud.user import crud_user
 from fastapi.encoders import jsonable_encoder
 from mail import Mail
 from mail import Receiver
@@ -35,28 +36,28 @@ class NotificationSchedules(BaseSchedules):
     def _send_item_notification(self) -> None:
         log.info("Running notification schedule: Sending pending bought item notifications.")
 
-        pending = email_notification.get_all(self.db)
+        pending = crud_email_notification.get_all(self.db)
         pending_count = len(pending) if pending else 0
         log.info(f"There are {pending_count} pending notifications.")
 
-        receiver_ids = email_notification.get_distinct_receiver_ids(self.db)
+        receiver_ids = crud_email_notification.get_distinct_receiver_ids(self.db)
         if not receiver_ids:
             return
         log.debug(f"Notification receivers are {receiver_ids}.")
 
         for receiver_id in receiver_ids:
-            current_user = user.get(db=self.db, id=receiver_id)
+            current_user = crud_user.get(db=self.db, id=receiver_id)
             current_items = []
-            pending_notifications = email_notification.get_by_receiver_id(self.db, receiver_id=receiver_id)
+            pending_notifications = crud_email_notification.get_by_receiver_id(self.db, receiver_id=receiver_id)
             if not current_user or not pending_notifications:
                 break
 
             for pending in pending_notifications:
-                current_item = bought_item.get(db=self.db, id=pending.bought_item_id)
+                current_item = crud_bought_item.get(db=self.db, id=pending.bought_item_id)
                 if not current_item:
                     break
                 current_items.append(jsonable_encoder(current_item))
-                email_notification.delete(db=self.db, id=pending.id)
+                crud_email_notification.delete(db=self.db, id=pending.id)
 
             log.info(f"Sending email notification to {current_user.email!r}...")
             body = render_template(
