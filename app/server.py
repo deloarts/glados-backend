@@ -11,6 +11,7 @@ from const import API_WEB_V1
 from const import VERSION
 from fastapi.applications import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import RedirectResponse
 
 web_api = FastAPI(title="GLADOS WEB API", openapi_url="/docs.json" if cfg.debug else None)
 web_api.include_router(api_web.api_router)
@@ -33,7 +34,7 @@ pat_api.add_middleware(
     allow_headers=["*"],
 )
 
-DESC = "The API docs are not available in production."
+DESC_PROD = "API documentation is not available in production."
 description_debug = f"""
 GLADOS API:
 
@@ -45,7 +46,7 @@ GLADOS API:
 app = FastAPI(
     title="GLADOS",
     version=VERSION,
-    description=DESC if not cfg.debug else description_debug,
+    description=DESC_PROD if not cfg.debug else description_debug,
     servers=[
         {"url": API_WEB_V1, "description": "WEB API"},
         {"url": API_PAT_V1, "description": "Personal Access Token API"},
@@ -54,6 +55,12 @@ app = FastAPI(
 app.mount(API_WEB_V1, web_api)
 app.mount(API_PAT_V1, pat_api)
 # app.mount("/", StaticFiles(directory=static_folder), name="static")
+
+
+@app.get("/")
+async def route_root() -> RedirectResponse:
+    """Route to the server root. Redirects to /docs."""
+    return RedirectResponse(url="/docs")
 
 
 def run():
