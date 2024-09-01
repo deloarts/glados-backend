@@ -19,9 +19,12 @@ from db.models import UserModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException
 from multilog import log
-from sqlalchemy import Column
+from sqlalchemy import asc
+from sqlalchemy import desc
+from sqlalchemy.orm import InstrumentedAttribute
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
+from sqlalchemy.sql.elements import TextClause
 from utilities.helper import get_changelog
 
 
@@ -80,32 +83,32 @@ class CRUDBoughtItem(
     ) -> List[BoughtItemModel]:
         """Returns a list of bought items by the given filter params."""
 
-        def build_order_by(keyword: str | None) -> str:
+        def build_order_by(keyword: str | None) -> TextClause:
             """
-            Inner function to create the order_by string.
+            Inner function to create the order_by clause.
             # TODO: Refactor this.
             """
             if keyword is None:
-                return f"{self.model.id} desc"
+                return text(str(desc(self.model.id)))
             output_list = []
             values = keyword.split(",")
             for value in values:
                 if value == cfg.items.bought.order_by.high_priority:
-                    output_list.append(f"{self.model.high_priority} desc")
+                    output_list.append(desc(self.model.high_priority))
                 elif value == cfg.items.bought.order_by.created:
-                    output_list.append(f"{self.model.created} asc")
+                    output_list.append(asc(self.model.created))
                 elif value == cfg.items.bought.order_by.project:
-                    output_list.append(f"{self.model.project} asc")
+                    output_list.append(asc(self.model.project))
                 elif value == cfg.items.bought.order_by.machine:
-                    output_list.append(f"{self.model.machine} asc")
+                    output_list.append(asc(self.model.machine))
                 elif value == cfg.items.bought.order_by.group_1:
-                    output_list.append(f"{self.model.group_1} asc")
+                    output_list.append(asc(self.model.group_1))
                 elif value == cfg.items.bought.order_by.manufacturer:
-                    output_list.append(f"{self.model.manufacturer} asc")
+                    output_list.append(asc(self.model.manufacturer))
                 elif value == cfg.items.bought.order_by.supplier:
-                    output_list.append(f"{self.model.supplier} asc")
-            output_list.append(f"{self.model.id} desc")
-            return ",".join(output_list)
+                    output_list.append(asc(self.model.supplier))
+            output_list.append(desc(self.model.id))
+            return text(",".join(str(i) for i in output_list))
 
         if created_from is None:
             created_from = date(2000, 1, 1)
@@ -117,19 +120,10 @@ class CRUDBoughtItem(
         if changed_to is None:
             changed_to = date.today()
 
-        # if desired_from is None:
-        #     desired_from = date(2000, 1, 1)
-        # if desired_to is None:
-        #     desired_to = date.today()
-
-        # if expected_from is None:
-        #     expected_from = date(2000, 1, 1)
-        # if expected_to is None:
-        #     expected_to = date.today()
-
+        # order_by = text(sort_by or str(desc(self.model.id)))
         order_by = build_order_by(sort_by)
 
-        return (
+        query = (
             db.query(self.model)
             .filter_by(
                 deleted=False,
@@ -174,11 +168,12 @@ class CRUDBoughtItem(
                 self.model.taken_over_id == taken_over_id if taken_over_id else text(""),
                 self.model.storage_place.ilike(f"%{storage_place}%") if storage_place else text(""),
             )
-            .order_by(text(order_by))
+            .order_by(order_by)
             .offset(skip)
             .limit(limit)
-            .all()
         )
+        # log.debug(str(query))
+        return query.all()
 
     def create(self, db: Session, *, db_obj_user: UserModel, obj_in: BoughtItemCreateSchema) -> BoughtItemModel:
         """Creates a new bought item.
@@ -375,7 +370,7 @@ class CRUDBoughtItem(
         *,
         db_obj_user: UserModel,
         db_obj_item: BoughtItemModel | None,
-        db_field: Column,
+        db_field: InstrumentedAttribute,
         value: bool | int | float | str | date,
     ) -> BoughtItemModel:
         """Updates a data field (db column).
@@ -441,7 +436,7 @@ class CRUDBoughtItem(
         *,
         db_obj_user: UserModel,
         db_obj_item: BoughtItemModel | None,
-        db_field: Column,
+        db_field: InstrumentedAttribute,
         value: bool | int | float | str | date,
     ) -> BoughtItemModel:
         """Updates a required data field (db column).
