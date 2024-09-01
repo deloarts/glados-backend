@@ -4,12 +4,13 @@
 
 # pylint: disable=C0115,R0903
 
+from datetime import date
 from typing import TYPE_CHECKING
+from typing import List
 
 from config import cfg
 from db.base import Base
 from sqlalchemy import Boolean
-from sqlalchemy import Column
 from sqlalchemy import Date
 from sqlalchemy import Float
 from sqlalchemy import ForeignKey
@@ -17,6 +18,8 @@ from sqlalchemy import Integer
 from sqlalchemy import PickleType
 from sqlalchemy import String
 from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
@@ -28,8 +31,10 @@ if TYPE_CHECKING:
 
 
 class BoughtItem(Base):
+    __tablename__ = "bought_item_table"
+
     # data handled by the server
-    id = Column(
+    id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
         index=True,
@@ -37,39 +42,39 @@ class BoughtItem(Base):
         nullable=False,
         autoincrement=True,
     )
-    created = Column(Date, nullable=False)
-    changed = Column(Date, nullable=True)
-    changes = Column(MutableList.as_mutable(PickleType), nullable=False, default=[])
-    deleted = Column(Boolean, nullable=False, default=False)
+    created: Mapped[date] = mapped_column(Date, nullable=False)
+    changed: Mapped[date] = mapped_column(Date, nullable=True)
+    changes: Mapped[List] = mapped_column(MutableList.as_mutable(PickleType), nullable=False, default=[])  # type:ignore
+    deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     # data given on creation/update
-    high_priority = Column(Boolean, nullable=False, default=False, server_default=false())
-    notify_on_delivery = Column(Boolean, nullable=False, default=False)
-    group_1 = Column(String, nullable=True)
-    project = Column(String, index=True, nullable=False)
-    machine = Column(String, nullable=True)
-    quantity = Column(Float, nullable=False)
-    unit = Column(String, nullable=False)
-    partnumber = Column(String, nullable=False)
-    definition = Column(String, nullable=False)
-    supplier = Column(String, nullable=True)
-    manufacturer = Column(String, nullable=False)
-    weblink = Column(String, nullable=True)
-    note_general = Column(String, nullable=True)
-    note_supplier = Column(String, nullable=True)
-    desired_delivery_date = Column(Date, nullable=True)
+    high_priority: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    notify_on_delivery: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    group_1: Mapped[str] = mapped_column(String, nullable=True)
+    project: Mapped[str] = mapped_column(String, nullable=False)
+    machine: Mapped[str] = mapped_column(String, nullable=True)
+    quantity: Mapped[float] = mapped_column(Float, nullable=False)
+    unit: Mapped[str] = mapped_column(String, nullable=False)
+    partnumber: Mapped[str] = mapped_column(String, nullable=False)
+    definition: Mapped[str] = mapped_column(String, nullable=False)
+    supplier: Mapped[str] = mapped_column(String, nullable=True)
+    manufacturer: Mapped[str] = mapped_column(String, nullable=False)
+    weblink: Mapped[str] = mapped_column(String, nullable=True)
+    note_general: Mapped[str] = mapped_column(String, nullable=True)
+    note_supplier: Mapped[str] = mapped_column(String, nullable=True)
+    desired_delivery_date: Mapped[date] = mapped_column(Date, nullable=True)
 
     # data given on single value update
-    status = Column(String, nullable=False, default=cfg.items.bought.status.default)
-    requester_id = Column(Integer, nullable=True)  # changed with status
-    requested_date = Column(Date, nullable=True)  # changed with status
-    orderer_id = Column(Integer, nullable=True)  # changed with status
-    ordered_date = Column(Date, nullable=True)  # changed with status
-    expected_delivery_date = Column(Date, nullable=True)
-    taken_over_id = Column(Integer, nullable=True)  # changed with status
-    delivery_date = Column(Date, nullable=True)  # changed with status
-    storage_place = Column(String, nullable=True)
+    status: Mapped[str] = mapped_column(String, nullable=False, default=cfg.items.bought.status.default)
+    requester_id: Mapped[int] = mapped_column(Integer, nullable=True)  # changed with status
+    requested_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
+    orderer_id: Mapped[int] = mapped_column(Integer, nullable=True)  # changed with status
+    ordered_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
+    expected_delivery_date: Mapped[date] = mapped_column(Date, nullable=True)
+    taken_over_id: Mapped[str] = mapped_column(Integer, nullable=True)  # changed with status
+    delivery_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
+    storage_place: Mapped[str] = mapped_column(String, nullable=True)
 
     # relations
-    creator_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    creator = relationship("db.models.user.User", back_populates="bought_items")
+    creator_id: Mapped[int] = mapped_column(Integer, ForeignKey("user_table.id"), nullable=False)
+    creator: Mapped["User"] = relationship("db.models.user.User", back_populates="bought_items")
