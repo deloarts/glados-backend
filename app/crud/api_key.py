@@ -17,49 +17,37 @@ from sqlalchemy.orm import Session
 class CRUDAPIKey(CRUDBase[APIKeyModel, APIKeyCreateSchema, APIKeyUpdateSchema]):
     """CRUDAPIKey class. Descendent of the CRUDBase class."""
 
-    def get(self, db: Session, id: Any) -> Optional[APIKeyModel]:  # pylint: disable=W0622
+    def get(self, db: Session, id: int) -> Optional[APIKeyModel]:  # pylint: disable=W0622
         """
         Retrieves an api key by its id.
         """
-        return (
-            db.query(APIKeyModel)
-            .filter(
-                APIKeyModel.id == id,
-                APIKeyModel.deleted is False,
-            )
-            .first()
-        )
+        return db.query(self.model).filter_by(deleted=False).filter(self.model.id == id).first()
 
     def get_multi(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[APIKeyModel]:
         """
         Retrieves multiple api keys.
         """
-        return db.query(APIKeyModel).filter(APIKeyModel.deleted is False).offset(skip).limit(limit).all()
+        query = db.query(self.model).filter_by(deleted=False).offset(skip).limit(limit)
+        print(query)
+        return query.all()
 
     def get_by_api_key(self, db: Session, *, key: str) -> Optional[APIKeyModel]:
         """
         Retrieves an api key by its key value.
         """
-        return (
-            db.query(APIKeyModel)
-            .filter(
-                APIKeyModel.api_key == key,
-                APIKeyModel.deleted is False,
-            )
-            .first()
-        )
+        return db.query(self.model).filter_by(deleted=False).filter(self.model.api_key == key).first()
 
     def get_deleted(self, db: Session, *, id: int) -> Optional[APIKeyModel]:  # pylint: disable=W0622
         """
         Retrieves an as deleted marked api key by its id.
         """
-        return db.query(APIKeyModel).filter(APIKeyModel.id == id, APIKeyModel.deleted is True).first()
+        return db.query(self.model).filter_by(deleted=True).filter(self.model.id == id).first()
 
     def get_deleted_multi(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[APIKeyModel]:
         """
         Retrieves multiple as deleted marked api keys.
         """
-        return db.query(APIKeyModel).filter(APIKeyModel.deleted is True).offset(skip).limit(limit).all()
+        return db.query(self.model).filter_by(deleted=True).offset(skip).limit(limit).all()
 
     def create(self, db: Session, *, obj_in: APIKeyCreateSchema) -> APIKeyModel:
         """
@@ -83,8 +71,8 @@ class CRUDAPIKey(CRUDBase[APIKeyModel, APIKeyCreateSchema, APIKeyUpdateSchema]):
         """
         Marks an api key as deleted. An api key will never be fully deleted.
         """
-        obj = db.query(APIKeyModel).filter(APIKeyModel.id == id).first()
-        setattr(obj, APIKeyModel.deleted.name, True)
+        obj = db.query(self.model).filter(self.model.id == id).first()
+        setattr(obj, self.model.deleted.name, True)
         db.add(obj)
         db.commit()
         db.refresh(obj)
