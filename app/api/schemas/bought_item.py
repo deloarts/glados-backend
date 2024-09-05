@@ -79,7 +79,7 @@ class BoughtItemSchema(BoughtItemInDBBaseSchema):
     orderer_id: Optional[int]
     ordered_date: Optional[date]
     expected_delivery_date: Optional[date]
-    taken_over_id: Optional[int]
+    receiver_id: Optional[int]
     delivery_date: Optional[date]
     storage_place: Optional[str]
 

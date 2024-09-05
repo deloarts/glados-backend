@@ -74,7 +74,7 @@ class CRUDBoughtItem(
         expected_to: date | None = None,
         delivered_from: date | None = None,
         delivered_to: date | None = None,
-        taken_over_id: int | None = None,
+        receiver_id: int | None = None,
         storage_place: str | None = None,
         high_priority: bool | None = None,
         ignore_delivered: bool | None = None,
@@ -165,7 +165,7 @@ class CRUDBoughtItem(
                 self.model.expected_delivery_date <= expected_to if expected_to else text(""),
                 self.model.delivery_date >= delivered_from if delivered_from else text(""),
                 self.model.delivery_date <= delivered_to if delivered_to else text(""),
-                self.model.taken_over_id == taken_over_id if taken_over_id else text(""),
+                self.model.receiver_id == receiver_id if receiver_id else text(""),
                 self.model.storage_place.ilike(f"%{storage_place}%") if storage_place else text(""),
             )
             .order_by(order_by)
@@ -327,7 +327,7 @@ class CRUDBoughtItem(
             data["orderer_id"] = int(db_obj_user.id)  # type:ignore
         if status == cfg.items.bought.status.delivered:
             data["delivery_date"] = date.today()  # type:ignore
-            data["taken_over_id"] = int(db_obj_user.id)  # type:ignore
+            data["receiver_id"] = int(db_obj_user.id)  # type:ignore
         data["changed"] = date.today()  # type:ignore
         data["changes"] = get_changelog(  # type:ignore
             changes=f"Update status: {db_obj_item.status} -> {status}",
