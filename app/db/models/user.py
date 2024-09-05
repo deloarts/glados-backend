@@ -10,6 +10,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 from typing import List
+from typing import Optional
 
 from db.base import Base
 from sqlalchemy import Boolean
@@ -36,7 +37,7 @@ class User(Base):
     # data handled by the server
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, unique=True, nullable=False)
     created: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    personal_access_token: Mapped[str] = mapped_column(String, nullable=True)
+    personal_access_token: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # data given on creation
     username: Mapped[str] = mapped_column(String, index=True, unique=True, nullable=False)

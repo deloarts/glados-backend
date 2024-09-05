@@ -51,27 +51,27 @@ class BoughtItem(Base):
     # data given on creation/update
     high_priority: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
     notify_on_delivery: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    group_1: Mapped[str] = mapped_column(String, nullable=True)
+    group_1: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     project: Mapped[str] = mapped_column(String, nullable=False)
-    machine: Mapped[str] = mapped_column(String, nullable=True)
+    machine: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     quantity: Mapped[float] = mapped_column(Float, nullable=False)
     unit: Mapped[str] = mapped_column(String, nullable=False)
     partnumber: Mapped[str] = mapped_column(String, nullable=False)
     definition: Mapped[str] = mapped_column(String, nullable=False)
-    supplier: Mapped[str] = mapped_column(String, nullable=True)
+    supplier: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     manufacturer: Mapped[str] = mapped_column(String, nullable=False)
-    weblink: Mapped[str] = mapped_column(String, nullable=True)
-    note_general: Mapped[str] = mapped_column(String, nullable=True)
-    note_supplier: Mapped[str] = mapped_column(String, nullable=True)
-    desired_delivery_date: Mapped[date] = mapped_column(Date, nullable=True)
+    weblink: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    note_general: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    note_supplier: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    desired_delivery_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
 
     # data given on single value update
     status: Mapped[str] = mapped_column(String, nullable=False, default=cfg.items.bought.status.default)
-    requested_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
-    ordered_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
-    expected_delivery_date: Mapped[date] = mapped_column(Date, nullable=True)
-    delivery_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
-    storage_place: Mapped[str] = mapped_column(String, nullable=True)
+    requested_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)  # changed with status
+    ordered_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)  # changed with status
+    expected_delivery_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    delivery_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)  # changed with status
+    storage_place: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # relations
     creator_id: Mapped[int] = mapped_column(
