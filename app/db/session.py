@@ -4,16 +4,21 @@
 
 # pylint: disable=R0903
 
+import sys
 from typing import Generator
 
 from api.schemas.user import UserCreateSchema
 from config import cfg
+from const import ALEMBIC_VERSION
 from const import DB_DEVELOPMENT
 from const import DB_PRODUCTION
 from const import SYSTEM_USER
 from crud.user import crud_user
+from db.base import Base
 from db.models import UserModel
 from multilog import log
+from sqlalchemy import Column
+from sqlalchemy import Table
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -47,9 +52,22 @@ class InitDatabase:
         import db.models  # pylint: disable=W0611
 
         db = SessionLocal()
+        # Check db revision
+        version_num = db.query(Table("alembic_version", Base.metadata, Column("version_num"))).first()
+        if version_num is None:
+            log.error("Failed to fetch database version. Terminating the app.")
+            sys.exit()
+        if version_num[0] != ALEMBIC_VERSION:
+            log.error(
+                f"Database version differs from required version: DB={version_num[0]}, REQ={ALEMBIC_VERSION}. "
+                "Terminating the app."
+            )
+            sys.exit()
+
+        # Create system user if it doesn't exist
         user = crud_user.get_by_email(db, email=cfg.init.mail)
         if not user:
-            log.info("Admin user not found in database. Creating admin user.")
+            log.info("System user not found in database. Creating system user.")
             user_in = UserCreateSchema(
                 username=SYSTEM_USER,
                 email=cfg.init.mail,
