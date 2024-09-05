@@ -7,14 +7,18 @@
 
 # pylint: disable=C0115,R0903
 
+from datetime import datetime
 from typing import TYPE_CHECKING
+from typing import List
+from typing import Optional
 
 from db.base import Base
 from sqlalchemy import Boolean
-from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import String
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 
@@ -26,23 +30,44 @@ if TYPE_CHECKING:
 
 
 class User(Base):
+    __tablename__ = "user_table"
+
     # __table_args__ = {"extend_existing": True}
 
     # data handled by the server
-    id = Column(Integer, primary_key=True, index=True, unique=True, nullable=False)
-    created = Column(DateTime, nullable=False)
-    personal_access_token = Column(String, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, unique=True, nullable=False)
+    created: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    personal_access_token: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # data given on creation
-    username = Column(String, index=True, unique=True, nullable=False)
-    full_name = Column(String, index=True, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    is_active = Column(Boolean, nullable=False, default=True)
-    is_superuser = Column(Boolean, nullable=False, default=False)
-    is_adminuser = Column(Boolean, nullable=False, default=False, server_default=false())
-    is_guestuser = Column(Boolean, nullable=False, default=False, server_default=false())
-    is_systemuser = Column(Boolean, nullable=False, default=False, server_default=false())
+    username: Mapped[str] = mapped_column(String, index=True, unique=True, nullable=False)
+    full_name: Mapped[str] = mapped_column(String, nullable=False)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_adminuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    is_guestuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    is_systemuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
 
     # relations
-    bought_items = relationship("db.models.bought_item.BoughtItem", back_populates="creator")
+    created_bought_items: Mapped[List["BoughtItem"]] = relationship(
+        "db.models.bought_item.BoughtItem",
+        back_populates="creator",
+        foreign_keys="db.models.bought_item.BoughtItem.creator_id",
+    )
+    requested_bought_items: Mapped[List["BoughtItem"]] = relationship(
+        "db.models.bought_item.BoughtItem",
+        back_populates="requester",
+        foreign_keys="db.models.bought_item.BoughtItem.requester_id",
+    )
+    ordered_bought_items: Mapped[List["BoughtItem"]] = relationship(
+        "db.models.bought_item.BoughtItem",
+        back_populates="orderer",
+        foreign_keys="db.models.bought_item.BoughtItem.orderer_id",
+    )
+    received_items: Mapped[List["BoughtItem"]] = relationship(
+        "db.models.bought_item.BoughtItem",
+        back_populates="receiver",
+        foreign_keys="db.models.bought_item.BoughtItem.receiver_id",
+    )

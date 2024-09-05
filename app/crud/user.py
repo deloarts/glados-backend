@@ -25,15 +25,15 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
 
     def get_by_id(self, db: Session, *, id: int) -> Optional[UserModel]:
         """Returns a user by the id."""
-        return db.query(UserModel).filter(UserModel.id == id).first()
+        return db.query(self.model).filter(self.model.id == id).first()
 
     def get_by_username(self, db: Session, *, username: str) -> Optional[UserModel]:
         """Returns a user by the username."""
-        return db.query(UserModel).filter(UserModel.username == username).first()
+        return db.query(self.model).filter(self.model.username == username).first()
 
     def get_by_email(self, db: Session, *, email: str) -> Optional[UserModel]:
         """Returns a user by the email."""
-        return db.query(UserModel).filter(UserModel.email == email).first()
+        return db.query(self.model).filter(self.model.email == email).first()
 
     def create(self, db: Session, *, current_user: UserModel, obj_in: UserCreateSchema) -> UserModel:
         """Creates a UserModel.

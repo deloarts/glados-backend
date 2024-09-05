@@ -24,15 +24,15 @@ class CRUDEmailNotification(
 
     def get_all(self, db: Session) -> Optional[List[EmailNotificationModel]]:
         """Returns all pending email notifications."""
-        return db.query(EmailNotificationModel).all()
+        return db.query(self.model).all()
 
     def get_by_receiver_id(self, db: Session, *, receiver_id: int) -> Optional[List[EmailNotificationModel]]:
         """Returns all pending email notifications for a specific user."""
-        return db.query(EmailNotificationModel).filter_by(receiver_id=receiver_id).all()
+        return db.query(self.model).filter_by(receiver_id=receiver_id).all()
 
     def get_distinct_receiver_ids(self, db: Session) -> Optional[List[int]]:
         """Returns a list of all distinct user ids."""
-        query = db.query(EmailNotificationModel.receiver_id).distinct().all()
+        query = db.query(self.model.receiver_id).distinct().all()
         try:
             return [item[0] for item in query]
         except:

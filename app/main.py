@@ -20,6 +20,8 @@ def main() -> None:
     log.add_file_handler()
     log.info("Application started.")
 
+    session.InitDatabase()
+
     system_schedule = SystemSchedules()
     system_schedule.start()
 
@@ -32,7 +34,6 @@ def main() -> None:
     database_schedules = DatabaseSchedules()
     database_schedules.start()
 
-    session.InitDatabase()
     server.run()
 
 
