@@ -50,6 +50,23 @@ class User(Base):
     is_systemuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
 
     # relations
-    bought_items: Mapped[List["BoughtItem"]] = relationship(
-        "db.models.bought_item.BoughtItem", back_populates="creator"
+    created_bought_items: Mapped[List["BoughtItem"]] = relationship(
+        "db.models.bought_item.BoughtItem",
+        back_populates="creator",
+        foreign_keys="db.models.bought_item.BoughtItem.creator_id",
+    )
+    requested_bought_items: Mapped[List["BoughtItem"]] = relationship(
+        "db.models.bought_item.BoughtItem",
+        back_populates="requester",
+        foreign_keys="db.models.bought_item.BoughtItem.requester_id",
+    )
+    ordered_bought_items: Mapped[List["BoughtItem"]] = relationship(
+        "db.models.bought_item.BoughtItem",
+        back_populates="orderer",
+        foreign_keys="db.models.bought_item.BoughtItem.orderer_id",
+    )
+    received_items: Mapped[List["BoughtItem"]] = relationship(
+        "db.models.bought_item.BoughtItem",
+        back_populates="receiver",
+        foreign_keys="db.models.bought_item.BoughtItem.receiver_id",
     )

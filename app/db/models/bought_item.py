@@ -7,6 +7,7 @@
 from datetime import date
 from typing import TYPE_CHECKING
 from typing import List
+from typing import Optional
 
 from config import cfg
 from db.base import Base
@@ -66,15 +67,56 @@ class BoughtItem(Base):
 
     # data given on single value update
     status: Mapped[str] = mapped_column(String, nullable=False, default=cfg.items.bought.status.default)
-    requester_id: Mapped[int] = mapped_column(Integer, nullable=True)  # changed with status
     requested_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
-    orderer_id: Mapped[int] = mapped_column(Integer, nullable=True)  # changed with status
     ordered_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
     expected_delivery_date: Mapped[date] = mapped_column(Date, nullable=True)
-    taken_over_id: Mapped[str] = mapped_column(Integer, nullable=True)  # changed with status
     delivery_date: Mapped[date] = mapped_column(Date, nullable=True)  # changed with status
     storage_place: Mapped[str] = mapped_column(String, nullable=True)
 
     # relations
-    creator_id: Mapped[int] = mapped_column(Integer, ForeignKey("user_table.id"), nullable=False)
-    creator: Mapped["User"] = relationship("db.models.user.User", back_populates="bought_items")
+    creator_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("user_table.id", name="fk_bought_item_table_creator_id_user_table"),
+        nullable=False,
+    )
+    creator: Mapped["User"] = relationship(
+        "db.models.user.User",
+        back_populates="created_bought_items",
+        foreign_keys=[creator_id],
+    )
+
+    # Warning: requester_id and requester is None at creation and only changed with status
+    requester_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("user_table.id", name="fk_bought_item_table_requester_id_user_table"),
+        nullable=True,
+    )
+    requester: Mapped[Optional["User"]] = relationship(
+        "db.models.user.User",
+        back_populates="requested_bought_items",
+        foreign_keys=[requester_id],
+    )
+
+    # Warning: orderer_id and orderer is None at creation and only changed with status
+    orderer_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("user_table.id", name="fk_bought_item_table_orderer_id_user_table"),
+        nullable=True,
+    )
+    orderer: Mapped[Optional["User"]] = relationship(
+        "db.models.user.User",
+        back_populates="ordered_bought_items",
+        foreign_keys=[orderer_id],
+    )
+
+    # Warning: receiver_id and receiver is None at creation and only changed with status
+    receiver_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("user_table.id", name="fk_bought_item_table_receiver_id_user_table"),
+        nullable=True,
+    )
+    receiver: Mapped[Optional["User"]] = relationship(
+        "db.models.user.User",
+        back_populates="received_items",
+        foreign_keys=[receiver_id],
+    )
