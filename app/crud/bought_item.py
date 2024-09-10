@@ -14,6 +14,7 @@ from api.schemas.email_notification import EmailNotificationCreateSchema
 from config import cfg
 from crud.base import CRUDBase
 from crud.email_notification import crud_email_notification
+from crud.project import crud_project
 from db.models import BoughtItemModel
 from db.models import UserModel
 from fastapi.encoders import jsonable_encoder
@@ -46,7 +47,7 @@ class CRUDBoughtItem(
         sort_by: str | None = None,
         id: str | None = None,  # pylint: disable=W0622
         status: str | None = None,
-        project: str | None = None,
+        project_number: str | None = None,
         machine: str | None = None,
         quantity: float | None = None,
         unit: str | None = None,
@@ -98,7 +99,7 @@ class CRUDBoughtItem(
                 elif value == cfg.items.bought.order_by.created:
                     output_list.append(asc(self.model.created))
                 elif value == cfg.items.bought.order_by.project:
-                    output_list.append(asc(self.model.project))
+                    output_list.append(asc(self.model.project_number))
                 elif value == cfg.items.bought.order_by.machine:
                     output_list.append(asc(self.model.machine))
                 elif value == cfg.items.bought.order_by.group_1:
@@ -140,7 +141,7 @@ class CRUDBoughtItem(
                 self.model.status != cfg.items.bought.status.canceled if ignore_canceled else text(""),
                 self.model.status != cfg.items.bought.status.lost if ignore_lost else text(""),
                 # search filter
-                self.model.project.ilike(f"%{project}%") if project else text(""),
+                self.model.project_number.ilike(f"%{project_number}%") if project_number else text(""),
                 self.model.machine.ilike(f"%{machine}%") if machine else text(""),
                 self.model.partnumber.ilike(f"%{partnumber}%") if partnumber else text(""),
                 self.model.definition.ilike(f"%{definition}%") if definition else text(""),
@@ -189,6 +190,12 @@ class CRUDBoughtItem(
         if db_obj_user.is_guestuser:
             raise HTTPException(status_code=403, detail="A guest user cannot create items.")
 
+        project = crud_project.get_by_id(db, id=obj_in.project_id)
+        if not project:
+            raise HTTPException(status_code=403, detail="The given project doesn't exist.")
+        if not project.is_active:
+            raise HTTPException(status_code=403, detail="The given project isn't active.")
+
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=False)
 
         # Manipulate data
@@ -231,6 +238,12 @@ class CRUDBoughtItem(
         """
         if not db_obj_item:
             raise HTTPException(status_code=404, detail="The item does not exist.")
+
+        project = crud_project.get_by_id(db, id=obj_in.project_id)
+        if not project:
+            raise HTTPException(status_code=403, detail="The given project doesn't exist.")
+        if db_obj_item.project_id != obj_in.project_id and not project.is_active:
+            raise HTTPException(status_code=403, detail="The given project isn't active.")
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
@@ -363,6 +376,34 @@ class CRUDBoughtItem(
             f"({item.partnumber}), status={item.status}, ID={item.id}."
         )
         return item
+
+    def update_project(
+        self, db: Session, *, db_obj_user: UserModel, db_obj_item: BoughtItemModel | None, project_number: str
+    ) -> BoughtItemModel:
+        if not db_obj_item:
+            raise HTTPException(status_code=404, detail="The item does not exist.")
+
+        project = crud_project.get_by_number(db, number=project_number)
+        if not project:
+            raise HTTPException(status_code=403, detail="The given project doesn't exist.")
+        if not project.is_active:
+            raise HTTPException(status_code=403, detail="The given project isn't active.")
+
+        # Manipulate data
+        data = {"project_id": project.id}
+        data["changed"] = date.today()  # type:ignore
+        data["changes"] = get_changelog(  # type:ignore
+            changes=(f"Update project: {db_obj_item.project_number} -> {project.number}"),
+            db_obj_user=db_obj_user,
+            db_obj_item=db_obj_item,
+        )
+
+        return_obj = super().update(db, db_obj=db_obj_item, obj_in=data)
+        log.info(
+            f"User {db_obj_user.username!r} updated the project of a bought item "
+            f"({return_obj.partnumber}), status={return_obj.status}, ID={return_obj.id}."
+        )
+        return return_obj
 
     def update_field(
         self,

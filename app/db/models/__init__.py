@@ -9,4 +9,5 @@
 from db.models.api_key import APIKey as APIKeyModel
 from db.models.bought_item import BoughtItem as BoughtItemModel
 from db.models.email_notification import EmailNotification as EmailNotificationModel
+from db.models.project import Project as ProjectModel
 from db.models.user import User as UserModel

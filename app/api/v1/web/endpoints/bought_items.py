@@ -23,9 +23,10 @@ from crud.bought_item import crud_bought_item
 from db.models import BoughtItemModel
 from db.models import UserModel
 from db.session import get_db
-from excel.xlsx_export import ExportExcel
-from excel.xlsx_import import ImportExcel
+from excel.xlsx_export.bought_item import BoughtItemExcelExport
+from excel.xlsx_import.bought_item import BoughtItemExcelImport
 from fastapi import UploadFile
+from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.responses import FileResponse
@@ -44,7 +45,7 @@ def read_bought_items(
     sort_by: str | None = None,
     id: str | None = None,  # pylint: disable=W0622
     status: str | None = None,
-    project: str | None = None,
+    project_number: str | None = None,
     machine: str | None = None,
     quantity: float | None = None,
     unit: str | None = None,
@@ -96,7 +97,7 @@ def read_bought_items_excel(
     sort_by: str | None = None,
     id: str | None = None,  # pylint: disable=W0622
     status: str | None = None,
-    project: str | None = None,
+    project_number: str | None = None,
     machine: str | None = None,
     quantity: float | None = None,
     unit: str | None = None,
@@ -137,8 +138,8 @@ def read_bought_items_excel(
     kwargs.pop("verified")
 
     data = crud_bought_item.get_multi(**kwargs)
-    xlsx = ExportExcel(data=data, schema=BoughtItemExcelExportSchema)
-    path = xlsx.save()
+    export_handler = BoughtItemExcelExport(data=data)
+    path = export_handler.save()
 
     if not path.exists():
         raise HTTPException(
@@ -210,13 +211,7 @@ def create_bought_items_from_excel(
     *, db: Session = Depends(get_db), file: UploadFile, current_user: UserModel = Depends(get_current_active_user)
 ) -> Any:
     """Create new bought items from an excel file."""
-    xlsx = ImportExcel(
-        db=db,
-        model=BoughtItemModel,
-        schema=BoughtItemCreateSchema,
-        db_obj_user=current_user,
-        file=file,
-    )
+    xlsx = BoughtItemExcelImport(db=db, db_obj_user=current_user, file=file)
     return xlsx.load()
 
 
@@ -270,17 +265,13 @@ def update_bought_item_project(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    project: str,
+    project_number: str,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the project of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_required_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.project,
-        value=project,
+    return crud_bought_item.update_project(
+        db, db_obj_user=current_user, db_obj_item=item, project_number=project_number
     )
 
 
@@ -293,14 +284,7 @@ def update_bought_item_machine(
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the machine of an item."""
-    item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.machine,
-        value=machine,
-    )
+    raise HTTPException(status_code=status.HTTP_410_GONE, detail="Machine must be changed in the project.")
 
 
 @router.put("/{item_id}/quantity", response_model=BoughtItemSchema)
