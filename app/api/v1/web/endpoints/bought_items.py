@@ -25,8 +25,16 @@ from db.models import UserModel
 from db.session import get_db
 from excel.xlsx_export.bought_item import BoughtItemExcelExport
 from excel.xlsx_import.bought_item import BoughtItemExcelImport
+from exceptions import BoughtItemAlreadyPlannedError
+from exceptions import BoughtItemCannotChangeToOpenError
+from exceptions import BoughtItemOfAnotherUserError
+from exceptions import BoughtItemRequiredFieldNotSetError
+from exceptions import BoughtItemUnknownStatusError
+from exceptions import InsufficientPermissionsError
+from exceptions import ProjectInactiveError
+from exceptions import ProjectNotFoundError
 from fastapi import UploadFile
-from fastapi import status
+from fastapi import status as sc
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.responses import FileResponse
@@ -203,7 +211,15 @@ def create_bought_item(
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Create new bought item."""
-    return crud_bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)
+    try:
+        item = crud_bought_item.create(db, db_obj_user=current_user, obj_in=obj_in)
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Not enough permissions") from e
+    except ProjectNotFoundError as e:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Project doesn't exists") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Project is inactive") from e
+    return item
 
 
 @router.post("/excel", response_model=List[BoughtItemSchema])
@@ -225,7 +241,23 @@ def update_bought_item(
 ) -> Any:
     """Update a bought item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update(db, db_obj_user=current_user, db_obj_item=item, obj_in=obj_in)
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update(db, db_obj_user=current_user, db_obj_item=item, obj_in=obj_in)
+    except ProjectNotFoundError as e:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="This project number doesn't exists") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active")
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/status", response_model=BoughtItemSchema)
@@ -238,26 +270,23 @@ def update_bought_item_status(
 ) -> Any:
     """Updates the status of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_status(db, db_obj_user=current_user, db_obj_item=item, status=status)
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
 
+    try:
+        updated_item = crud_bought_item.update_status(db, db_obj_user=current_user, db_obj_item=item, status=status)
+    except BoughtItemUnknownStatusError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Unknown status") from e
+    except BoughtItemCannotChangeToOpenError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change status back to open") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
 
-@router.put("/{item_id}/group-1", response_model=BoughtItemSchema)
-def update_bought_item_group_1(
-    *,
-    db: Session = Depends(get_db),
-    item_id: int,
-    group: str,
-    current_user: UserModel = Depends(get_current_active_user),
-) -> Any:
-    """Updates the group of an item."""
-    item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.group_1,
-        value=group,
-    )
+    return updated_item
 
 
 @router.put("/{item_id}/project", response_model=BoughtItemSchema)
@@ -270,9 +299,52 @@ def update_bought_item_project(
 ) -> Any:
     """Updates the project of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_project(
-        db, db_obj_user=current_user, db_obj_item=item, project_number=project_number
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_project(
+            db, db_obj_user=current_user, db_obj_item=item, project_number=project_number
+        )
+    except ProjectNotFoundError as e:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="This project number doesn't exists")
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project is inactive") from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
+
+
+@router.put("/{item_id}/group-1", response_model=BoughtItemSchema)
+def update_bought_item_group_1(
+    *,
+    db: Session = Depends(get_db),
+    item_id: int,
+    group: str,
+    current_user: UserModel = Depends(get_current_active_user),
+) -> Any:
+    """Updates the group of an item."""
+    item = crud_bought_item.get(db, id=item_id)
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.group_1, value=group
+        )
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/machine", response_model=BoughtItemSchema)
@@ -284,7 +356,7 @@ def update_bought_item_machine(
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the machine of an item."""
-    raise HTTPException(status_code=status.HTTP_410_GONE, detail="Machine must be changed in the project.")
+    raise HTTPException(status_code=sc.HTTP_410_GONE, detail="Machine must be changed in the project.")
 
 
 @router.put("/{item_id}/quantity", response_model=BoughtItemSchema)
@@ -297,13 +369,23 @@ def update_bought_item_quantity(
 ) -> Any:
     """Updates the quantity of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_required_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.quantity,
-        value=quantity,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_required_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.quantity, value=quantity
+        )
+    except BoughtItemRequiredFieldNotSetError as e:
+        raise HTTPException(status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail="Value must be set") from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/partnumber", response_model=BoughtItemSchema)
@@ -316,13 +398,23 @@ def update_bought_item_partnumber(
 ) -> Any:
     """Updates the partnumber of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_required_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.partnumber,
-        value=partnumber,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_required_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.partnumber, value=partnumber
+        )
+    except BoughtItemRequiredFieldNotSetError as e:
+        raise HTTPException(status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail="Value must be set") from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/definition", response_model=BoughtItemSchema)
@@ -335,13 +427,23 @@ def update_bought_item_definition(
 ) -> Any:
     """Updates the definition of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_required_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.definition,
-        value=definition,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_required_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.definition, value=definition
+        )
+    except BoughtItemRequiredFieldNotSetError as e:
+        raise HTTPException(status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail="Value must be set") from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/manufacturer", response_model=BoughtItemSchema)
@@ -354,13 +456,23 @@ def update_bought_item_manufacturer(
 ) -> Any:
     """Updates the manufacturer of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_required_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.manufacturer,
-        value=manufacturer,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_required_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.manufacturer, value=manufacturer
+        )
+    except BoughtItemRequiredFieldNotSetError as e:
+        raise HTTPException(status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail="Value must be set") from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/supplier", response_model=BoughtItemSchema)
@@ -373,13 +485,21 @@ def update_bought_item_supplier(
 ) -> Any:
     """Updates the supplier of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.supplier,
-        value=supplier,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.supplier, value=supplier
+        )
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/weblink", response_model=BoughtItemSchema)
@@ -392,13 +512,21 @@ def update_bought_item_weblink(
 ) -> Any:
     """Updates the weblink of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.weblink,
-        value=weblink,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.weblink, value=weblink
+        )
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/note-general", response_model=BoughtItemSchema)
@@ -411,13 +539,21 @@ def update_bought_item_note_general(
 ) -> Any:
     """Updates the general note of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.note_general,
-        value=note,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.note_general, value=note
+        )
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/note-supplier", response_model=BoughtItemSchema)
@@ -430,13 +566,21 @@ def update_bought_item_note_supplier(
 ) -> Any:
     """Updates the supplier note of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.note_supplier,
-        value=note,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.note_supplier, value=note
+        )
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/desired-delivery-date", response_model=BoughtItemSchema)
@@ -449,13 +593,21 @@ def update_bought_item_desired_delivery_date(
 ) -> Any:
     """Updates the desired delivery date of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.desired_delivery_date,
-        value=date,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.delivery_date, value=date
+        )
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/expected-delivery-date", response_model=BoughtItemSchema)
@@ -468,13 +620,21 @@ def update_bought_item_expected_delivery_date(
 ) -> Any:
     """Updates the expected delivery date of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.expected_delivery_date,
-        value=date,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.expected_delivery_date, value=date
+        )
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.put("/{item_id}/storage", response_model=BoughtItemSchema)
@@ -487,13 +647,21 @@ def update_bought_item_storage(
 ) -> Any:
     """Updates the storage of an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.update_field(
-        db,
-        db_obj_user=current_user,
-        db_obj_item=item,
-        db_field=BoughtItemModel.storage_place,
-        value=storage_place,
-    )
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.storage_place, value=storage_place
+        )
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
 
 
 @router.delete("/{item_id}", response_model=BoughtItemSchema)
@@ -505,4 +673,16 @@ def delete_bought_item(
 ) -> Any:
     """Delete an item."""
     item = crud_bought_item.get(db, id=item_id)
-    return crud_bought_item.delete(db, db_obj_item=item, db_obj_user=current_user)
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="The item does not exist")
+
+    try:
+        deleted_item = crud_bought_item.delete(db, db_obj_item=item, db_obj_user=current_user)
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot delete planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot delete the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Only admin users can delete items") from e
+
+    return deleted_item

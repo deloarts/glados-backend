@@ -10,12 +10,15 @@ from api.deps import get_current_active_adminuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
 from api.schemas.user import UserCreateSchema
-from api.schemas.user import UserInDBSchema
 from api.schemas.user import UserSchema
 from api.schemas.user import UserUpdateSchema
 from crud.user import crud_user
 from db.models import UserModel
 from db.session import get_db
+from exceptions import InsufficientPermissionsError
+from exceptions import PasswordCriteriaError
+from exceptions import UserAlreadyExistsError
+from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
@@ -46,10 +49,7 @@ def create_user(
     """Create new user."""
     user = crud_user.get_by_email(db, email=user_in.email) or crud_user.get_by_username(db, username=user_in.username)
     if user:
-        raise HTTPException(
-            status_code=406,
-            detail="The user already exists in the system.",
-        )
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="The user already exists in the system")
     return crud_user.create(db, current_user=current_user, obj_in=user_in)
 
 
@@ -65,14 +65,14 @@ def update_user_me(
     user_username = crud_user.get_by_username(db, username=user_in.username)
     if user_username and user_username.id != current_user.id:
         raise HTTPException(
-            status_code=409,
+            status_code=status.HTTP_409_CONFLICT,
             detail="This username is already in use.",
         )
 
     user_email = crud_user.get_by_email(db, email=user_in.email)
     if user_email and user_email.id != current_user.id:
         raise HTTPException(
-            status_code=409,
+            status_code=status.HTTP_409_CONFLICT,
             detail="This email is already in use.",
         )
 
@@ -99,7 +99,7 @@ def read_user_by_id(
     user = crud_user.get(db, id=user_id)
     if user is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="The user with this id doesn't exists in the system.",
         )
     if user == current_user:
@@ -119,26 +119,26 @@ def update_user(
     user = crud_user.get(db, id=user_id)
     if not user:
         raise HTTPException(
-            status_code=404,
-            detail="The user with this id does not exist in the system.",
+            status_code=status.HTTP_404_NOT_FOUND, detail="The user with this id does not exist in the system"
         )
 
-    user_username = crud_user.get_by_username(db, username=user_in.username)
-    if user_username and user_username.id != user_id:
+    try:
+        updated_user = crud_user.update(db, current_user=current_user, db_obj=user, obj_in=user_in)
+    except PasswordCriteriaError as e:
         raise HTTPException(
-            status_code=409,
-            detail="This username is already in use.",
-        )
-
-    user_email = crud_user.get_by_email(db, email=user_in.email)
-    if user_email and user_email.id != user_id:
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Password too weak",
+        ) from e
+    except UserAlreadyExistsError as e:
         raise HTTPException(
-            status_code=409,
-            detail="This email is already in use.",
-        )
+            status_code=status.HTTP_409_CONFLICT, detail="A user with this username or email already exists"
+        ) from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to change this user"
+        ) from e
 
-    user = crud_user.update(db, current_user=current_user, db_obj=user, obj_in=user_in)
-    return user
+    return updated_user
 
 
 @router.put("/me/personal-access-token", response_model=str)

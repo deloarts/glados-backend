@@ -5,7 +5,6 @@
 from typing import Any
 from typing import List
 
-from api.deps import get_current_active_adminuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
 from api.schemas.project import ProjectCreateSchema
@@ -15,6 +14,9 @@ from crud.project import crud_project
 from db.models import ProjectModel
 from db.models import UserModel
 from db.session import get_db
+from exceptions import InsufficientPermissionsError
+from exceptions import ProjectAlreadyExistsError
+from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
@@ -47,16 +49,17 @@ def create_project(
     *,
     db: Session = Depends(get_db),
     project_in: ProjectCreateSchema,
-    current_user: UserModel = Depends(get_current_active_adminuser),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Create new project."""
-    project = crud_project.get_by_number(db, number=project_in.number)
-    if project:
-        raise HTTPException(
-            status_code=406,
-            detail="The project already exists in the system.",
-        )
-    return crud_project.create(db, db_obj_user=current_user, obj_in=project_in)
+    try:
+        new_project = crud_project.create(db, db_obj_user=current_user, obj_in=project_in)
+    except ProjectAlreadyExistsError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The project already exists")
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Only admin users can delete projects") from e
+
+    return new_project
 
 
 @router.get("/my", response_model=List[ProjectSchema])
@@ -65,7 +68,7 @@ def read_project_my(
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Get current users projects."""
-    return crud_project.get_by_designated_user(db, user_id=current_user.id)
+    return crud_project.get_by_designated_user_id(db, user_id=current_user.id)
 
 
 @router.get("/{project_id}", response_model=ProjectSchema)
@@ -77,10 +80,8 @@ def read_project_by_id(
     """Get a specific project by id."""
     project = crud_project.get_by_id(db, id=project_id)
     if project is None:
-        raise HTTPException(
-            status_code=404,
-            detail="The project with this id doesn't exists in the system.",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The project does not exist")
+
     return project
 
 
@@ -93,11 +94,19 @@ def read_project_by_number(
     """Get a specific project by its number."""
     project = crud_project.get_by_number(db, number=project_number)
     if project is None:
-        raise HTTPException(
-            status_code=404,
-            detail="The project with this number doesn't exists in the system.",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The project does not exist")
+
     return project
+
+
+@router.get("/machine/{machine_number}", response_model=List[ProjectSchema])
+def read_project_by_machine(
+    machine_number: str,
+    current_user: UserModel = Depends(get_current_active_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    """Get a projects with the machine number."""
+    return crud_project.get_by_machine(db, machine=machine_number)
 
 
 @router.put("/{project_id}", response_model=ProjectSchema)
@@ -106,24 +115,26 @@ def update_project(
     db: Session = Depends(get_db),
     project_id: int,
     project_in: ProjectUpdateSchema,
-    current_user: UserModel = Depends(get_current_active_adminuser),
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Update a project by id."""
     project = crud_project.get(db, id=project_id)
     if not project:
-        raise HTTPException(
-            status_code=404,
-            detail="The project with this id does not exist in the system.",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The project does not exist")
 
-    project_by_number = crud_project.get_by_number(db, number=project_in.number)
-    if project_by_number and project_by_number.id != project_id:
+    try:
+        updated_project = crud_project.update(db, db_obj_user=current_user, db_obj=project, obj_in=project_in)
+    except ProjectAlreadyExistsError as e:
         raise HTTPException(
-            status_code=409,
-            detail="This project number is already in use.",
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This project number is already in use",
         )
+    except InsufficientPermissionsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to change this project"
+        ) from e
 
-    return crud_project.update(db, db_obj_user=current_user, db_obj=project, obj_in=project_in)
+    return updated_project
 
 
 @router.delete("/{project_id}", response_model=ProjectSchema)
@@ -135,4 +146,12 @@ def delete_project(
 ) -> Any:
     """Delete a project."""
     project = crud_project.get(db, id=project_id)
-    return crud_project.delete(db, db_obj_project=project, db_obj_user=current_user)
+    if not project:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The project does not exist")
+
+    try:
+        deleted_project = crud_project.delete(db, db_obj_project=project, db_obj_user=current_user)
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin users can delete projects") from e
+
+    return deleted_project
