@@ -24,17 +24,18 @@ ModelType = TypeVar("ModelType", bound=Base)  # pylint: disable=C0103
 SchemaType = TypeVar("SchemaType", bound=BaseModel)  # pylint: disable=C0103
 
 
-class ExportExcel(Generic[ModelType, SchemaType]):
+class BaseExcelExport(Generic[ModelType, SchemaType]):
     """Generic excel export class."""
 
-    def __init__(self, data: List[ModelType], schema: Type[SchemaType]) -> None:
+    def __init__(self, schema: Type[SchemaType]) -> None:
         """Inits the class.
 
         Args:
             data (List[ModelType]): The data models to convert to an xlsx file.
             schema (Type[SchemaType]): The schema for the columns.
         """
-        self.data = self._apply_schema(data, schema)
+        self.schema = schema
+        self.data: List[dict] = []  # self._apply_schema(data, schema)
         self.name = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         self.wb: Workbook = Workbook()
@@ -42,18 +43,11 @@ class ExportExcel(Generic[ModelType, SchemaType]):
         assert isinstance(self.ws, Worksheet)
         self.ws.title = self.name
 
-    @staticmethod
-    def _apply_schema(data, schema) -> List[dict]:
-        """Applies the schema to the data.
+    def import_data_by_model(self, data: List[ModelType]) -> None:
+        self.data = [jsonable_encoder(self.schema(**item.__dict__)) for item in data]
 
-        Args:
-            data (List[ModelType]): The data models to convert to a list of dicts.
-            schema (Type[SchemaType]): The schema for the columns.
-
-        Returns:
-            List[dict]: The converted data.
-        """
-        return [jsonable_encoder(schema(**item.__dict__)) for item in data]
+    def import_data_by_dict(self, data: List[dict]) -> None:
+        self.data = [jsonable_encoder(self.schema(**item)) for item in data]
 
     def _write_header(self) -> None:
         """
@@ -76,6 +70,12 @@ class ExportExcel(Generic[ModelType, SchemaType]):
 
     def save(self) -> Path:
         """Saves the created excel file to the temp folder and returns the path."""
+        if len(self.data) == 0:
+            raise Exception(
+                "Cannot save XLSX file: No data. "
+                "Data must be imported first by calling `import_data_by_model` or `import_data_by_dict`."
+            )
+
         self._write_header()
         self._write_data()
         self._style_worksheet()

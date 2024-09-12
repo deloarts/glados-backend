@@ -27,9 +27,7 @@ class CRUDAPIKey(CRUDBase[APIKeyModel, APIKeyCreateSchema, APIKeyUpdateSchema]):
         """
         Retrieves multiple api keys.
         """
-        query = db.query(self.model).filter_by(deleted=False).offset(skip).limit(limit)
-        print(query)
-        return query.all()
+        return db.query(self.model).filter_by(deleted=False).offset(skip).limit(limit).all()
 
     def get_by_api_key(self, db: Session, *, key: str) -> Optional[APIKeyModel]:
         """

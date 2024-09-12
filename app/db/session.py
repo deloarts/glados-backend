@@ -65,7 +65,7 @@ class InitDatabase:
             sys.exit()
 
         # Create system user if it doesn't exist
-        user = crud_user.get_by_email(db, email=cfg.init.mail)
+        user = crud_user.get_by_username(db, username=SYSTEM_USER)
         if not user:
             log.info("System user not found in database. Creating system user.")
             user_in = UserCreateSchema(

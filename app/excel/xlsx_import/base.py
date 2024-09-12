@@ -5,6 +5,8 @@
 # pylint: disable=R0903
 
 from io import BytesIO
+from typing import Any
+from typing import Dict
 from typing import Generic
 from typing import List
 from typing import Type
@@ -15,13 +17,13 @@ from db.base import Base
 from db.models import UserModel
 from fastapi import HTTPException
 from fastapi import UploadFile
-from fastapi.encoders import jsonable_encoder
+from fastapi import status
 from multilog import log
 from openpyxl import load_workbook
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from pydantic import BaseModel
-from pydantic import ValidationError
+from pydantic_core import ValidationError
 from sqlalchemy.orm import Session
 
 ModelType = TypeVar("ModelType", bound=Base)  # pylint: disable=C0103
@@ -29,7 +31,7 @@ SchemaType = TypeVar("SchemaType", bound=BaseModel)  # pylint: disable=C0103
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)  # pylint: disable=C0103
 
 
-class ImportExcel(Generic[ModelType, CreateSchemaType]):
+class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
     """Generative import class."""
 
     def __init__(
@@ -58,19 +60,6 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
         self.wb: Workbook
         self.ws: Worksheet
 
-    @staticmethod
-    def _apply_schema(data, schema) -> List[dict]:
-        """Applies the schema to the data.
-
-        Args:
-            data (List[ModelType]): The data models to convert to a list of dicts.
-            schema (Type[SchemaType]): The schema for the columns.
-
-        Returns:
-            List[dict]: The converted data.
-        """
-        return [jsonable_encoder(schema(**item.__dict__)) for item in data]
-
     def _read_file(self) -> None:
         """Reads the data from the uploaded excel file."""
 
@@ -82,6 +71,18 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
             log.error(f"Failed to load workbook from user {self.db_obj_user.username}: {e}")
             raise HTTPException(status_code=422, detail=[str(e)]) from e
 
+    # def _get_model_columns_by_name_convention(self) -> List[str]:
+    #     model_cols = []
+    #     for col in self.model.__table__.columns.keys():  # type: ignore
+    #         model_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
+    #     return model_cols
+
+    def _get_schema_columns_by_name_convention(self) -> List[str]:
+        schema_cols = []
+        for col in self.schema.model_fields.keys():  # type: ignore
+            schema_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
+        return schema_cols
+
     def _get_header_row(self) -> int:
         """Return the header row with EXCEL index (index starts by 1)
 
@@ -91,11 +92,8 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
         Returns:
             int: The header row index.
         """
-        db_columns = []
+        db_columns = self._get_schema_columns_by_name_convention()
         empty_row_count = 0
-
-        for col in self.model.__table__.columns.keys():  # type: ignore
-            db_columns.append(" ".join(i.capitalize() for i in str(col).split("_")))
 
         for row_index in range(1, self.ws.max_row + 1):
             # Abort after 100 empty rows
@@ -115,12 +113,18 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
                 empty_row_count += 1
             else:
                 empty_row_count = 0
-                if set(header_candidate) <= set(db_columns):
+                # if set(header_candidate) <= set(db_columns):
+                if set(header_candidate).intersection(set(db_columns)):
                     log.debug(f"Import file header row is {row_index}")
                     return row_index
 
         log.warning(f"Failed to read header data from workbook, uploaded by user {self.db_obj_user.username!r}.")
-        raise HTTPException(status_code=422, detail=["Header missing or invalid."])
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Header missing or invalid. Use the latest template."
+        )
+
+    def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[CreateSchemaType]) -> None:
+        db_objs_in.append(self.schema(**db_obj_in))
 
     def _read_data(self) -> List[CreateSchemaType]:
         """Reads the data from the worksheet.
@@ -158,7 +162,7 @@ class ImportExcel(Generic[ModelType, CreateSchemaType]):
                 break
 
             try:
-                db_objs_in.append(self.schema(**db_obj_in))
+                self._append_schema(db_obj_in=db_obj_in, db_objs_in=db_objs_in)
             except ValidationError as error:
                 warnings.append({"row": row_index, "errors": error.errors()})
 

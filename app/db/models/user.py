@@ -27,6 +27,7 @@ from sqlalchemy.sql import false
 # Do not import the models like this: UserModel, BoughtItemModel, ...
 if TYPE_CHECKING:
     from db.models.bought_item import BoughtItem  # noqa: F401
+    from db.models.project import Project  # noqa: F401
 
 
 class User(Base):
@@ -51,6 +52,12 @@ class User(Base):
     is_systemuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
 
     # relations
+    projects: Mapped[List["Project"]] = relationship(
+        "db.models.project.Project",
+        back_populates="designated_user",
+        foreign_keys="db.models.project.Project.designated_user_id",
+    )
+
     created_bought_items: Mapped[List["BoughtItem"]] = relationship(
         "db.models.bought_item.BoughtItem",
         back_populates="creator",

@@ -6,155 +6,284 @@ from sqlalchemy.orm import Session
 from app.config import cfg
 from app.const import API_WEB_V1
 from tests.utils.bought_item import create_random_item
-from tests.utils.utils import random_lower_string
-from tests.utils.utils import random_project
+from tests.utils.project import get_test_project
+from tests.utils.utils import random_bought_item_definition
+from tests.utils.utils import random_bought_item_name
+from tests.utils.utils import random_manufacturer
 
-item_data = {
-    "project": random_project(),
-    "machine": None,
+JSON_ITEM_DATA = {
+    "project_id": None,
     "quantity": 1,
     "unit": cfg.items.bought.units.default,
-    "partnumber": random_lower_string(),
-    "definition": random_lower_string(),
-    "manufacturer": random_lower_string(),
+    "partnumber": random_bought_item_name(),
+    "definition": random_bought_item_definition(),
+    "manufacturer": random_manufacturer(),
 }
 
 
 def test_create_item(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
+    # ----------------------------------------------
+    # CREATE ITEM: PREPARATION
+    # ----------------------------------------------
+
+    t_data = copy.deepcopy(JSON_ITEM_DATA)
+    t_data["project_id"] = get_test_project(db).id
+
+    # ----------------------------------------------
+    # CREATE ITEM: METHODS TO TEST
+    # ----------------------------------------------
+
+    response = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data)
+
+    # ----------------------------------------------
+    # CREATE ITEM: VALIDATION
+    # ----------------------------------------------
+
     assert response.status_code == 200
     content = response.json()
 
     assert "id" in content
+    assert "status" in content
+    assert "created" in content
     assert "creator_id" in content
 
-    assert content["project"] == data["project"]
-    assert content["quantity"] == data["quantity"]
-    assert content["unit"] == data["unit"]
-    assert content["partnumber"] == data["partnumber"]
-    assert content["definition"] == data["definition"]
-    assert content["manufacturer"] == data["manufacturer"]
+    assert "project_id" in content
+    assert "project_number" in content
+    assert "project_is_active" in content
+    assert "machine" in content
+
+    assert "high_priority" in content
+    assert "notify_on_delivery" in content
+    assert "quantity" in content
+    assert "unit" in content
+    assert "partnumber" in content
+    assert "definition" in content
+    assert "manufacturer" in content
+    assert "supplier" in content
+    assert "weblink" in content
+    assert "group_1" in content
+    assert "note_general" in content
+    assert "note_supplier" in content
+    assert "desired_delivery_date" in content
+    assert "creator_full_name" in content
+    assert "requester_id" in content
+    assert "requester_full_name" in content
+    assert "requested_date" in content
+    assert "orderer_id" in content
+    assert "orderer_full_name" in content
+    assert "ordered_date" in content
+    assert "expected_delivery_date" in content
+    assert "receiver_id" in content
+    assert "receiver_full_name" in content
+    assert "delivery_date" in content
+    assert "storage_place" in content
+
+    assert content["id"]
+    assert content["status"] == cfg.items.bought.status.default
+    assert content["project_id"] == t_data["project_id"]
+    assert content["quantity"] == t_data["quantity"]
+    assert content["unit"] == t_data["unit"]
+    assert content["partnumber"] == t_data["partnumber"]
+    assert content["definition"] == t_data["definition"]
+    assert content["manufacturer"] == t_data["manufacturer"]
 
 
 def test_create_item_missing_project(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data.pop("project")
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 422
+    # ----------------------------------------------
+    # CREATE ITEM MISSING PROJECT: PREPARATION
+    # ----------------------------------------------
+
+    t_data_1 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_1.pop("project_id")
+
+    t_data_2 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_2["project_id"] = 999999999
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING PROJECT: METHODS TO TEST
+    # ----------------------------------------------
+
+    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_2 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING PROJECT: VALIDATION
+    # ----------------------------------------------
+
+    assert response_1.status_code == 422
+    assert response_2.status_code == 404
 
 
 def test_create_item_missing_quantity(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data.pop("quantity")
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 422
+    # ----------------------------------------------
+    # CREATE ITEM MISSING QTY: PREPARATION
+    # ----------------------------------------------
 
+    t_data_1 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_1["project_id"] = get_test_project(db).id
+    t_data_1.pop("quantity")
 
-def test_create_item_wrong_quantity(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data["quantity"] = -1
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 422
+    t_data_2 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_2["project_id"] = get_test_project(db).id
+    t_data_2["quantity"] = "no a number"
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING QTY: METHODS TO TEST
+    # ----------------------------------------------
+
+    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_2 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING QTY: VALIDATION
+    # ----------------------------------------------
+
+    assert response_1.status_code == 422
+    assert response_2.status_code == 422
 
 
 def test_create_item_missing_unit(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data.pop("unit")
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 200
-    assert response.json()["unit"] == cfg.items.bought.units.default
+    # ----------------------------------------------
+    # CREATE ITEM MISSING UNIT: PREPARATION
+    # ----------------------------------------------
 
+    t_data_1 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_1["project_id"] = get_test_project(db).id
+    t_data_1.pop("unit")
 
-def test_create_item_wrong_unit(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data["unit"] = "foo"
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 422
+    t_data_2 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_2["project_id"] = get_test_project(db).id
+    t_data_2["unit"] = "no a valid unit"
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING UNIT: METHODS TO TEST
+    # ----------------------------------------------
+
+    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_2 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING UNIT: VALIDATION
+    # ----------------------------------------------
+
+    assert response_1.status_code == 200  # Missing unit will be replaced with default unit
+    assert response_2.status_code == 422
 
 
 def test_create_item_missing_partnumber(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data.pop("partnumber")
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 422
+    # ----------------------------------------------
+    # CREATE ITEM MISSING PARTNUMBER: PREPARATION
+    # ----------------------------------------------
+
+    t_data_1 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_1["project_id"] = get_test_project(db).id
+    t_data_1.pop("partnumber")
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING PARTNUMBER: METHODS TO TEST
+    # ----------------------------------------------
+
+    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING PARTNUMBER: VALIDATION
+    # ----------------------------------------------
+
+    assert response_1.status_code == 422
 
 
 def test_create_item_missing_definition(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data.pop("definition")
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 422
+    # ----------------------------------------------
+    # CREATE ITEM MISSING DEFINITION: PREPARATION
+    # ----------------------------------------------
+
+    t_data_1 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_1["project_id"] = get_test_project(db).id
+    t_data_1.pop("definition")
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING DEFINITION: METHODS TO TEST
+    # ----------------------------------------------
+
+    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING DEFINITION: VALIDATION
+    # ----------------------------------------------
+
+    assert response_1.status_code == 422
 
 
 def test_create_item_missing_manufacturer(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data.pop("manufacturer")
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 422
+    # ----------------------------------------------
+    # CREATE ITEM MISSING MANUFACTURER: PREPARATION
+    # ----------------------------------------------
+
+    t_data_1 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_1["project_id"] = get_test_project(db).id
+    t_data_1.pop("manufacturer")
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING MANUFACTURER: METHODS TO TEST
+    # ----------------------------------------------
+
+    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+
+    # ----------------------------------------------
+    # CREATE ITEM MISSING MANUFACTURER: VALIDATION
+    # ----------------------------------------------
+
+    assert response_1.status_code == 422
 
 
 def test_create_item_extra_field(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
-    data = copy.deepcopy(item_data)
-    data["some_key"] = "some_value"
+    # ----------------------------------------------
+    # CREATE ITEM EXTRA FIELD: PREPARATION
+    # ----------------------------------------------
 
-    response = client.post(
-        f"{API_WEB_V1}/items/bought/",
-        headers=normal_user_token_headers,
-        json=data,
-    )
-    assert response.status_code == 200
+    t_data_1 = copy.deepcopy(JSON_ITEM_DATA)
+    t_data_1["project_id"] = get_test_project(db).id
+    t_data_1["some_non_db_field"] = "some_value"
+
+    # ----------------------------------------------
+    # CREATE ITEM EXTRA FIELD: METHODS TO TEST
+    # ----------------------------------------------
+
+    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+
+    # ----------------------------------------------
+    # CREATE ITEM EXTRA FIELD: VALIDATION
+    # ----------------------------------------------
+
+    assert response_1.status_code == 200
 
 
 def test_read_item(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
+    # ----------------------------------------------
+    # GET ITEM: PREPARATION
+    # ----------------------------------------------
+
     item = create_random_item(db)
-    response = client.get(
-        f"{API_WEB_V1}/items/bought/{item.id}",
-        headers=normal_user_token_headers,
-    )
+
+    # ----------------------------------------------
+    # GET ITEM: METHODS TO TEST
+    # ----------------------------------------------
+
+    response = client.get(f"{API_WEB_V1}/items/bought/{item.id}", headers=normal_user_token_headers)
+
+    # ----------------------------------------------
+    # GET ITEM: VALIDATION
+    # ----------------------------------------------
+
     assert response.status_code == 200
     content = response.json()
 
     assert content["id"] == item.id
     assert content["creator_id"] == item.creator_id
 
-    assert content["project"] == item.project
+    assert content["project_id"] == item.project_id
+    assert content["project_number"] == item.project_number
+
     assert content["quantity"] == item.quantity
     assert content["unit"] == item.unit
     assert content["partnumber"] == item.partnumber

@@ -14,10 +14,18 @@ from api.schemas.email_notification import EmailNotificationCreateSchema
 from config import cfg
 from crud.base import CRUDBase
 from crud.email_notification import crud_email_notification
+from crud.project import crud_project
 from db.models import BoughtItemModel
 from db.models import UserModel
+from exceptions import BoughtItemAlreadyPlannedError
+from exceptions import BoughtItemCannotChangeToOpenError
+from exceptions import BoughtItemOfAnotherUserError
+from exceptions import BoughtItemRequiredFieldNotSetError
+from exceptions import BoughtItemUnknownStatusError
+from exceptions import InsufficientPermissionsError
+from exceptions import ProjectInactiveError
+from exceptions import ProjectNotFoundError
 from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import HTTPException
 from multilog import log
 from sqlalchemy import asc
 from sqlalchemy import desc
@@ -46,7 +54,7 @@ class CRUDBoughtItem(
         sort_by: str | None = None,
         id: str | None = None,  # pylint: disable=W0622
         status: str | None = None,
-        project: str | None = None,
+        project_number: str | None = None,
         machine: str | None = None,
         quantity: float | None = None,
         unit: str | None = None,
@@ -98,7 +106,7 @@ class CRUDBoughtItem(
                 elif value == cfg.items.bought.order_by.created:
                     output_list.append(asc(self.model.created))
                 elif value == cfg.items.bought.order_by.project:
-                    output_list.append(asc(self.model.project))
+                    output_list.append(asc(self.model.project_number))
                 elif value == cfg.items.bought.order_by.machine:
                     output_list.append(asc(self.model.machine))
                 elif value == cfg.items.bought.order_by.group_1:
@@ -140,7 +148,7 @@ class CRUDBoughtItem(
                 self.model.status != cfg.items.bought.status.canceled if ignore_canceled else text(""),
                 self.model.status != cfg.items.bought.status.lost if ignore_lost else text(""),
                 # search filter
-                self.model.project.ilike(f"%{project}%") if project else text(""),
+                self.model.project_number.ilike(f"%{project_number}%") if project_number else text(""),
                 self.model.machine.ilike(f"%{machine}%") if machine else text(""),
                 self.model.partnumber.ilike(f"%{partnumber}%") if partnumber else text(""),
                 self.model.definition.ilike(f"%{definition}%") if definition else text(""),
@@ -176,18 +184,38 @@ class CRUDBoughtItem(
         return query.all()
 
     def create(self, db: Session, *, db_obj_user: UserModel, obj_in: BoughtItemCreateSchema) -> BoughtItemModel:
-        """Creates a new bought item.
+        """Create a new bought item.
 
         Args:
-            db (Session): The database session.
-            db_obj_user (UserModel): The user model who creates the item.
-            obj_in (BoughtItemCreateSchema): The creation schema.
+            db (Session): DB session.
+            db_obj_user (UserModel): The user who creates the item as db model.
+            obj_in (BoughtItemCreateSchema): The item data as api schema.
+
+        Raises:
+            InsufficientPermissionsError: User doesn't have required permissions.
+            ProjectNotFoundError: The project given by ob_in doesn't exists.
+            ProjectNotFoundError: The project given by ob_in is inactive.
 
         Returns:
-            BoughtItem: The new bought item model.
+            BoughtItemModel: The new bought item as db model.
         """
         if db_obj_user.is_guestuser:
-            raise HTTPException(status_code=403, detail="A guest user cannot create items.")
+            raise InsufficientPermissionsError(
+                f"Blocked creation of an item by user #{db_obj_user.id} ({db_obj_user.full_name}): "
+                "A guest user is not allowed to create bought items."
+            )
+
+        project = crud_project.get_by_id(db, id=obj_in.project_id)
+        if not project:
+            raise ProjectNotFoundError(
+                f"Blocked creation of an item by user #{db_obj_user.id} ({db_obj_user.full_name}): "
+                f"The given project (ID={obj_in.project_id}) doesn't exists."
+            )
+        if not project.is_active:
+            raise ProjectNotFoundError(
+                f"Blocked creation of an item by user #{db_obj_user.id} ({db_obj_user.full_name}): "
+                f"The given project (ID={obj_in.project_id}) is inactive."
+            )
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=False)
 
@@ -210,44 +238,66 @@ class CRUDBoughtItem(
         db: Session,
         *,
         db_obj_user: UserModel,
-        db_obj_item: BoughtItemModel | None,
+        db_obj_item: BoughtItemModel,
         obj_in: BoughtItemUpdateSchema,
     ) -> BoughtItemModel:
-        """Updates a bought item.
+        """Update a bought item.
 
         Args:
-            db (Session): The database session.
-            db_obj_user (UserModel): The user model who updates the item.
-            db_obj_item (BoughtItem): The model of the item to update.
-            obj_in (BoughtItemUpdateSchema): The update data.
+            db (Session): DB session.
+            db_obj_user (UserModel): The user who updates the item.
+            db_obj_item (BoughtItemModel): The current item as model.
+            obj_in (BoughtItemUpdateSchema): The new data as schema.
 
         Raises:
-            HTTPException: Raised if the item doesn't exist.
-            HTTPException: Raised if a normal user tries to edit a planned item.
-            HTTPException: Raised if a normal user tries to edit an item of another user.
+            ProjectNotFoundError: The project of the given new data doesn't exists.
+            ProjectInactiveError: The project of the given new data isn't active.
+            InsufficientPermissionsError: The user is not allowed to make changed.
+            BoughtItemAlreadyPlannedError: The item's state is not open.
+            BoughtItemOfAnotherUserError: The item belongs to another user.
 
         Returns:
-            BoughtItem: The updated bought item data model.
+            BoughtItemModel: The updated item as model.
         """
-        if not db_obj_item:
-            raise HTTPException(status_code=404, detail="The item does not exist.")
+        project = crud_project.get_by_id(db, id=obj_in.project_id)
+        if not project:
+            raise ProjectNotFoundError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update, but no project with the number "
+                f"#{obj_in.project_id} exists."
+            )
+        if db_obj_item.project_id != obj_in.project_id and not project.is_active:
+            raise ProjectInactiveError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to move the item to project "
+                f"#{db_obj_item.project_id}, but this project is inactive."
+            )
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
 
         # Rules
         if db_obj_user.is_guestuser:
-            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+            raise InsufficientPermissionsError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update, but has not enough permissions "
+                "(guest user)."
+            )
 
         if (
             not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
             and db_obj_item.status != cfg.items.bought.status.open
         ):
-            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
+            raise BoughtItemAlreadyPlannedError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update, but has not enough permissions "
+                "to change planned items (not a superuser or admin user)."
+            )
 
         if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
-            raise HTTPException(
-                status_code=403,
-                detail="Only superusers and adminusers can edit items from another user.",
+            raise BoughtItemOfAnotherUserError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update, but has not enough permissions "
+                "to change another users items (not a superuser or admin user)."
             )
 
         # Manipulate data
@@ -269,53 +319,69 @@ class CRUDBoughtItem(
         return item
 
     def update_status(
-        self, db: Session, *, db_obj_user: UserModel, db_obj_item: BoughtItemModel | None, status: str
+        self, db: Session, *, db_obj_user: UserModel, db_obj_item: BoughtItemModel, status: str
     ) -> BoughtItemModel:
-        """Updates the status of a bought item.
+        """Update the status of a bought item. Status can only be changed via this method.
 
         Args:
-            db (Session): The database session.
-            db_obj_user (UserModel): The user model who updates the status.
-            db_obj_item (BoughtItem): The bought item model.
-            status (str): The new status.
+            db (Session): DB session.
+            db_obj_user (UserModel): The user who changes the status.
+            db_obj_item (BoughtItemModel): The current item from which to change the status.
+            status (str): The status value.
 
         Raises:
-            HTTPException: Raised if the item doesn't exist.
-            HTTPException: Raised if the status would be set back to open.
-            HTTPException: Raised if the status is unknown.
+            InsufficientPermissionsError: User is not allowed to change the status.
+            BoughtItemCannotChangeToOpenError: The status cannot be set back to open.
+            BoughtItemAlreadyPlannedError: The item is already planned and the user is not allowed to change.
+            BoughtItemOfAnotherUserError: The item belongs to another user and the user is not allowed to change.
+            BoughtItemUnknownStatusError: The given status value is unknown.
 
         Returns:
-            BoughtItem: The bought item model of the updated field.
+            BoughtItemModel: The update bought item as model.
         """
-        if not db_obj_item:
-            raise HTTPException(status_code=404, detail="The item does not exist.")
-
         if status == db_obj_item.status:
             log.debug(f"No changes in item #{db_obj_item.id}.")
             return db_obj_item
 
         # Rules
         if db_obj_user.is_guestuser:
-            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+            raise InsufficientPermissionsError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the status, but has not enough "
+                "permissions (guest user)."
+            )
 
         if status == cfg.items.bought.status.open and db_obj_item.status != cfg.items.bought.status.open:
-            raise HTTPException(status_code=403, detail="Cannot change status back to open.")
+            raise BoughtItemCannotChangeToOpenError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the status to open, but the item is "
+                "already planned (cannot change status back to open)."
+            )
 
         if (
             not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
             and db_obj_item.status != cfg.items.bought.status.open
         ):
-            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
+            raise BoughtItemAlreadyPlannedError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the status, but has not enough "
+                "permissions to change planned items (not a superuser or admin user)."
+            )
 
         if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
-            raise HTTPException(
-                status_code=403,
-                detail="Only superusers and adminusers can edit items from another user.",
+            raise BoughtItemOfAnotherUserError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the status, but has not enough "
+                "permissions to change another users items (not a superuser or admin user)."
             )
 
         # Incoming data rules
         if status not in cfg.items.bought.status.values:
-            raise HTTPException(status_code=400, detail="Unknown status.")
+            raise BoughtItemUnknownStatusError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the status, but the given value "
+                f"({status}) is unknown."
+            )
 
         # Manipulate data
         data = {"status": status}
@@ -364,52 +430,135 @@ class CRUDBoughtItem(
         )
         return item
 
-    def update_field(
-        self,
-        db: Session,
-        *,
-        db_obj_user: UserModel,
-        db_obj_item: BoughtItemModel | None,
-        db_field: InstrumentedAttribute,
-        value: bool | int | float | str | date,
+    def update_project(
+        self, db: Session, *, db_obj_user: UserModel, db_obj_item: BoughtItemModel, project_number: str
     ) -> BoughtItemModel:
-        """Updates a data field (db column).
+        """Update the project of a bought item.
 
         Args:
-            db (Session): The database session.
-            db_obj_user (UserModel): The user who updates the item.
-            db_obj_item (BoughtItem | None): The item to update.
-            db_field (Column): The database column.
-
-            value (bool | int | float | str | date): The value to write to the column.
+            db (Session): DB session.
+            db_obj_user (UserModel): The user who changes the status.
+            db_obj_item (BoughtItemModel): The current bought item.
+            project_number (str): The new project number to which to move the item to.
 
         Raises:
-            HTTPException: Raised if the given item doesn't exist.
+            ProjectNotFoundError: The given project number doesn't exist.
+            ProjectInactiveError: The project from the given number isn't active.
+            InsufficientPermissionsError: User is not allowed to change the project.
+            BoughtItemAlreadyPlannedError: The item is already planned and the user is not allowed to change.
+            BoughtItemOfAnotherUserError: The item belongs to another user and the user is not allowed to change.
 
         Returns:
-            BoughtItem: Returns the updated item.
+            BoughtItemModel: The updated bought item as model.
         """
-        if not db_obj_item:
-            raise HTTPException(status_code=404, detail="The item with this id does not exist.")
+        project = crud_project.get_by_number(db, number=project_number)
+        if not project:
+            raise ProjectNotFoundError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to move the item to project "
+                f"number #{db_obj_item.project_id}, but this project doesn't exists."
+            )
+        if db_obj_item.project_id != db_obj_item.project_id and not project.is_active:
+            raise ProjectInactiveError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to move the item to project "
+                f"#{db_obj_item.project_id}, but this project is inactive."
+            )
 
         # Rules
         if db_obj_user.is_guestuser:
-            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
+            raise InsufficientPermissionsError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the project, but has not enough "
+                "permissions (guest user)."
+            )
 
         if (
             not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
             and db_obj_item.status != cfg.items.bought.status.open
         ):
-            raise HTTPException(status_code=403, detail="Only superusers and adminusers can change planned items.")
-
-        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
-            raise HTTPException(
-                status_code=403,
-                detail="Only superusers and adminusers can edit an items from another user.",
+            raise BoughtItemAlreadyPlannedError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the project, but has not enough "
+                "permissions to change planned items (not a superuser or admin user)."
             )
 
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
+            raise BoughtItemOfAnotherUserError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the project, but has not enough "
+                "permissions to change another users items (not a superuser or admin user)."
+            )
+
+        # Manipulate data
+        data = {"project_id": project.id}
+        data["changed"] = date.today()  # type:ignore
+        data["changes"] = get_changelog(  # type:ignore
+            changes=(f"Update project: {db_obj_item.project_number} -> {project.number}"),
+            db_obj_user=db_obj_user,
+            db_obj_item=db_obj_item,
+        )
+
+        return_obj = super().update(db, db_obj=db_obj_item, obj_in=data)
+        log.info(
+            f"User {db_obj_user.username!r} updated the project of a bought item "
+            f"({return_obj.partnumber}), {db_obj_item.project_number} -> {project.number}, ID={return_obj.id}."
+        )
+        return return_obj
+
+    def update_field(
+        self,
+        db: Session,
+        *,
+        db_obj_user: UserModel,
+        db_obj_item: BoughtItemModel,
+        db_field: InstrumentedAttribute,
+        value: bool | int | float | str | date,
+    ) -> BoughtItemModel:
+        """Update a field's value in the table of the bought item.
+
+        Args:
+            db (Session): DB session.
+            db_obj_user (UserModel): The user who update the value.
+            db_obj_item (BoughtItemModel): The current bought item as model.
+            db_field (InstrumentedAttribute): The field which to update.
+            value (bool | int | float | str | date): The value which to assign to the field.
+
+        Raises:
+            InsufficientPermissionsError: User is not allowed to change the field.
+            BoughtItemAlreadyPlannedError: The item is already planned and the user is not allowed to change.
+            BoughtItemOfAnotherUserError: The item belongs to another user and the user is not allowed to change.
+
+        Returns:
+            BoughtItemModel: The updated bought item as model.
+        """
         field_name = db_field.description
         field_value = jsonable_encoder(db_obj_item)[field_name]
+
+        # Rules
+        if db_obj_user.is_guestuser:
+            raise InsufficientPermissionsError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the {field_name}, but has not enough "
+                "permissions (guest user)."
+            )
+
+        if (
+            not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
+            and db_obj_item.status != cfg.items.bought.status.open
+        ):
+            raise BoughtItemAlreadyPlannedError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the {field_name}, but has not enough "
+                "permissions to change planned items (not a superuser or admin user)."
+            )
+
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
+            raise BoughtItemOfAnotherUserError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the {field_name}, but has not enough "
+                "permissions to change another users items (not a superuser or admin user)."
+            )
 
         if value == field_value:
             return db_obj_item
@@ -435,79 +584,82 @@ class CRUDBoughtItem(
         db: Session,
         *,
         db_obj_user: UserModel,
-        db_obj_item: BoughtItemModel | None,
+        db_obj_item: BoughtItemModel,
         db_field: InstrumentedAttribute,
         value: bool | int | float | str | date,
     ) -> BoughtItemModel:
-        """Updates a required data field (db column).
+        """_summary_
 
         Args:
-            db (Session): The database session.
-            db_obj_user (UserModel): The user who updates the item.
-            db_obj_item (BoughtItem | None): The item to update.
-            db_field (Column): The database column.
-
-            value (bool | int | float | str | date): The value to write to the column.
+            db (Session): DB session.
+            db_obj_user (UserModel): The user who update the value.
+            db_obj_item (BoughtItemModel): The current bought item as model.
+            db_field (InstrumentedAttribute): The field which to update.
+            value (bool | int | float | str | date): The value which to assign to the field.
 
         Raises:
-            HTTPException: Raised if the value is invalid.
-            HTTPException: Raised if the given item doesn't exist.
+            BoughtItemRequiredFieldNotSetError: The field is required. No value was given.
+
+        Raises (by extension):
+            InsufficientPermissionsError: User is not allowed to change the field.
+            BoughtItemAlreadyPlannedError: The item is already planned and the user is not allowed to change.
+            BoughtItemOfAnotherUserError: The item belongs to another user and the user is not allowed to change.
 
         Returns:
-            BoughtItem: Returns the updated item.
+            BoughtItemModel: The updated bought item as model.
         """
-        if db_obj_user.is_guestuser:
-            raise HTTPException(status_code=403, detail="A guest user cannot change items.")
-
         kwargs = locals()
         kwargs.pop("self")
 
+        field_name = db_field.description
         if value == "" or value is None:
-            raise HTTPException(
-                status_code=403,
-                detail=f"{db_field.description.capitalize()} must be set.",
+            raise BoughtItemRequiredFieldNotSetError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the required field {field_name}, but "
+                "no value was given."
             )
         return self.update_field(**kwargs)
 
-    def delete(
-        self, db: Session, *, db_obj_user: UserModel, db_obj_item: BoughtItemModel | None
-    ) -> Optional[BoughtItemModel]:
-        """Deletes an item (set its status to deleted).
+    def delete(self, db: Session, *, db_obj_user: UserModel, db_obj_item: BoughtItemModel) -> Optional[BoughtItemModel]:
+        """Deletes a bought item. Only marks the item as ´deleted`, items are never really gone.
 
         Args:
-            db (Session): The database session.
+            db (Session): DB session.
             db_obj_user (UserModel): The user who deletes the item.
-            db_obj_item (BoughtItem | None): The item to delete.
+            db_obj_item (BoughtItemModel): The current item as model.
 
         Raises:
-            HTTPException: Raised if the item doesn't exist.
-            HTTPException: Raised if a normal user tries to delete an item from another \
-                user.
-            HTTPException: Raised if a normal user tries to delete a planned item.
+            InsufficientPermissionsError: User has not enough permission to delete the item.
+            BoughtItemAlreadyPlannedError: User has not enough permission to delete a planned item.
+            BoughtItemOfAnotherUserError: User has not enough permission to delete an item of another user.
 
         Returns:
-            Optional[BoughtItem]: The as deleted marked item.
+            Optional[BoughtItemModel]: The deleted item as model.
         """
+        # Rules
         if db_obj_user.is_guestuser:
-            raise HTTPException(status_code=403, detail="A guest user cannot delete items.")
-
-        if not db_obj_item:
-            raise HTTPException(
-                status_code=404,
-                detail="The item does not exist.",
-            )
-
-        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
-            raise HTTPException(
-                status_code=403,
-                detail="Only a superuser or adminuser can delete an item from another user.",
+            raise InsufficientPermissionsError(
+                f"Blocked deletion of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to delete, but has not enough "
+                "permissions (guest user)."
             )
 
         if (
             not (db_obj_user.is_superuser or db_obj_user.is_adminuser)
             and db_obj_item.status != cfg.items.bought.status.open
         ):
-            raise HTTPException(status_code=403, detail="Only a superuser or adminuser can delete a planned item.")
+            raise BoughtItemAlreadyPlannedError(
+                f"Blocked deletion of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to delete, but has not enough "
+                "permissions to change planned items (not a superuser or admin user)."
+            )
+
+        if not (db_obj_user.is_superuser or db_obj_user.is_adminuser) and not db_obj_item.creator_id == db_obj_user.id:
+            raise BoughtItemOfAnotherUserError(
+                f"Blocked deletion of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to delete, but has not enough "
+                "permissions to change another users items (not a superuser or admin user)."
+            )
 
         data = {"deleted": True}
         data["changed"] = date.today()  # type:ignore

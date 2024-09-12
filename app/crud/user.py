@@ -13,7 +13,9 @@ from api.schemas.user import UserUpdateSchema
 from config import cfg
 from crud.base import CRUDBase
 from db.models import UserModel
-from fastapi import HTTPException
+from exceptions import InsufficientPermissionsError
+from exceptions import PasswordCriteriaError
+from exceptions import UserAlreadyExistsError
 from multilog import log
 from security.pwd import get_password_hash
 from security.pwd import verify_password
@@ -24,26 +26,51 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
     """CRUDUser class. Descendent of the CRUDBase class."""
 
     def get_by_id(self, db: Session, *, id: int) -> Optional[UserModel]:
-        """Returns a user by the id."""
+        """Returns a user by their ID.
+
+        Args:
+            db (Session): DB session.
+            id (int): The ID to lookup.
+
+        Returns:
+            Optional[UserModel]: The user as model.
+        """
         return db.query(self.model).filter(self.model.id == id).first()
 
     def get_by_username(self, db: Session, *, username: str) -> Optional[UserModel]:
-        """Returns a user by the username."""
+        """Returns a user by their username.
+
+        Args:
+            db (Session): DB session.
+            username (str): The username to lookup.
+
+        Returns:
+            Optional[UserModel]: The user as model.
+        """
         return db.query(self.model).filter(self.model.username == username).first()
 
     def get_by_email(self, db: Session, *, email: str) -> Optional[UserModel]:
-        """Returns a user by the email."""
+        """Returns a user by their email.
+
+        Args:
+            db (Session): DB session.
+            email (str): The mail address to lookup.
+
+        Returns:
+            Optional[UserModel]: The user as model.
+        """
         return db.query(self.model).filter(self.model.email == email).first()
 
     def create(self, db: Session, *, current_user: UserModel, obj_in: UserCreateSchema) -> UserModel:
-        """Creates a UserModel.
+        """Creates a user.
 
         Args:
-            db (Session): The database session.
-            obj_in (UserCreateSchema): The creation schema.
+            db (Session): DB session.
+            current_user (UserModel): The current user who creates a new user.
+            obj_in (UserCreateSchema): The user data as schema.
 
         Returns:
-            User: The user model.
+            UserModel: The newly created user.
         """
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["created"] = datetime.now(UTC)
@@ -81,28 +108,53 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
     def update(
         self, db: Session, *, current_user: UserModel, db_obj: UserModel, obj_in: UserUpdateSchema | Dict[str, Any]
     ) -> UserModel:
-        """Updates a UserModel.
+        """Update a user.
 
         Args:
-            db (Session): The database session.
-            db_obj (UserModel): The user model.
-            obj_in (UserUpdateSchema | Dict[str, Any]): The update schema.
+            db (Session): DB session.
+            current_user (UserModel): The user who updates another user.
+            db_obj (UserModel): The current to-be-updated user as model.
+            obj_in (UserUpdateSchema | Dict[str, Any]): The new data.
 
         Raises:
-            HTTPException: Raised if the password change doesn't match the security standard.
-
+            UserAlreadyExistsError: A user with this username exists.
+            UserAlreadyExistsError: A user with this email exists.
+            PasswordCriteriaError: Password too weak.
+            InsufficientPermissionsError: System user cannot be updated by another user.
 
         Returns:
-            User: The user model.
+            UserModel: _description_
         """
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
+
+        if (
+            "username" in data
+            and (existing_user := self.get_by_username(db, username=data["username"]))
+            and existing_user.id != db_obj.id
+        ):
+            raise UserAlreadyExistsError(
+                f"Blocked update of a user #{db_obj.id} ({db_obj.username}): "
+                f"User #{current_user.id} ({current_user.full_name}) tried to update, but a user with this username "
+                "already exists."
+            )
+
+        if (
+            "email" in data
+            and (existing_user := self.get_by_email(db, email=data["email"]))
+            and existing_user.id != db_obj.id
+        ):
+            raise UserAlreadyExistsError(
+                f"Blocked update of a user #{db_obj.id} ({db_obj.username}): "
+                f"User #{current_user.id} ({current_user.full_name}) tried to update, but a user with this mail "
+                "already exists."
+            )
 
         # Handle a new password
         if "password" in data:
             if len(data["password"]) < cfg.security.min_pw_len:
-                raise HTTPException(
-                    status_code=406,
-                    detail="Password must have at least 8 characters.",
+                raise PasswordCriteriaError(
+                    f"Blocked update of a user #{db_obj.id} ({db_obj.full_name}): "
+                    f"User #{current_user.id} ({current_user.full_name}) tried to set a weak password"
                 )
             hashed_password = get_password_hash(data["password"])
             del data["password"]
@@ -112,9 +164,9 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         # The systemuser has fixed permissions that cannot be altered.
         if db_obj.is_systemuser:
             if db_obj.id != current_user.id:
-                raise HTTPException(
-                    status_code=403,
-                    detail="The systemuser cannot be edited by another UserModel.",
+                raise InsufficientPermissionsError(
+                    f"Blocked update of a user #{db_obj.id} ({db_obj.full_name}): "
+                    f"User #{current_user.id} ({current_user.full_name}) tried to update the system user"
                 )
             data["is_active"] = True
             data["is_superuser"] = True
