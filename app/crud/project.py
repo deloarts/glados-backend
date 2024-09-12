@@ -143,7 +143,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
                 "already exists."
             )
 
-        if not db_obj_user.is_adminuser or not db_obj_user.is_systemuser:
+        if not db_obj_user.is_adminuser and not db_obj_user.is_systemuser:
             raise InsufficientPermissionsError(
                 f"Blocked creation of a project ({obj_in.number}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to create, but has not enough permissions."
