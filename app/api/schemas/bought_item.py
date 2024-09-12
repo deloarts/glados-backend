@@ -11,6 +11,7 @@ from typing import Optional
 from config import cfg
 from pydantic import BaseModel
 from pydantic import BeforeValidator
+from pydantic import ConfigDict
 from pydantic import Field
 
 # This type includes str, int, float, ...

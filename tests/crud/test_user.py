@@ -1,11 +1,17 @@
+import pytest
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.schemas.user import UserCreateSchema
 from app.api.schemas.user import UserUpdateSchema
 from app.crud.user import crud_user
 from app.security.pwd import verify_password
+from tests.utils.user import TEST_PASS
 from tests.utils.user import current_user_adminuser
+from tests.utils.user import get_test_admin_user
+from tests.utils.user import get_test_super_user
+from tests.utils.user import get_test_user
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
@@ -13,173 +19,246 @@ from tests.utils.utils import random_username
 
 
 def test_create_user(db: Session) -> None:
-    username = random_username()
-    full_name = random_name()
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateSchema(username=username, full_name=full_name, email=email, password=password)
-    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    assert user.email == email
-    assert user.username == username
-    assert user.full_name == full_name
+    # ----------------------------------------------
+    # CREATE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_username = random_username()
+    t_full_name = random_name()
+    t_email = random_email()
+    t_password = random_lower_string()
+
+    while crud_user.get_by_username(db, username=t_username) or crud_user.get_by_email(db, email=t_email):
+        t_username = random_username()
+        t_email = random_email()
+
+    t_user_in = UserCreateSchema(username=t_username, full_name=t_full_name, email=t_email, password=t_password)
+
+    # ----------------------------------------------
+    # CREATE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
+
+    # ----------------------------------------------
+    # CREATE USER: VALIDATION
+    # ----------------------------------------------
+
+    assert user.username == t_username
+    assert user.email == t_email
+    assert user.full_name == t_full_name
     assert user.is_active is True
     assert user.is_superuser is False
+    assert user.is_adminuser is False
     assert user.is_systemuser is False
     assert hasattr(user, "hashed_password")
 
+    with pytest.raises(IntegrityError):
+        # Cannot create same user twice
+        crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
+
 
 def test_authenticate_user(db: Session) -> None:
-    username = random_username()
-    full_name = random_name()
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateSchema(username=username, full_name=full_name, email=email, password=password)
-    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    authenticated_user = crud_user.authenticate(db, username=username, password=password)
-    assert authenticated_user
-    assert user.email == authenticated_user.email
+    # ----------------------------------------------
+    # AUTH USER: PREPARATION
+    # ----------------------------------------------
 
+    t_user = get_test_user(db)
+    t_super = get_test_super_user(db)
+    t_admin = get_test_admin_user(db)
 
-def test_not_authenticate_user(db: Session) -> None:
-    username = random_username()
-    password = random_lower_string()
-    user = crud_user.authenticate(db, username=username, password=password)
-    assert user is None
+    # ----------------------------------------------
+    # AUTH USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    authenticated_super_user = crud_user.authenticate(db, username=t_super.username, password=TEST_PASS)
+    authenticated_admin_user = crud_user.authenticate(db, username=t_admin.username, password=TEST_PASS)
+    unauthenticated_user = crud_user.authenticate(db, username=t_user.username, password="definitely not the password")
+
+    # ----------------------------------------------
+    # AUTH USER: VALIDATION
+    # ----------------------------------------------
+
+    assert authenticated_super_user
+    assert authenticated_admin_user
+    assert not unauthenticated_user
 
 
 def test_check_if_user_is_active(db: Session) -> None:
-    username = random_username()
-    full_name = random_name()
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateSchema(username=username, full_name=full_name, email=email, password=password)
-    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    is_active = crud_user.is_active(user)
+    # ----------------------------------------------
+    # ACTIVE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user_in = UserCreateSchema(
+        username=random_username(), full_name=random_name(), email=random_email(), password=random_lower_string()
+    )
+    t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
+
+    # ----------------------------------------------
+    # ACTIVE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    is_active = crud_user.is_active(t_user)
+
+    # ----------------------------------------------
+    # ACTIVE USER: VALIDATION
+    # ----------------------------------------------
+
     assert is_active is True
 
 
 def test_check_if_user_is_inactive(db: Session) -> None:
-    username = random_username()
-    full_name = random_name()
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateSchema(
-        username=username,
-        full_name=full_name,
-        email=email,
-        password=password,
+    # ----------------------------------------------
+    # INACTIVE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user_in = UserCreateSchema(
+        username=random_username(),
+        full_name=random_name(),
+        email=random_email(),
+        password=random_lower_string(),
         is_active=False,
     )
-    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    is_active = crud_user.is_active(user)
+    t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
+
+    # ----------------------------------------------
+    # INACTIVE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    is_active = crud_user.is_active(t_user)
+
+    # ----------------------------------------------
+    # INACTIVE USER: VALIDATION
+    # ----------------------------------------------
+
     assert is_active is False
 
 
 def test_check_if_user_is_superuser(db: Session) -> None:
-    username = random_username()
-    full_name = random_name()
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateSchema(
-        username=username,
-        full_name=full_name,
-        email=email,
-        password=password,
+    # ----------------------------------------------
+    # SUPER USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user_in = UserCreateSchema(
+        username=random_username(),
+        full_name=random_name(),
+        email=random_email(),
+        password=random_lower_string(),
         is_superuser=True,
     )
-    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    is_superuser = crud_user.is_superuser(user)
-    is_active = crud_user.is_active(user)
-    assert is_superuser is True
+    t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
+
+    # ----------------------------------------------
+    # SUPER USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    is_active = crud_user.is_active(t_user)
+    is_superuser = crud_user.is_superuser(t_user)
+    is_adminuser = crud_user.is_adminuser(t_user)
+
+    # ----------------------------------------------
+    # SUPER USER: VALIDATION
+    # ----------------------------------------------
+
     assert is_active is True
+    assert is_superuser is True
+    assert is_adminuser is False
 
 
 def test_check_if_user_is_adminuser(db: Session) -> None:
-    username = random_username()
-    full_name = random_name()
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateSchema(
-        username=username,
-        full_name=full_name,
-        email=email,
-        password=password,
+    # ----------------------------------------------
+    # ADMIN USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user_in = UserCreateSchema(
+        username=random_username(),
+        full_name=random_name(),
+        email=random_email(),
+        password=random_lower_string(),
+        is_superuser=False,  # Even if set to false, when is_adminuser is set True, this will become True
         is_adminuser=True,
     )
-    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    is_adminuser = crud_user.is_adminuser(user)
-    is_superuser = crud_user.is_superuser(user)
-    is_active = crud_user.is_active(user)
-    assert is_adminuser is True
-    assert is_superuser is True
+    t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
+
+    # ----------------------------------------------
+    # ADMIN USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    is_active = crud_user.is_active(t_user)
+    is_superuser = crud_user.is_superuser(t_user)
+    is_adminuser = crud_user.is_adminuser(t_user)
+
+    # ----------------------------------------------
+    # ADMIN USER: VALIDATION
+    # ----------------------------------------------
+
     assert is_active is True
-
-
-# def test_check_if_user_is_systemuser(db: Session) -> None:
-#     username = random_username()
-#     full_name = random_name()
-#     email = random_email()
-#     password = random_lower_string()
-#     user_in = UserCreateSchema(
-#         username=username,
-#         full_name=full_name,
-#         email=email,
-#         password=password,
-#         is_systemuser=True,
-#     )
-#     user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-#     is_systemuser = crud_user.is_systemuser(user)
-#     is_adminuser = crud_user.is_adminuser(user)
-#     is_superuser = crud_user.is_superuser(user)
-#     is_active = crud_user.is_active(user)
-#     assert is_systemuser is True
-#     assert is_superuser is True
-#     assert is_adminuser is False
-#     assert is_active is True
+    assert is_superuser is True
+    assert is_adminuser is True
 
 
 def test_get_user(db: Session) -> None:
-    username = random_username()
-    full_name = random_name()
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateSchema(
-        username=username,
-        full_name=full_name,
-        email=email,
-        password=password,
-        is_superuser=True,
+    # ----------------------------------------------
+    # GET USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user_in = UserCreateSchema(
+        username=random_username(),
+        full_name=random_name(),
+        email=random_email(),
+        password=random_lower_string(),
+        is_superuser=False,  # Even if set to false, when is_adminuser is set True, this will become True
+        is_adminuser=True,
     )
-    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    user_2 = crud_user.get(db, id=user.id)
+    t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
+
+    # ----------------------------------------------
+    # GET USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    user_2 = crud_user.get(db, id=t_user.id)
+
+    # ----------------------------------------------
+    # GET USER: VALIDATION
+    # ----------------------------------------------
+
     assert user_2
-    assert user.email == user_2.email
-    assert jsonable_encoder(user) == jsonable_encoder(user_2)
+    assert user_2 is t_user
+    assert user_2.email == t_user.email
+    assert jsonable_encoder(t_user) == jsonable_encoder(user_2)
 
 
 def test_update_user(db: Session) -> None:
-    username = random_username()
-    full_name = random_name()
-    email = random_email()
-    password = random_lower_string()
-    user_in = UserCreateSchema(
-        username=username,
-        full_name=full_name,
-        email=email,
-        password=password,
-        is_superuser=True,
+    # ----------------------------------------------
+    # UPDATE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user_in = UserCreateSchema(
+        username=random_username(),
+        full_name=random_name(),
+        email=random_email(),
+        password=random_lower_string(),
     )
-    user = crud_user.create(db, obj_in=user_in, current_user=current_user_adminuser())
-    new_password = random_lower_string()
-    user_in_update = UserUpdateSchema(
-        username=username,
-        full_name=full_name,
-        email=email,
-        password=new_password,
-        is_superuser=True,
+    t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
+    t_new_pass = random_lower_string()
+    t_user_in_update = UserUpdateSchema(
+        username=t_user_in.username,
+        full_name=t_user.full_name,
+        email=t_user.email,
+        password=t_new_pass,
     )
-    crud_user.update(db, db_obj=user, obj_in=user_in_update, current_user=current_user_adminuser())
-    user_2 = crud_user.get(db, id=user.id)
+
+    # ----------------------------------------------
+    # UPDATE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    crud_user.update(db, db_obj=t_user, obj_in=t_user_in_update, current_user=current_user_adminuser())
+
+    # ----------------------------------------------
+    # UPDATE USER: VALIDATION
+    # ----------------------------------------------
+
+    user_2 = crud_user.get(db, id=t_user.id)
     assert user_2
-    assert user.email == user_2.email
-    assert verify_password(new_password, user_2.hashed_password)
+    assert t_user.email == user_2.email
+    assert verify_password(t_new_pass, user_2.hashed_password)

@@ -2,6 +2,7 @@ import random
 import string
 from typing import Dict
 
+import faker_commerce
 from faker import Faker
 from fastapi.testclient import TestClient
 
@@ -10,6 +11,7 @@ from app.const import API_WEB_V1
 from app.const import SYSTEM_USER
 
 fake = Faker()
+fake.add_provider(faker_commerce.Provider)
 Faker.seed(random.randint(0, 999))
 
 
@@ -25,12 +27,36 @@ def random_username() -> str:
     return f"test_{random.randint(1000, 9999):06d}"
 
 
+def random_project() -> str:
+    return f"P{random.randint(10000, 99999):05d}"
+
+
+def random_machine() -> str:
+    return f"M{random.randint(10000, 99999):05d}"
+
+
 def random_name() -> str:
     return fake.name()
 
 
-def random_project() -> str:
-    return f"P{random.randint(10000, 99999):05d}"
+def random_bought_item_name() -> str:
+    return fake.ecommerce_name()
+
+
+def random_bought_item_definition() -> str:
+    return fake.isbn10()
+
+
+def random_manufacturer() -> str:
+    return fake.company()
+
+
+def random_supplier() -> str:
+    return fake.company()
+
+
+def random_note() -> str:
+    return fake.text()
 
 
 def get_systemuser_token_headers(client: TestClient) -> Dict[str, str]:
