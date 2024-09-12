@@ -71,11 +71,17 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
             log.error(f"Failed to load workbook from user {self.db_obj_user.username}: {e}")
             raise HTTPException(status_code=422, detail=[str(e)]) from e
 
-    def _get_model_columns_by_name_convention(self) -> List[str]:
-        model_cols = []
-        for col in self.model.__table__.columns.keys():  # type: ignore
-            model_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
-        return model_cols
+    # def _get_model_columns_by_name_convention(self) -> List[str]:
+    #     model_cols = []
+    #     for col in self.model.__table__.columns.keys():  # type: ignore
+    #         model_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
+    #     return model_cols
+
+    def _get_schema_columns_by_name_convention(self) -> List[str]:
+        schema_cols = []
+        for col in self.schema.model_fields.keys():  # type: ignore
+            schema_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
+        return schema_cols
 
     def _get_header_row(self) -> int:
         """Return the header row with EXCEL index (index starts by 1)
@@ -86,7 +92,7 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
         Returns:
             int: The header row index.
         """
-        db_columns = self._get_model_columns_by_name_convention()
+        db_columns = self._get_schema_columns_by_name_convention()
         empty_row_count = 0
 
         for row_index in range(1, self.ws.max_row + 1):
@@ -107,7 +113,8 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
                 empty_row_count += 1
             else:
                 empty_row_count = 0
-                if set(header_candidate) <= set(db_columns):
+                # if set(header_candidate) <= set(db_columns):
+                if set(header_candidate).intersection(set(db_columns)):
                     log.debug(f"Import file header row is {row_index}")
                     return row_index
 
