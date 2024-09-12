@@ -4,17 +4,17 @@
 
 from typing import Any
 
-from sqlalchemy.ext.declarative import as_declarative
-from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import DeclarativeBase
 
 
-@as_declarative()
-class Base:
+class Base(DeclarativeBase):
     """Declarative db base class."""
 
     id: Any
     __name__: str
 
-    @declared_attr
-    def __tablename__(cls) -> str:
-        return cls.__name__.lower()
+    # Automatic table naming has been removed in alembic revision f74f18d478ec
+    # Now all db models need to be named manually by setting __tablename__
+    # @declared_attr
+    # def __tablename__(cls) -> str:
+    #     return cls.__name__.lower()

@@ -11,6 +11,7 @@ from typing import Optional
 from config import cfg
 from pydantic import BaseModel
 from pydantic import BeforeValidator
+from pydantic import ConfigDict
 from pydantic import Field
 
 # This type includes str, int, float, ...
@@ -29,8 +30,7 @@ class BoughtItemCreateSchema(BoughtItemBaseSchema):
     high_priority: Optional[bool] = False
     notify_on_delivery: Optional[bool] = False
     group_1: Optional[str] = None
-    project: str = Field(..., min_length=1, pattern=cfg.items.bought.validation.project)
-    machine: Optional[str] = Field(pattern=cfg.items.bought.validation.machine)
+    project_id: int = Field(..., gt=0)
     quantity: float = Field(..., gt=0)
     unit: Literal[tuple(cfg.items.bought.units.values)] = Field(cfg.items.bought.units.default)  # type: ignore
     partnumber: str = Field(..., min_length=1)
@@ -61,7 +61,9 @@ class BoughtItemSchema(BoughtItemInDBBaseSchema):
 
     high_priority: bool
     notify_on_delivery: bool
-    project: str
+    project_id: int
+    project_number: str
+    project_is_active: bool
     machine: Optional[str]
     quantity: float
     unit: str
@@ -74,12 +76,16 @@ class BoughtItemSchema(BoughtItemInDBBaseSchema):
     note_general: Optional[str]
     note_supplier: Optional[str]
     desired_delivery_date: Optional[date]
+    creator_full_name: str
     requester_id: Optional[int]
+    requester_full_name: Optional[str]
     requested_date: Optional[date]
     orderer_id: Optional[int]
+    orderer_full_name: Optional[str]
     ordered_date: Optional[date]
     expected_delivery_date: Optional[date]
-    taken_over_id: Optional[int]
+    receiver_id: Optional[int]
+    receiver_full_name: Optional[str]
     delivery_date: Optional[date]
     storage_place: Optional[str]
 
@@ -95,7 +101,8 @@ class BoughtItemExcelExportSchema(BoughtItemBaseSchema):
 
     id: int
     status: str
-    project: str
+    # project_id: int
+    project_number: str
     machine: Optional[str]
     quantity: float
     unit: str

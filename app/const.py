@@ -6,7 +6,7 @@ import os
 import secrets
 from pathlib import Path
 
-VERSION = "0.6.0"
+VERSION = "0.7.0"
 NAME = "glados"
 
 # Security
@@ -17,6 +17,9 @@ NAME = "glados"
 # leave the value from the config-file empty if you want to use the secret_key from this module.
 SECRET_KEY = secrets.token_urlsafe(32)
 SYSTEM_USER = "system"
+
+# DB
+ALEMBIC_VERSION = "3d9027c47dd2"
 
 # API
 API_WEB_V1 = "/api/web/v1"

@@ -15,3 +15,4 @@ from db.models.user import User  # isort: skip
 from db.models.bought_item import BoughtItem  # isort: skip
 from db.models.api_key import APIKey  # isort: skip
 from db.models.email_notification import EmailNotification  # isort: skip
+from db.models.project import Project  # isort:skip
