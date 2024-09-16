@@ -16,6 +16,7 @@ from crud.base import CRUDBase
 from crud.email_notification import crud_email_notification
 from crud.project import crud_project
 from db.models import BoughtItemModel
+from db.models import ProjectModel
 from db.models import UserModel
 from exceptions import BoughtItemAlreadyPlannedError
 from exceptions import BoughtItemCannotChangeToOpenError
@@ -106,9 +107,12 @@ class CRUDBoughtItem(
                 elif value == cfg.items.bought.order_by.created:
                     output_list.append(asc(self.model.created))
                 elif value == cfg.items.bought.order_by.project:
-                    output_list.append(asc(self.model.project_number))
+                    # Ordering by association proxy is not possible.
+                    # Therefor it is required to specify the foreign table column name.
+                    # This required the join statement when building the query.
+                    output_list.append(asc(ProjectModel.number))
                 elif value == cfg.items.bought.order_by.machine:
-                    output_list.append(asc(self.model.machine))
+                    output_list.append(asc(ProjectModel.machine))
                 elif value == cfg.items.bought.order_by.group_1:
                     output_list.append(asc(self.model.group_1))
                 elif value == cfg.items.bought.order_by.manufacturer:
@@ -176,6 +180,7 @@ class CRUDBoughtItem(
                 self.model.receiver_id == receiver_id if receiver_id else text(""),
                 self.model.storage_place.ilike(f"%{storage_place}%") if storage_place else text(""),
             )
+            .join(ProjectModel, self.model.project)
             .order_by(order_by)
             .offset(skip)
             .limit(limit)

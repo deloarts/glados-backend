@@ -142,9 +142,3 @@ class BoughtItem(Base):
     requester_full_name = association_proxy("requester", "full_name")
     orderer_full_name = association_proxy("orderer", "full_name")
     receiver_full_name = association_proxy("creator", "full_name")
-
-    # def __init__(self, **kwargs):
-    #     allowed_args = self.__mapper__.class_manager  # returns a dict
-    #     print(allowed_args)
-    #     kwargs = {k: v for k, v in kwargs.items() if k in allowed_args}
-    #     super().__init__(**kwargs)
