@@ -409,15 +409,19 @@ All user levels share a common `active` state. A user must be active to logon to
 
 The **user** is the default level for new users in the app. The following rules are applied to the **user**:
 
+- A **user** cannot create projects
+- A **user** can edit their projects
 - A **user** can create items
-- A **user** can edit his or her own items, as long as the items state is `open`
-- A **user** can delete his or her own items, as long as the items state is `open`
+- A **user** can edit their own items, as long as the items state is `open`
+- A **user** can delete their own items, as long as the items state is `open`
 - A **user** cannot make changes to the settings of the app
 
 ### 4.2 superuser
 
 The **superuser** has a bit more permissions, compared to the **user**. The following rules are applied to the **superuser**:
 
+- A **superuser** cannot create projects
+- A **superuser** can edit their projects
 - A **superuser** can create items
 - A **superuser** can edit all items from all users at any state
 - A **superuser** can delete all items from all users at any state
@@ -427,6 +431,7 @@ The **superuser** has a bit more permissions, compared to the **user**. The foll
 
 The **adminuser** has the highest level of permissions. Elevate an **user** or a **superuser** to this right only if the person understands the consequences! The following rules are applied to the **adminuser**:
 
+- A **adminuser** can create, edit and delete projects
 - A **adminuser** can create items
 - A **adminuser** can edit all items from all users at any state
 - A **adminuser** can delete all items from all users at any state
@@ -438,6 +443,7 @@ The **adminuser** has the highest level of permissions. Elevate an **user** or a
 The **guestuser** has the lowest level of permissions. This user exist, so people can view the state of items. The following rules are applied to the **guestuser**:
 
 - A **guestuser** flag in the user permission settings overrules all other levels (forbidden before allow)
+- A **guestuser** can only view projects (cannot create, nor edit, nor delete)
 - A **guestuser** can only view items (cannot create, nor edit, nor delete)
 - A **guestuser** cannot make changed to the settings of the app
 
