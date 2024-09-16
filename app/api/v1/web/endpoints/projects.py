@@ -20,6 +20,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
+from multilog import log
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -41,7 +42,9 @@ def read_projects(
     """Retrieve all project."""
     kwargs = locals()
     kwargs.pop("verified")
-    return crud_project.get_multi(**kwargs)
+    projects = crud_project.get_multi(**kwargs)
+    log.debug(f"Found {len(projects)} projects with filter {kwargs}")
+    return projects
 
 
 @router.post("/", response_model=ProjectSchema)

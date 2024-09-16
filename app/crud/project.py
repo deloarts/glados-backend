@@ -58,7 +58,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
             db.query(self.model)
             .filter_by(
                 deleted=False,
-                is_active=is_active if is_active else self.model.is_active,
+                is_active=is_active if is_active is not None else self.model.is_active,
                 designated_user_id=designated_user_id if designated_user_id else self.model.designated_user_id,
             )
             .filter(
