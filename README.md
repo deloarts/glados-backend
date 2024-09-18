@@ -420,7 +420,7 @@ The **user** is the default level for new users in the app. The following rules 
 
 The **superuser** has a bit more permissions, compared to the **user**. The following rules are applied to the **superuser**:
 
-- A **superuser** cannot create projects
+- A **superuser** can create, edit and delete projects
 - A **superuser** can edit their projects
 - A **superuser** can create items
 - A **superuser** can edit all items from all users at any state

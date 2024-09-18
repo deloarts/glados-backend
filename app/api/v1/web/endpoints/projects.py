@@ -60,7 +60,9 @@ def create_project(
     except ProjectAlreadyExistsError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The project already exists")
     except InsufficientPermissionsError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Only admin users can create projects") from e
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Only super users and admin users can create projects"
+        ) from e
 
     return new_project
 
@@ -155,6 +157,8 @@ def delete_project(
     try:
         deleted_project = crud_project.delete(db, db_obj_project=project, db_obj_user=current_user)
     except InsufficientPermissionsError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin users can delete projects") from e
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Only super users and admin users can delete projects"
+        ) from e
 
     return deleted_project

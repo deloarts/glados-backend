@@ -143,7 +143,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
                 "already exists."
             )
 
-        if not db_obj_user.is_adminuser and not db_obj_user.is_systemuser:
+        if not db_obj_user.is_superuser and not db_obj_user.is_adminuser and not db_obj_user.is_systemuser:
             raise InsufficientPermissionsError(
                 f"Blocked creation of a project ({obj_in.number}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to create, but has not enough permissions."
@@ -200,7 +200,8 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
             )
 
         if (
-            not db_obj_user.is_adminuser
+            not db_obj_user.is_superuser
+            and not db_obj_user.is_adminuser
             and not db_obj_user.is_systemuser
             and not db_obj_user.id == db_obj.designated_user_id
         ):
@@ -230,7 +231,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         Returns:
             Optional[ProjectModel]: The deleted project.
         """
-        if not db_obj_user.is_adminuser and not db_obj_user.is_systemuser:
+        if not db_obj_user.is_superuser and not db_obj_user.is_adminuser and not db_obj_user.is_systemuser:
             raise InsufficientPermissionsError(
                 f"Blocked deletion of project #{db_obj_project.id} ({db_obj_project.number}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to delete, but has not enough permissions."
