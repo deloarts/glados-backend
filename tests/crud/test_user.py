@@ -67,10 +67,16 @@ def test_authenticate_user(db: Session) -> None:
     t_super = get_test_super_user(db)
     t_admin = get_test_admin_user(db)
 
+    # Some tests update the password, make sure to authenticate the user to their current pw
+    crud_user.update(db, current_user=t_admin, db_obj=t_user, obj_in={"password": TEST_PASS})
+    crud_user.update(db, current_user=t_admin, db_obj=t_super, obj_in={"password": TEST_PASS})
+    crud_user.update(db, current_user=t_admin, db_obj=t_admin, obj_in={"password": TEST_PASS})
+
     # ----------------------------------------------
     # AUTH USER: METHODS TO TEST
     # ----------------------------------------------
 
+    authenticated_user = crud_user.authenticate(db, username=t_user.username, password=TEST_PASS)
     authenticated_super_user = crud_user.authenticate(db, username=t_super.username, password=TEST_PASS)
     authenticated_admin_user = crud_user.authenticate(db, username=t_admin.username, password=TEST_PASS)
     unauthenticated_user = crud_user.authenticate(db, username=t_user.username, password="definitely not the password")
@@ -79,6 +85,7 @@ def test_authenticate_user(db: Session) -> None:
     # AUTH USER: VALIDATION
     # ----------------------------------------------
 
+    assert authenticated_user
     assert authenticated_super_user
     assert authenticated_admin_user
     assert not unauthenticated_user
