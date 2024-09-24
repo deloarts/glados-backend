@@ -7,8 +7,8 @@ from app.config import cfg
 from app.const import API_WEB_V1
 from tests.utils.bought_item import create_random_item
 from tests.utils.project import get_test_project
-from tests.utils.utils import random_bought_item_definition
 from tests.utils.utils import random_bought_item_name
+from tests.utils.utils import random_bought_item_order_number
 from tests.utils.utils import random_manufacturer
 
 JSON_ITEM_DATA = {
@@ -16,7 +16,7 @@ JSON_ITEM_DATA = {
     "quantity": 1,
     "unit": cfg.items.bought.units.default,
     "partnumber": random_bought_item_name(),
-    "definition": random_bought_item_definition(),
+    "order_number": random_bought_item_order_number(),
     "manufacturer": random_manufacturer(),
 }
 
@@ -57,7 +57,7 @@ def test_create_item(client: TestClient, normal_user_token_headers: dict, db: Se
     assert "quantity" in content
     assert "unit" in content
     assert "partnumber" in content
-    assert "definition" in content
+    assert "order_number" in content
     assert "manufacturer" in content
     assert "supplier" in content
     assert "weblink" in content
@@ -84,7 +84,7 @@ def test_create_item(client: TestClient, normal_user_token_headers: dict, db: Se
     assert content["quantity"] == t_data["quantity"]
     assert content["unit"] == t_data["unit"]
     assert content["partnumber"] == t_data["partnumber"]
-    assert content["definition"] == t_data["definition"]
+    assert content["order_number"] == t_data["order_number"]
     assert content["manufacturer"] == t_data["manufacturer"]
 
 
@@ -192,23 +192,23 @@ def test_create_item_missing_partnumber(client: TestClient, normal_user_token_he
     assert response_1.status_code == 422
 
 
-def test_create_item_missing_definition(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
+def test_create_item_missing_order_number(client: TestClient, normal_user_token_headers: dict, db: Session) -> None:
     # ----------------------------------------------
-    # CREATE ITEM MISSING DEFINITION: PREPARATION
+    # CREATE ITEM MISSING ORDER NUMBER: PREPARATION
     # ----------------------------------------------
 
     t_data_1 = copy.deepcopy(JSON_ITEM_DATA)
     t_data_1["project_id"] = get_test_project(db).id
-    t_data_1.pop("definition")
+    t_data_1.pop("order_number")
 
     # ----------------------------------------------
-    # CREATE ITEM MISSING DEFINITION: METHODS TO TEST
+    # CREATE ITEM MISSING ORDER NUMBER: METHODS TO TEST
     # ----------------------------------------------
 
     response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
 
     # ----------------------------------------------
-    # CREATE ITEM MISSING DEFINITION: VALIDATION
+    # CREATE ITEM MISSING ORDER NUMBER: VALIDATION
     # ----------------------------------------------
 
     assert response_1.status_code == 422
@@ -287,5 +287,5 @@ def test_read_item(client: TestClient, normal_user_token_headers: dict, db: Sess
     assert content["quantity"] == item.quantity
     assert content["unit"] == item.unit
     assert content["partnumber"] == item.partnumber
-    assert content["definition"] == item.definition
+    assert content["order_number"] == item.order_number
     assert content["manufacturer"] == item.manufacturer

@@ -34,7 +34,7 @@ class BoughtItemCreateSchema(BoughtItemBaseSchema):
     quantity: float = Field(..., gt=0)
     unit: Literal[tuple(cfg.items.bought.units.values)] = Field(cfg.items.bought.units.default)  # type: ignore
     partnumber: str = Field(..., min_length=1)
-    definition: IncludingString = Field(..., min_length=1)
+    order_number: IncludingString = Field(..., min_length=1)
     supplier: Optional[str] = None
     manufacturer: str = Field(..., min_length=1)
     weblink: Optional[str] = None
@@ -68,7 +68,7 @@ class BoughtItemSchema(BoughtItemInDBBaseSchema):
     quantity: float
     unit: str
     partnumber: str
-    definition: str
+    order_number: str
     manufacturer: str
     supplier: Optional[str]
     weblink: Optional[str]
@@ -107,7 +107,7 @@ class BoughtItemExcelExportSchema(BoughtItemBaseSchema):
     quantity: float
     unit: str
     partnumber: str
-    definition: str
+    order_number: str
     manufacturer: str
     supplier: Optional[str]
     group_1: Optional[str]

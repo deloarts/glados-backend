@@ -18,8 +18,8 @@ from tests.utils.user import create_random_user
 from tests.utils.user import get_test_admin_user
 from tests.utils.user import get_test_super_user
 from tests.utils.user import get_test_user
-from tests.utils.utils import random_bought_item_definition
 from tests.utils.utils import random_bought_item_name
+from tests.utils.utils import random_bought_item_order_number
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_manufacturer
 from tests.utils.utils import random_note
@@ -37,7 +37,7 @@ def test_create_item(db: Session) -> None:
     t_quantity = 1.0
     t_unit = cfg.items.bought.units.default
     t_partnumber = random_bought_item_name()
-    t_definition = random_bought_item_definition()
+    t_order_number = random_bought_item_order_number()
     t_manufacturer = random_manufacturer()
 
     t_supplier = random_supplier()
@@ -54,7 +54,7 @@ def test_create_item(db: Session) -> None:
         quantity=t_quantity,
         unit=t_unit,
         partnumber=t_partnumber,
-        definition=t_definition,
+        order_number=t_order_number,
         manufacturer=t_manufacturer,
         supplier=t_supplier,
         group_1=t_group_1,
@@ -80,7 +80,7 @@ def test_create_item(db: Session) -> None:
     assert item.quantity == t_quantity
     assert item.unit == t_unit
     assert item.partnumber == t_partnumber
-    assert item.definition == t_definition
+    assert item.order_number == t_order_number
     assert item.manufacturer == t_manufacturer
 
     assert item.supplier == t_supplier
@@ -138,7 +138,7 @@ def test_get_item(db: Session) -> None:
     assert item.quantity == t_item.quantity
     assert item.unit == t_item.unit
     assert item.partnumber == t_item.partnumber
-    assert item.definition == t_item.definition
+    assert item.order_number == t_item.order_number
     assert item.manufacturer == t_item.manufacturer
 
     assert item.creator_id == t_item.creator_id
@@ -166,7 +166,7 @@ def test_update_item(db: Session) -> None:
     t_qty = 10
     t_unit = cfg.items.bought.units.values[-1]
     t_partnumber = random_bought_item_name()
-    t_definition = random_lower_string()
+    t_order_number = random_bought_item_order_number()
     t_manufacturer = random_manufacturer()
 
     item_in = BoughtItemUpdateSchema(
@@ -174,7 +174,7 @@ def test_update_item(db: Session) -> None:
         quantity=t_qty,
         unit=t_unit,
         partnumber=t_partnumber,
-        definition=t_definition,
+        order_number=t_order_number,
         manufacturer=t_manufacturer,
     )
 
@@ -193,7 +193,7 @@ def test_update_item(db: Session) -> None:
     assert item_out.quantity == t_qty
     assert item_out.unit == t_unit
     assert item_out.partnumber == t_partnumber
-    assert item_out.definition == t_definition
+    assert item_out.order_number == t_order_number
     assert item_out.manufacturer == t_manufacturer
     assert item_out.creator_id == t_item.creator_id  # mus be unchanged
 
@@ -283,7 +283,7 @@ def test_update_item_assign_new_project(db: Session) -> None:
         quantity=t_item.quantity,
         unit=t_item.unit,
         partnumber=t_item.partnumber,
-        definition=t_item.definition,
+        order_number=t_item.order_number,
         manufacturer=t_item.manufacturer,
     )
 

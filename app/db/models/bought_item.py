@@ -59,7 +59,7 @@ class BoughtItem(Base):
     quantity: Mapped[float] = mapped_column(Float, nullable=False)
     unit: Mapped[str] = mapped_column(String, nullable=False)
     partnumber: Mapped[str] = mapped_column(String, nullable=False)
-    definition: Mapped[str] = mapped_column(String, nullable=False)
+    order_number: Mapped[str] = mapped_column(String, nullable=False)
     supplier: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     manufacturer: Mapped[str] = mapped_column(String, nullable=False)
     weblink: Mapped[Optional[str]] = mapped_column(String, nullable=True)
