@@ -38,7 +38,7 @@ class ConfigBoughtItemsFilter:
     quantity: str = field(default="")
     unit: str = field(default="")
     partnumber: str = field(default="")
-    definition: str = field(default="")
+    orderNumber: str = field(default="")
     manufacturer: str = field(default="")
     supplier: str = field(default="")
     group1: str = field(default="")

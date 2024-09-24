@@ -43,7 +43,7 @@ def random_bought_item_name() -> str:
     return fake.ecommerce_name()
 
 
-def random_bought_item_definition() -> str:
+def random_bought_item_order_number() -> str:
     return fake.isbn10()
 
 
