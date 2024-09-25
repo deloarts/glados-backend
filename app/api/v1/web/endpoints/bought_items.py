@@ -54,11 +54,11 @@ def read_bought_items(
     id: str | None = None,  # pylint: disable=W0622
     status: str | None = None,
     project_number: str | None = None,
-    machine: str | None = None,
+    product_number: str | None = None,
     quantity: float | None = None,
     unit: str | None = None,
     partnumber: str | None = None,
-    definition: str | None = None,
+    order_number: str | None = None,
     manufacturer: str | None = None,
     supplier: str | None = None,
     group_1: str | None = None,
@@ -106,11 +106,11 @@ def read_bought_items_excel(
     id: str | None = None,  # pylint: disable=W0622
     status: str | None = None,
     project_number: str | None = None,
-    machine: str | None = None,
+    product_number: str | None = None,
     quantity: float | None = None,
     unit: str | None = None,
     partnumber: str | None = None,
-    definition: str | None = None,
+    order_number: str | None = None,
     manufacturer: str | None = None,
     supplier: str | None = None,
     group_1: str | None = None,
@@ -347,16 +347,16 @@ def update_bought_item_group_1(
     return updated_item
 
 
-@router.put("/{item_id}/machine", response_model=BoughtItemSchema)
-def update_bought_item_machine(
+@router.put("/{item_id}/product-number", response_model=BoughtItemSchema)
+def update_bought_item_product_number(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    machine: str,
+    product_number: str,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
-    """Updates the machine of an item."""
-    raise HTTPException(status_code=sc.HTTP_410_GONE, detail="Machine must be changed in the project.")
+    """Updates the product number of an item."""
+    raise HTTPException(status_code=sc.HTTP_410_GONE, detail="Product number must be changed in the project.")
 
 
 @router.put("/{item_id}/quantity", response_model=BoughtItemSchema)
@@ -417,22 +417,22 @@ def update_bought_item_partnumber(
     return updated_item
 
 
-@router.put("/{item_id}/definition", response_model=BoughtItemSchema)
-def update_bought_item_definition(
+@router.put("/{item_id}/order-number", response_model=BoughtItemSchema)
+def update_bought_item_order_number(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    definition: str,
+    order_number: str,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
-    """Updates the definition of an item."""
+    """Updates the order number of an item."""
     item = crud_bought_item.get(db, id=item_id)
     if not item:
         raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
 
     try:
         updated_item = crud_bought_item.update_required_field(
-            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.definition, value=definition
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.order_number, value=order_number
         )
     except BoughtItemRequiredFieldNotSetError as e:
         raise HTTPException(status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail="Value must be set") from e

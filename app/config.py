@@ -41,7 +41,7 @@ class ConfigServer:
 @dataclass(slots=True, kw_only=True, frozen=True)
 class ConfigItemsBoughtValidation:
     project: str | None
-    machine: str | None
+    product: str | None
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
@@ -79,7 +79,7 @@ class ConfigItemsBoughtOrderBy:
     high_priority: str
     created: str
     project: str
-    machine: str
+    product: str
     group_1: str
     manufacturer: str
     supplier: str

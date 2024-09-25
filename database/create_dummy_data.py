@@ -35,7 +35,7 @@ if system_user:
     for i in range(projects):
         project_in = ProjectCreateSchema(
             number=fake.bothify(text="P24###"),
-            machine=fake.bothify(text="M24###"),
+            product_number=fake.bothify(text="M24###"),
             customer=fake.company(),
             description=fake.text(),
             designated_user_id=system_user.id,
@@ -44,9 +44,9 @@ if system_user:
 
         for j in range(items):
             name = fake.ecommerce_name()
-            definition = fake.bothify(text="????-########")
+            order_number = fake.bothify(text="????-########")
             manufacturer = fake.company()
-            partnumber = f"{name} - {definition} - {manufacturer}"
+            partnumber = f"{name} - {order_number} - {manufacturer}"
             quantity = randint(1, 100)
 
             data_in = BoughtItemCreateSchema(  # type: ignore
@@ -54,7 +54,7 @@ if system_user:
                 quantity=quantity,
                 unit=cfg.items.bought.units.default,
                 partnumber=partnumber,
-                definition=definition,
+                order_number=order_number,
                 manufacturer=manufacturer,
             )
             item = crud_bought_item.create(db, db_obj_user=system_user, obj_in=data_in)

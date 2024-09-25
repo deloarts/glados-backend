@@ -59,7 +59,7 @@ class BoughtItem(Base):
     quantity: Mapped[float] = mapped_column(Float, nullable=False)
     unit: Mapped[str] = mapped_column(String, nullable=False)
     partnumber: Mapped[str] = mapped_column(String, nullable=False)
-    definition: Mapped[str] = mapped_column(String, nullable=False)
+    order_number: Mapped[str] = mapped_column(String, nullable=False)
     supplier: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     manufacturer: Mapped[str] = mapped_column(String, nullable=False)
     weblink: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -137,7 +137,7 @@ class BoughtItem(Base):
     # associations
     project_number = association_proxy("project", "number")
     project_is_active = association_proxy("project", "is_active")
-    machine = association_proxy("project", "machine")
+    product_number = association_proxy("project", "product_number")
     creator_full_name = association_proxy("creator", "full_name")
     requester_full_name = association_proxy("requester", "full_name")
     orderer_full_name = association_proxy("orderer", "full_name")

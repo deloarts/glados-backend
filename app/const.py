@@ -6,7 +6,7 @@ import os
 import secrets
 from pathlib import Path
 
-VERSION = "0.7.3"
+VERSION = "0.8.0"
 NAME = "glados"
 
 # Security
@@ -19,7 +19,7 @@ SECRET_KEY = secrets.token_urlsafe(32)
 SYSTEM_USER = "system"
 
 # DB
-ALEMBIC_VERSION = "3d9027c47dd2"
+ALEMBIC_VERSION = "824d657001b8"
 
 # API
 API_WEB_V1 = "/api/web/v1"

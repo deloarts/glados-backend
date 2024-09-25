@@ -35,7 +35,7 @@ items:
   bought:
     validation:
       project: "^(^[P][0-9]{5}?$|MyExceptionOne|MyException2){1}$"
-      machine: "^(^[M][0-9]{5}?$|){1}$"
+      product: "^(^[M][0-9]{5}?$|){1}$"
     status:
       open: "open"
       requested: "requested"
@@ -52,7 +52,7 @@ items:
       high_priority: "high_priority"
       created: "created"
       project: "project"
-      machine: "machine"
+      product: "productNumber"
       group_1: "group1"
       manufacturer: "manufacturer"
       supplier: "supplier"

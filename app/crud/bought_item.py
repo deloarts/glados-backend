@@ -56,11 +56,11 @@ class CRUDBoughtItem(
         id: str | None = None,  # pylint: disable=W0622
         status: str | None = None,
         project_number: str | None = None,
-        machine: str | None = None,
+        product_number: str | None = None,
         quantity: float | None = None,
         unit: str | None = None,
         partnumber: str | None = None,
-        definition: str | None = None,
+        order_number: str | None = None,
         manufacturer: str | None = None,
         supplier: str | None = None,
         group_1: str | None = None,
@@ -111,8 +111,8 @@ class CRUDBoughtItem(
                     # Therefor it is required to specify the foreign table column name.
                     # This required the join statement when building the query.
                     output_list.append(asc(ProjectModel.number))
-                elif value == cfg.items.bought.order_by.machine:
-                    output_list.append(asc(ProjectModel.machine))
+                elif value == cfg.items.bought.order_by.product:
+                    output_list.append(asc(ProjectModel.product_number))
                 elif value == cfg.items.bought.order_by.group_1:
                     output_list.append(asc(self.model.group_1))
                 elif value == cfg.items.bought.order_by.manufacturer:
@@ -153,9 +153,9 @@ class CRUDBoughtItem(
                 self.model.status != cfg.items.bought.status.lost if ignore_lost else text(""),
                 # search filter
                 self.model.project_number.ilike(f"%{project_number}%") if project_number else text(""),
-                self.model.machine.ilike(f"%{machine}%") if machine else text(""),
+                self.model.product_number.ilike(f"%{product_number}%") if product_number else text(""),
                 self.model.partnumber.ilike(f"%{partnumber}%") if partnumber else text(""),
-                self.model.definition.ilike(f"%{definition}%") if definition else text(""),
+                self.model.order_number.ilike(f"%{order_number}%") if order_number else text(""),
                 self.model.manufacturer.ilike(f"%{manufacturer}%") if manufacturer else text(""),
                 self.model.supplier.ilike(f"%{supplier}%") if supplier else text(""),
                 self.model.group_1.ilike(f"%{group_1}%") if group_1 else text(""),

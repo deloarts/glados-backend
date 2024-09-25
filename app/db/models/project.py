@@ -36,7 +36,7 @@ class Project(Base):
 
     # data given on creation
     number: Mapped[str] = mapped_column(String, index=True, unique=True, nullable=False)
-    machine: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    product_number: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     customer: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
