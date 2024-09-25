@@ -97,7 +97,7 @@ def test_create_item(db: Session) -> None:
 
     assert item.project == t_project
     assert item.project_number == t_project.number
-    assert item.machine == t_project.machine
+    assert item.product_number == t_project.product_number
 
     assert item in t_user.created_bought_items
     assert item in t_project.bought_items

@@ -14,7 +14,7 @@ from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_project
 
 TEST_NUMBER = "P24000"
-TEST_MACHINE = "M24000"
+TEST_PRODUCT = "M24000"
 TEST_CUSTOMER = "TEST"
 TEST_DESC = "Project Test"
 
@@ -23,7 +23,7 @@ def create_project(
     db: Session,
     user: UserModel,
     number: str,
-    machine: str | None,
+    product_number: str | None,
     customer: str,
     description: str,
     designated_user_id: int,
@@ -31,7 +31,7 @@ def create_project(
 ):
     project_in = ProjectCreateSchema(
         number=number,
-        machine=machine,
+        product_number=product_number,
         customer=customer,
         description=description,
         designated_user_id=designated_user_id,
@@ -56,7 +56,7 @@ def create_random_project(db: Session) -> ProjectModel:
         db,
         user=admin_user,
         number=number,
-        machine=None,
+        product_number=None,
         customer=random_lower_string(),
         description=random_lower_string(),
         designated_user_id=normal_user.id,
@@ -79,7 +79,7 @@ def get_test_project(db: Session) -> ProjectModel:
             db,
             user=admin_user,
             number=TEST_NUMBER,
-            machine=TEST_MACHINE,
+            product_number=TEST_PRODUCT,
             customer=TEST_CUSTOMER,
             description=TEST_DESC,
             designated_user_id=normal_user.id,

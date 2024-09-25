@@ -137,7 +137,7 @@ class BoughtItem(Base):
     # associations
     project_number = association_proxy("project", "number")
     project_is_active = association_proxy("project", "is_active")
-    machine = association_proxy("project", "machine")
+    product_number = association_proxy("project", "product_number")
     creator_full_name = association_proxy("creator", "full_name")
     requester_full_name = association_proxy("requester", "full_name")
     orderer_full_name = association_proxy("orderer", "full_name")

@@ -32,7 +32,7 @@ def read_projects(
     skip: int | None = None,
     limit: int | None = None,
     number: str | None = None,
-    machine: str | None = None,
+    product_number: str | None = None,
     customer: str | None = None,
     description: str | None = None,
     is_active: bool | None = None,
@@ -104,14 +104,14 @@ def read_project_by_number(
     return project
 
 
-@router.get("/machine/{machine_number}", response_model=List[ProjectSchema])
-def read_project_by_machine(
-    machine_number: str,
+@router.get("/product-number/{product_number}", response_model=List[ProjectSchema])
+def read_project_by_product_number(
+    product_number: str,
     current_user: UserModel = Depends(get_current_active_user),
     db: Session = Depends(get_db),
 ) -> Any:
-    """Get a projects with the machine number."""
-    return crud_project.get_by_machine(db, machine=machine_number)
+    """Get a projects with the product number number."""
+    return crud_project.get_by_product_number(db, product_number=product_number)
 
 
 @router.put("/{project_id}", response_model=ProjectSchema)

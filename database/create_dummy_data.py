@@ -35,7 +35,7 @@ if system_user:
     for i in range(projects):
         project_in = ProjectCreateSchema(
             number=fake.bothify(text="P24###"),
-            machine=fake.bothify(text="M24###"),
+            product_number=fake.bothify(text="M24###"),
             customer=fake.company(),
             description=fake.text(),
             designated_user_id=system_user.id,

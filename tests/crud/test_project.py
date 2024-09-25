@@ -8,7 +8,7 @@ from tests.utils.project import get_test_project
 from tests.utils.user import get_test_admin_user
 from tests.utils.user import get_test_super_user
 from tests.utils.user import get_test_user
-from tests.utils.utils import random_machine
+from tests.utils.utils import random_product_number
 from tests.utils.utils import random_manufacturer
 from tests.utils.utils import random_note
 from tests.utils.utils import random_project
@@ -21,7 +21,7 @@ def test_create_project_normal_user(db: Session) -> None:
 
     t_normal_user = get_test_user(db)
     t_number = random_project()
-    t_machine = random_machine()
+    t_product_number = random_product_number()
     t_customer = random_manufacturer()
     t_description = random_note()
 
@@ -30,7 +30,7 @@ def test_create_project_normal_user(db: Session) -> None:
 
     t_project_in = ProjectCreateSchema(
         number=t_number,
-        machine=t_machine,
+        product_number=t_product_number,
         customer=t_customer,
         description=t_description,
         designated_user_id=t_normal_user.id,
@@ -54,7 +54,7 @@ def test_create_project_super_user(db: Session) -> None:
     t_super_user = get_test_super_user(db)
 
     t_number = random_project()
-    t_machine = random_machine()
+    t_product_number = random_product_number()
     t_customer = random_manufacturer()
     t_description = random_note()
 
@@ -63,7 +63,7 @@ def test_create_project_super_user(db: Session) -> None:
 
     t_project_in = ProjectCreateSchema(
         number=t_number,
-        machine=t_machine,
+        product_number=t_product_number,
         customer=t_customer,
         description=t_description,
         designated_user_id=t_normal_user.id,
@@ -81,7 +81,7 @@ def test_create_project_super_user(db: Session) -> None:
     # ----------------------------------------------
 
     assert project.number == t_number
-    assert project.machine == t_machine
+    assert project.product_number == t_product_number
     assert project.customer == t_customer
     assert project.description == t_description
     assert project.designated_user_id == t_normal_user.id
@@ -99,7 +99,7 @@ def test_create_project_admin_user(db: Session) -> None:
     t_admin_user = get_test_admin_user(db)
 
     t_number = random_project()
-    t_machine = random_machine()
+    t_product_number = random_product_number()
     t_customer = random_manufacturer()
     t_description = random_note()
 
@@ -108,7 +108,7 @@ def test_create_project_admin_user(db: Session) -> None:
 
     t_project_in = ProjectCreateSchema(
         number=t_number,
-        machine=t_machine,
+        product_number=t_product_number,
         customer=t_customer,
         description=t_description,
         designated_user_id=t_normal_user.id,
@@ -126,7 +126,7 @@ def test_create_project_admin_user(db: Session) -> None:
     # ----------------------------------------------
 
     assert project.number == t_number
-    assert project.machine == t_machine
+    assert project.product_number == t_product_number
     assert project.customer == t_customer
     assert project.description == t_description
     assert project.designated_user_id == t_normal_user.id

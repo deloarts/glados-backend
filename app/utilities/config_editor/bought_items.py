@@ -34,7 +34,7 @@ class ConfigBoughtItemsFilter:
     id: str = field(default="")
     status: str = field(default="")
     project: str = field(default="")
-    machine: str = field(default="")
+    productNumber: str = field(default="")
     quantity: str = field(default="")
     unit: str = field(default="")
     partnumber: str = field(default="")

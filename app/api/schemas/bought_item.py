@@ -64,7 +64,7 @@ class BoughtItemSchema(BoughtItemInDBBaseSchema):
     project_id: int
     project_number: str
     project_is_active: bool
-    machine: Optional[str]
+    product_number: Optional[str]
     quantity: float
     unit: str
     partnumber: str
@@ -103,7 +103,7 @@ class BoughtItemExcelExportSchema(BoughtItemBaseSchema):
     status: str
     # project_id: int
     project_number: str
-    machine: Optional[str]
+    product_number: Optional[str]
     quantity: float
     unit: str
     partnumber: str
