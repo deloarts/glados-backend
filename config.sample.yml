@@ -52,7 +52,7 @@ items:
       high_priority: "high_priority"
       created: "created"
       project: "project"
-      product: "product"
+      product: "productNumber"
       group_1: "group1"
       manufacturer: "manufacturer"
       supplier: "supplier"
