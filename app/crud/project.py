@@ -32,7 +32,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         skip: int | None = None,
         limit: int | None = None,
         number: str | None = None,
-        machine: str | None = None,
+        product_number: str | None = None,
         customer: str | None = None,
         description: str | None = None,
         is_active: bool | None = None,
@@ -45,7 +45,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
             skip (int | None, optional): Number of items to skip (offset). Defaults to None.
             limit (int | None, optional): Number of items (limit). Defaults to None.
             number (str | None, optional): Filter the number. Defaults to None.
-            machine (str | None, optional): Filter the machine. Defaults to None.
+            product_number (str | None, optional): Filter the product number. Defaults to None.
             customer (str | None, optional): Filter the customer. Defaults to None.
             description (str | None, optional): Filter the description. Defaults to None.
             is_active (bool | None, optional): Filter only active projects. Defaults to None.
@@ -63,7 +63,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
             )
             .filter(
                 self.model.number.ilike(f"%{number}%") if number else text(""),
-                self.model.machine.ilike(f"%{machine}%") if machine else text(""),
+                self.model.product_number.ilike(f"%{product_number}%") if product_number else text(""),
                 self.model.customer.ilike(f"%{customer}%") if customer else text(""),
                 self.model.description.ilike(f"%{description}%") if description else text(""),
             )
@@ -109,17 +109,17 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         """
         return db.query(self.model).filter(self.model.designated_user_id == user_id).all()
 
-    def get_by_machine(self, db: Session, *, machine: str) -> Optional[List[ProjectModel]]:
-        """Returns all projects from a machine number.
+    def get_by_product_number(self, db: Session, *, product_number: str) -> Optional[List[ProjectModel]]:
+        """Returns all projects from a product number.
 
         Args:
             db (Session): DB session.
-            machine (int): The machine number to lookup.
+            product_number (int): The product number number to lookup.
 
         Returns:
-            Optional[List[ProjectModel]]: A list of all projects as model with the given machine number.
+            Optional[List[ProjectModel]]: A list of all projects as model with the given product number.
         """
-        return db.query(self.model).filter(self.model.machine == machine).all()
+        return db.query(self.model).filter(self.model.product_number == product_number).all()
 
     def create(self, db: Session, *, db_obj_user: UserModel, obj_in: ProjectCreateSchema) -> ProjectModel:
         """Creates a new project.

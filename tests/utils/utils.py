@@ -31,7 +31,7 @@ def random_project() -> str:
     return f"P{random.randint(10000, 99999):05d}"
 
 
-def random_machine() -> str:
+def random_product_number() -> str:
     return f"M{random.randint(10000, 99999):05d}"
 
 

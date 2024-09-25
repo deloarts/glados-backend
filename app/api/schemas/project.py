@@ -14,7 +14,7 @@ class ProjectBaseSchema(BaseModel):
     """Shared properties."""
 
     number: str = Field(..., min_length=1, pattern=cfg.items.bought.validation.project)
-    machine: Optional[str] = Field(pattern=cfg.items.bought.validation.machine)
+    product_number: Optional[str] = Field(pattern=cfg.items.bought.validation.product)
     customer: str = Field(..., min_length=1)
     description: str = Field(..., min_length=1)
     designated_user_id: int = Field(..., gt=0)
@@ -40,7 +40,7 @@ class ProjectSchema(ProjectInDBBaseSchema):
     """Additional properties to return via API."""
 
     number: str
-    machine: Optional[str]
+    product_number: Optional[str]
     customer: str
     description: str
     designated_user_id: int

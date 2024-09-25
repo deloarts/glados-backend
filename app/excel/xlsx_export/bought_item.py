@@ -21,7 +21,7 @@ class BoughtItemExcelExport(BaseExcelExport[BoughtItemModel, BoughtItemExcelExpo
         for datum in data:
             datum_dict = datum.__dict__
             datum_dict["project_number"] = datum.project_number
-            datum_dict["machine"] = datum.machine
+            datum_dict["product_number"] = datum.product_number
             extended_data.append(datum_dict)
 
         self.import_data_by_dict(data=extended_data)

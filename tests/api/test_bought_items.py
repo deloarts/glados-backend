@@ -50,7 +50,7 @@ def test_create_item(client: TestClient, normal_user_token_headers: dict, db: Se
     assert "project_id" in content
     assert "project_number" in content
     assert "project_is_active" in content
-    assert "machine" in content
+    assert "product_number" in content
 
     assert "high_priority" in content
     assert "notify_on_delivery" in content

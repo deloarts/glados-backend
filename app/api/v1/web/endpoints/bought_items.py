@@ -54,7 +54,7 @@ def read_bought_items(
     id: str | None = None,  # pylint: disable=W0622
     status: str | None = None,
     project_number: str | None = None,
-    machine: str | None = None,
+    product_number: str | None = None,
     quantity: float | None = None,
     unit: str | None = None,
     partnumber: str | None = None,
@@ -106,7 +106,7 @@ def read_bought_items_excel(
     id: str | None = None,  # pylint: disable=W0622
     status: str | None = None,
     project_number: str | None = None,
-    machine: str | None = None,
+    product_number: str | None = None,
     quantity: float | None = None,
     unit: str | None = None,
     partnumber: str | None = None,
@@ -347,16 +347,16 @@ def update_bought_item_group_1(
     return updated_item
 
 
-@router.put("/{item_id}/machine", response_model=BoughtItemSchema)
-def update_bought_item_machine(
+@router.put("/{item_id}/product-number", response_model=BoughtItemSchema)
+def update_bought_item_product_number(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    machine: str,
+    product_number: str,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
-    """Updates the machine of an item."""
-    raise HTTPException(status_code=sc.HTTP_410_GONE, detail="Machine must be changed in the project.")
+    """Updates the product number of an item."""
+    raise HTTPException(status_code=sc.HTTP_410_GONE, detail="Product number must be changed in the project.")
 
 
 @router.put("/{item_id}/quantity", response_model=BoughtItemSchema)
