@@ -12,10 +12,10 @@ from typing import List
 
 from api.deps import get_current_active_user
 from api.deps import verify_token
-from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemCreateWebSchema
 from api.schemas.bought_item import BoughtItemExcelExportSchema
 from api.schemas.bought_item import BoughtItemSchema
-from api.schemas.bought_item import BoughtItemUpdateSchema
+from api.schemas.bought_item import BoughtItemUpdateWebSchema
 from config import cfg
 from const import ROOT
 from const import TEMPLATES
@@ -207,7 +207,7 @@ def read_bought_item_changelog_by_id(
 def create_bought_item(
     *,
     db: Session = Depends(get_db),
-    obj_in: BoughtItemCreateSchema,
+    obj_in: BoughtItemCreateWebSchema,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Create new bought item."""
@@ -236,7 +236,7 @@ def update_bought_item(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    obj_in: BoughtItemUpdateSchema,
+    obj_in: BoughtItemUpdateWebSchema,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Update a bought item."""

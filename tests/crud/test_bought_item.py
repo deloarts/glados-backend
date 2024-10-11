@@ -1,16 +1,16 @@
 from datetime import date
 
 import pytest
+from api.schemas.bought_item import BoughtItemCreateWebSchema
+from api.schemas.bought_item import BoughtItemUpdateWebSchema
+from config import cfg
+from crud.bought_item import crud_bought_item
 from exceptions import BoughtItemAlreadyPlannedError
 from exceptions import BoughtItemCannotChangeToOpenError
 from exceptions import BoughtItemOfAnotherUserError
 from exceptions import BoughtItemUnknownStatusError
 from sqlalchemy.orm import Session
 
-from app.api.schemas.bought_item import BoughtItemCreateSchema
-from app.api.schemas.bought_item import BoughtItemUpdateSchema
-from app.config import cfg
-from app.crud.bought_item import crud_bought_item
 from tests.utils.bought_item import create_random_item
 from tests.utils.project import create_random_project
 from tests.utils.project import get_test_project
@@ -49,7 +49,7 @@ def test_create_item(db: Session) -> None:
     t_high_priority = True
     t_notify_on_delivery = True
 
-    t_item_in = BoughtItemCreateSchema(
+    t_item_in = BoughtItemCreateWebSchema(
         project_id=t_project.id,
         quantity=t_quantity,
         unit=t_unit,
@@ -169,7 +169,7 @@ def test_update_item(db: Session) -> None:
     t_order_number = random_bought_item_order_number()
     t_manufacturer = random_manufacturer()
 
-    item_in = BoughtItemUpdateSchema(
+    item_in = BoughtItemUpdateWebSchema(
         project_id=t_project.id,  # A normal user (t_user in this case) can only assign the same or their project
         quantity=t_qty,
         unit=t_unit,
@@ -278,7 +278,7 @@ def test_update_item_assign_new_project(db: Session) -> None:
     t_project = get_test_project(db)
     t_project_new = create_random_project(db)
 
-    item_in = BoughtItemUpdateSchema(
+    item_in = BoughtItemUpdateWebSchema(
         project_id=t_project_new.id,
         quantity=t_item.quantity,
         unit=t_item.unit,

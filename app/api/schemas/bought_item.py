@@ -24,13 +24,12 @@ class BoughtItemBaseSchema(BaseModel):
     """Shared properties."""
 
 
-class BoughtItemCreateSchema(BoughtItemBaseSchema):
+class BoughtItemCreateBaseSchema(BoughtItemBaseSchema):
     """Properties to receive via API on creation from "BoughtItem"."""
 
     high_priority: Optional[bool] = False
     notify_on_delivery: Optional[bool] = False
     group_1: Optional[str] = None
-    project_id: int = Field(..., gt=0)
     quantity: float = Field(..., gt=0)
     unit: Literal[tuple(cfg.items.bought.units.values)] = Field(cfg.items.bought.units.default)  # type: ignore
     partnumber: str = Field(..., min_length=1)
@@ -43,8 +42,22 @@ class BoughtItemCreateSchema(BoughtItemBaseSchema):
     desired_delivery_date: Optional[date] = None
 
 
-class BoughtItemUpdateSchema(BoughtItemCreateSchema):
-    """Properties to receive via API on update from "BoughtItem"."""
+class BoughtItemCreateWebSchema(BoughtItemCreateBaseSchema):
+    """Properties to receive on creation from WEB API"""
+
+    # The web client knows the project's id, so we can handle it directly
+    project_id: int = Field(..., gt=0)
+
+
+class BoughtItemCreatePatSchema(BoughtItemCreateBaseSchema):
+    """Properties to receive on creation from PAT API"""
+
+    # The PAT client may not know the project id, so we use the project number and handle the conversion down the line
+    project: str = Field(..., min_length=1)
+
+
+class BoughtItemUpdateWebSchema(BoughtItemCreateWebSchema):
+    """Properties to receive via WEB API on update from "BoughtItem"."""
 
 
 class BoughtItemInDBBaseSchema(BoughtItemBaseSchema):
