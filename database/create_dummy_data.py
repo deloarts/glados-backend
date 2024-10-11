@@ -11,7 +11,7 @@ if not cfg.debug:
 from random import randint
 
 import faker_commerce
-from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemCreateWebSchema
 from api.schemas.project import ProjectCreateSchema
 from crud.bought_item import crud_bought_item
 from crud.project import crud_project
@@ -49,7 +49,7 @@ if system_user:
             partnumber = f"{name} - {order_number} - {manufacturer}"
             quantity = randint(1, 100)
 
-            data_in = BoughtItemCreateSchema(  # type: ignore
+            data_in = BoughtItemCreateWebSchema(  # type: ignore
                 project_id=project.id,
                 quantity=quantity,
                 unit=cfg.items.bought.units.default,

@@ -9,7 +9,7 @@ from typing import Any
 
 from api.deps import get_current_user_personal_access_token
 from api.deps import verify_personal_access_token
-from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemCreatePatSchema
 from api.schemas.bought_item import BoughtItemSchema
 from crud.bought_item import crud_bought_item
 from db.models import UserModel
@@ -46,7 +46,7 @@ def read_bought_item_by_id(
 def create_bought_item(
     *,
     db: Session = Depends(get_db),
-    obj_in: BoughtItemCreateSchema,
+    obj_in: BoughtItemCreatePatSchema,
     current_user: UserModel = Depends(get_current_user_personal_access_token),
 ) -> Any:
     """Create new bought item."""
