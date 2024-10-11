@@ -8,8 +8,9 @@ from datetime import date
 from typing import List
 from typing import Optional
 
-from api.schemas.bought_item import BoughtItemCreateSchema
-from api.schemas.bought_item import BoughtItemUpdateSchema
+from api.schemas.bought_item import BoughtItemCreatePatSchema
+from api.schemas.bought_item import BoughtItemCreateWebSchema
+from api.schemas.bought_item import BoughtItemUpdateWebSchema
 from api.schemas.email_notification import EmailNotificationCreateSchema
 from config import cfg
 from crud.base import CRUDBase
@@ -40,8 +41,8 @@ from utilities.helper import get_changelog
 class CRUDBoughtItem(
     CRUDBase[
         BoughtItemModel,
-        BoughtItemCreateSchema,
-        BoughtItemUpdateSchema,
+        BoughtItemCreateWebSchema | BoughtItemCreatePatSchema,
+        BoughtItemUpdateWebSchema,
     ]
 ):
     """CRUDBoughtItem class. Descendent of the CRUDBase class."""
@@ -188,18 +189,20 @@ class CRUDBoughtItem(
         # log.debug(str(query))
         return query.all()
 
-    def create(self, db: Session, *, db_obj_user: UserModel, obj_in: BoughtItemCreateSchema) -> BoughtItemModel:
+    def create(
+        self, db: Session, *, db_obj_user: UserModel, obj_in: BoughtItemCreateWebSchema | BoughtItemCreatePatSchema
+    ) -> BoughtItemModel:
         """Create a new bought item.
 
         Args:
             db (Session): DB session.
             db_obj_user (UserModel): The user who creates the item as db model.
-            obj_in (BoughtItemCreateSchema): The item data as api schema.
+            obj_in (BoughtItemCreateWebSchema): The item data as api schema.
 
         Raises:
             InsufficientPermissionsError: User doesn't have required permissions.
             ProjectNotFoundError: The project given by ob_in doesn't exists.
-            ProjectNotFoundError: The project given by ob_in is inactive.
+            ProjectInactiveError: The project given by ob_in is inactive.
 
         Returns:
             BoughtItemModel: The new bought item as db model.
@@ -210,19 +213,35 @@ class CRUDBoughtItem(
                 "A guest user is not allowed to create bought items."
             )
 
-        project = crud_project.get_by_id(db, id=obj_in.project_id)
+        project = None
+        if isinstance(obj_in, BoughtItemCreateWebSchema):
+            project = crud_project.get_by_id(db, id=obj_in.project_id)
+        elif isinstance(obj_in, BoughtItemCreatePatSchema):
+            project = crud_project.get_by_number(db, number=obj_in.project)
+        else:
+            raise ValueError(f"The given data doesn't contain any information about the associated project.")
+
         if not project:
             raise ProjectNotFoundError(
                 f"Blocked creation of an item by user #{db_obj_user.id} ({db_obj_user.full_name}): "
-                f"The given project (ID={obj_in.project_id}) doesn't exists."
+                f"The given project doesn't exists."
             )
         if not project.is_active:
-            raise ProjectNotFoundError(
+            raise ProjectInactiveError(
                 f"Blocked creation of an item by user #{db_obj_user.id} ({db_obj_user.full_name}): "
-                f"The given project (ID={obj_in.project_id}) is inactive."
+                f"The given project (ID={project.id}) is inactive."
             )
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=False)
+
+        # Handle project from different clients
+        # The web client knows the project ID and sends it via the required db field `project_id`.
+        # But the pat client only knows the project number and sends it via the field `project`.
+        # Thus it's mandatory to resolve this name issue, because the key name `project` is an object
+        # in the db model.
+        if "project" in data:  # This is only present in the BoughtItemCreatePatSchema.
+            data.pop("project")
+        data["project_id"] = project.id
 
         # Manipulate data
         data["created"] = date.today()
@@ -244,7 +263,7 @@ class CRUDBoughtItem(
         *,
         db_obj_user: UserModel,
         db_obj_item: BoughtItemModel,
-        obj_in: BoughtItemUpdateSchema,
+        obj_in: BoughtItemUpdateWebSchema,
     ) -> BoughtItemModel:
         """Update a bought item.
 

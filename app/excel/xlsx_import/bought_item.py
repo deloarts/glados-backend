@@ -2,7 +2,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from api.schemas.bought_item import BoughtItemCreateSchema
+from api.schemas.bought_item import BoughtItemCreateWebSchema
 from crud.project import crud_project
 from db.models import BoughtItemModel
 from db.models.user import User
@@ -13,9 +13,11 @@ from fastapi import status
 from sqlalchemy.orm import Session
 
 
-class BoughtItemExcelImport(BaseExcelImport[BoughtItemModel, BoughtItemCreateSchema]):
+class BoughtItemExcelImport(BaseExcelImport[BoughtItemModel, BoughtItemCreateWebSchema]):
     def __init__(self, db: Session, db_obj_user: User, file: UploadFile) -> None:
-        super().__init__(db, model=BoughtItemModel, schema=BoughtItemCreateSchema, db_obj_user=db_obj_user, file=file)
+        super().__init__(
+            db, model=BoughtItemModel, schema=BoughtItemCreateWebSchema, db_obj_user=db_obj_user, file=file
+        )
 
     # def _get_model_columns_by_name_convention(self) -> List[str]:
     #     model_cols = []
@@ -33,7 +35,7 @@ class BoughtItemExcelImport(BaseExcelImport[BoughtItemModel, BoughtItemCreateSch
             schema_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
         return schema_cols
 
-    def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[BoughtItemCreateSchema]) -> None:
+    def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[BoughtItemCreateWebSchema]) -> None:
         if "project" not in db_obj_in:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Column `Project` not found")
 
