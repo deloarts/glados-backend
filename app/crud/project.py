@@ -143,11 +143,17 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
                 "already exists."
             )
 
-        if not db_obj_user.is_superuser and not db_obj_user.is_adminuser and not db_obj_user.is_systemuser:
+        if db_obj_user.is_guestuser:
             raise InsufficientPermissionsError(
                 f"Blocked creation of a project ({obj_in.number}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to create, but has not enough permissions."
             )
+
+        # When a normal user creates a project they cannot assign another user.
+        # Only a user with elevated permission can assign other users.
+        # Ignore whatever user may be assigned through the api and automatically assign the normal user.
+        if db_obj_user.is_superuser and not db_obj_user.is_adminuser and not db_obj_user.is_systemuser:
+            obj_in.designated_user_id = db_obj_user.id
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["created"] = datetime.now(UTC)

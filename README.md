@@ -409,7 +409,7 @@ All user levels share a common `active` state. A user must be active to logon to
 
 The **user** is the default level for new users in the app. The following rules are applied to the **user**:
 
-- A **user** cannot create projects
+- A **user** can create projects, but cannot assign other users as designated user
 - A **user** can edit their projects
 - A **user** can create items
 - A **user** can edit their own items, as long as the items state is `open`
@@ -420,7 +420,7 @@ The **user** is the default level for new users in the app. The following rules 
 
 The **superuser** has a bit more permissions, compared to the **user**. The following rules are applied to the **superuser**:
 
-- A **superuser** can create, edit and delete projects
+- A **superuser** can create, edit and delete projects and can assign other users as designated user
 - A **superuser** can edit their projects
 - A **superuser** can create items
 - A **superuser** can edit all items from all users at any state
@@ -431,7 +431,7 @@ The **superuser** has a bit more permissions, compared to the **user**. The foll
 
 The **adminuser** has the highest level of permissions. Elevate an **user** or a **superuser** to this right only if the person understands the consequences! The following rules are applied to the **adminuser**:
 
-- A **adminuser** can create, edit and delete projects
+- A **adminuser** can create, edit and delete projects and can assign other users as designated user
 - A **adminuser** can create items
 - A **adminuser** can edit all items from all users at any state
 - A **adminuser** can delete all items from all users at any state
