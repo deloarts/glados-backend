@@ -60,9 +60,7 @@ def create_project(
     except ProjectAlreadyExistsError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The project already exists")
     except InsufficientPermissionsError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Only super users and admin users can create projects"
-        ) from e
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="A guest user cannot create projects") from e
 
     return new_project
 
