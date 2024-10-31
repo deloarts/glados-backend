@@ -12,6 +12,7 @@ security:
   debug_secret_key: myDebugSecretKey
 
 server:
+  local_url: "glados.local"
   host: 0.0.0.0
   port: 5000
   whitelist:
@@ -83,6 +84,7 @@ templates:
   mail_item_notification: "item_notification.j2"
   mail_schedule_error: "schedule_error.j2"
   mail_disc_space_warning: "disc_space_warning.j2"
+  mail_welcome: "welcome.j2"
 
 init:
   full_name: "System"

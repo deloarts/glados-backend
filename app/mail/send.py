@@ -7,10 +7,24 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from multiprocessing import Process
 
+import dill
 from config import cfg
 from mail import Mail
 from mail import Receiver
 from multilog import log
+
+
+class SendProcess(Process):
+    """Middleman class for serializing closure function send_mail."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._target = dill.dumps(self._target)  # Save the target function as bytes
+
+    def run(self):
+        if self._target:
+            self._target = dill.loads(self._target)  # Unpickle the target function before executing
+            self._target(*self._args, **self._kwargs)  # type: ignore
 
 
 def send_mail(receiver: Receiver, mail: Mail) -> None:
@@ -60,5 +74,5 @@ def send_mail(receiver: Receiver, mail: Mail) -> None:
         finally:
             smtp.quit()
 
-    process = Process(target=send)
+    process = SendProcess(target=send)
     process.start()

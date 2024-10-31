@@ -33,6 +33,7 @@ class ConfigSecurity:
 
 @dataclass(slots=True, kw_only=True, frozen=True)
 class ConfigServer:
+    local_url: str
     host: str
     port: int
     whitelist: List[str]
@@ -189,6 +190,7 @@ class ConfigTemplates:
     mail_item_notification: str
     mail_schedule_error: str
     mail_disc_space_warning: str
+    mail_welcome: str
 
 
 @dataclass(slots=True, kw_only=True)
