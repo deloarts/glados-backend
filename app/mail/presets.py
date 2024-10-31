@@ -47,3 +47,13 @@ class MailPreset:
         receiver = Receiver(to=[cfg.init.mail])
         mail = Mail(subject="Glados Notification Service", body=body)
         send_mail(receiver=receiver, mail=mail)
+
+    @staticmethod
+    def send_welcome_mail(email: str, full_name: str, username: str, password: str) -> None:
+        """Send a welcome mail for new users."""
+        local_url = cfg.server.local_url
+        log.info(f"Sending welcome email to {email!r}...")
+        body = render_template(template_file=Path(TEMPLATES, cfg.templates.mail_welcome), **locals())
+        receiver = Receiver(to=[email])
+        mail = Mail(subject="Glados Notification Service", body=body)
+        send_mail(receiver=receiver, mail=mail)

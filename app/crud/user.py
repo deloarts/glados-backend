@@ -16,6 +16,7 @@ from db.models import UserModel
 from exceptions import InsufficientPermissionsError
 from exceptions import PasswordCriteriaError
 from exceptions import UserAlreadyExistsError
+from mail.presets import MailPreset
 from multilog import log
 from security.pwd import get_password_hash
 from security.pwd import verify_password
@@ -103,6 +104,11 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             f"Created user {db_obj.username!r} (Name={db_obj.full_name!r}, ID={db_obj.id}) "
             f"by {current_user.username!r} (Name={current_user.full_name!r}, ID={current_user.id})."
         )
+
+        MailPreset.send_welcome_mail(
+            email=db_obj.email, full_name=db_obj.full_name, username=db_obj.username, password=obj_in.password
+        )
+
         return db_obj
 
     def update(
