@@ -598,7 +598,7 @@ def update_bought_item_desired_delivery_date(
 
     try:
         updated_item = crud_bought_item.update_field(
-            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.delivery_date, value=date
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.desired_delivery_date, value=date
         )
     except BoughtItemAlreadyPlannedError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
