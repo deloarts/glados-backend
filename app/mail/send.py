@@ -54,7 +54,7 @@ def send_mail(receiver: Receiver, mail: Mail) -> None:
 
     msg = MIMEMultipart("alternative")
     msg["From"] = cfg.mailing.account
-    msg["Subject"] = mail.subject
+    msg["Subject"] = f"DEBUG | {mail.subject}" if cfg.debug else mail.subject
     msg["To"] = ", ".join(receiver.to)
     msg["Cc"] = ", ".join(receiver.cc)
     msg["Bcc"] = ", ".join(receiver.bcc)
