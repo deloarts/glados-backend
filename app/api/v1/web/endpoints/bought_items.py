@@ -388,6 +388,35 @@ def update_bought_item_quantity(
     return updated_item
 
 
+@router.put("/{item_id}/unit", response_model=BoughtItemSchema)
+def update_bought_item_unit(
+    *,
+    db: Session = Depends(get_db),
+    item_id: int,
+    unit: str,
+    current_user: UserModel = Depends(get_current_active_user),
+) -> Any:
+    """Updates the quantity of an item."""
+    item = crud_bought_item.get(db, id=item_id)
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Item doesn't exists")
+
+    try:
+        updated_item = crud_bought_item.update_required_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.unit, value=unit
+        )
+    except BoughtItemRequiredFieldNotSetError as e:
+        raise HTTPException(status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail="Value must be set") from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change planned items") from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+
+    return updated_item
+
+
 @router.put("/{item_id}/partnumber", response_model=BoughtItemSchema)
 def update_bought_item_partnumber(
     *,
