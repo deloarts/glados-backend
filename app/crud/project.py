@@ -31,6 +31,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         *,
         skip: int | None = None,
         limit: int | None = None,
+        id: str | None = None,  # pylint: disable=W0622
         number: str | None = None,
         product_number: str | None = None,
         customer: str | None = None,
@@ -44,7 +45,8 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
             db (Session): DB session.
             skip (int | None, optional): Number of items to skip (offset). Defaults to None.
             limit (int | None, optional): Number of items (limit). Defaults to None.
-            number (str | None, optional): Filter the number. Defaults to None.
+            id (int | None, optional): The id of the project. Defaults to None.
+            number (str | None, optional): Filter the project number. Defaults to None.
             product_number (str | None, optional): Filter the product number. Defaults to None.
             customer (str | None, optional): Filter the customer. Defaults to None.
             description (str | None, optional): Filter the description. Defaults to None.
@@ -58,6 +60,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
             db.query(self.model)
             .filter_by(
                 deleted=False,
+                id=id if id else self.model.id,
                 is_active=is_active if is_active is not None else self.model.is_active,
                 designated_user_id=designated_user_id if designated_user_id else self.model.designated_user_id,
             )
