@@ -31,6 +31,7 @@ def read_projects(
     db: Session = Depends(get_db),
     skip: int | None = None,
     limit: int | None = None,
+    id: int | None = None,
     number: str | None = None,
     product_number: str | None = None,
     customer: str | None = None,
