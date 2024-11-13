@@ -4,13 +4,14 @@ classifiers = ["Operating System :: Unix"]
 description = "Backend for the glados project."
 name = "glados"
 readme = "README.md"
-version = "0.8.3"
+version = "0.9.0"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 alembic = "^1.13.2"
 email-validator = "^2.2.0"
 fastapi = "^0.112.1"
+dill = "^0.3.9"
 gunicorn = "^23.0.0"
 jinja2 = "^3.1.4"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
