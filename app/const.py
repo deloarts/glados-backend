@@ -6,7 +6,7 @@ import os
 import secrets
 from pathlib import Path
 
-VERSION = "0.9.0"
+VERSION = "0.9.1"
 NAME = "glados"
 
 # Security

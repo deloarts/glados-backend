@@ -3,7 +3,7 @@
 Backend for the glados project.
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
-![version](https://img.shields.io/badge/Version-0.9.0-orange.svg?style=for-the-badge)
+![version](https://img.shields.io/badge/Version-0.9.1-orange.svg?style=for-the-badge)
 
 [![python](https://img.shields.io/badge/Python-3.10-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
@@ -268,7 +268,7 @@ git checkout {TAG_NAME}
 python -m pip install -r requirements.txt
 ```
 
-Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.9.0`.
+Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.9.1`.
 
 ### 2.3 update the config file
 
@@ -412,7 +412,7 @@ The **user** is the default level for new users in the app. The following rules 
 - A **user** can create projects, but cannot assign other users as designated user
 - A **user** can edit their projects
 - A **user** can create items
-- A **user** can edit their own items, as long as the items state is `open`
+- A **user** can edit their own items, as long as the items state is `open` and the project is active
 - A **user** can delete their own items, as long as the items state is `open`
 - A **user** cannot make changes to the settings of the app
 
@@ -423,7 +423,7 @@ The **superuser** has a bit more permissions, compared to the **user**. The foll
 - A **superuser** can create, edit and delete projects and can assign other users as designated user
 - A **superuser** can edit their projects
 - A **superuser** can create items
-- A **superuser** can edit all items from all users at any state
+- A **superuser** can edit all items from all users at any state, as long as the project is active
 - A **superuser** can delete all items from all users at any state
 - A **superuser** cannot make changes to the settings of the app
 
@@ -433,7 +433,7 @@ The **adminuser** has the highest level of permissions. Elevate an **user** or a
 
 - A **adminuser** can create, edit and delete projects and can assign other users as designated user
 - A **adminuser** can create items
-- A **adminuser** can edit all items from all users at any state
+- A **adminuser** can edit all items from all users at any state, as long as the project is active
 - A **adminuser** can delete all items from all users at any state
 - A **adminuser** can make changed to the settings of the app
 - A **adminuser** can create new users and change their level
@@ -461,6 +461,7 @@ No license.
 
 ## 6 changelog
 
+**v0.9.1**: Block item edit when project is inactive.  
 **v0.9.0**: Add unit api to bought items. Fix minor bugs.  
 **v0.8.3**: Add welcome mail for new users.  
 **v0.8.2**: Allow normal user to create projects.  
