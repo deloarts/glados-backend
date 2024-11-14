@@ -249,7 +249,7 @@ def update_bought_item(
     except ProjectNotFoundError as e:
         raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="This project number doesn't exists") from e
     except ProjectInactiveError as e:
-        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active")
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
     except BoughtItemOfAnotherUserError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except BoughtItemAlreadyPlannedError as e:
@@ -343,6 +343,8 @@ def update_bought_item_group_1(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -384,6 +386,8 @@ def update_bought_item_quantity(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -413,6 +417,8 @@ def update_bought_item_unit(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -442,6 +448,8 @@ def update_bought_item_partnumber(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -471,6 +479,8 @@ def update_bought_item_order_number(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -500,6 +510,8 @@ def update_bought_item_manufacturer(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -527,6 +539,8 @@ def update_bought_item_supplier(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -554,6 +568,8 @@ def update_bought_item_weblink(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -581,6 +597,8 @@ def update_bought_item_note_general(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -608,6 +626,8 @@ def update_bought_item_note_supplier(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -635,6 +655,8 @@ def update_bought_item_desired_delivery_date(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -662,6 +684,8 @@ def update_bought_item_expected_delivery_date(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 
@@ -689,6 +713,8 @@ def update_bought_item_storage(
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="Cannot change the item of another user") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="You are not allowed to change this item") from e
+    except ProjectInactiveError as e:
+        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail="This project isn't active") from e
 
     return updated_item
 

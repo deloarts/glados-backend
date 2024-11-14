@@ -552,6 +552,7 @@ class CRUDBoughtItem(
             InsufficientPermissionsError: User is not allowed to change the field.
             BoughtItemAlreadyPlannedError: The item is already planned and the user is not allowed to change.
             BoughtItemOfAnotherUserError: The item belongs to another user and the user is not allowed to change.
+            ProjectInactiveError: The project of this item is inactive.
 
         Returns:
             BoughtItemModel: The updated bought item as model.
@@ -582,6 +583,13 @@ class CRUDBoughtItem(
                 f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to set the {field_name}, but has not enough "
                 "permissions to change another users items (not a superuser or admin user)."
+            )
+
+        if not db_obj_item.project.is_active:
+            raise ProjectInactiveError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update the item of project "
+                f"#{db_obj_item.project_id}, but this project is inactive."
             )
 
         if value == field_value:
@@ -628,6 +636,7 @@ class CRUDBoughtItem(
             InsufficientPermissionsError: User is not allowed to change the field.
             BoughtItemAlreadyPlannedError: The item is already planned and the user is not allowed to change.
             BoughtItemOfAnotherUserError: The item belongs to another user and the user is not allowed to change.
+            ProjectInactiveError: The project of this item is inactive.
 
         Returns:
             BoughtItemModel: The updated bought item as model.
