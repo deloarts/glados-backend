@@ -412,7 +412,7 @@ The **user** is the default level for new users in the app. The following rules 
 - A **user** can create projects, but cannot assign other users as designated user
 - A **user** can edit their projects
 - A **user** can create items
-- A **user** can edit their own items, as long as the items state is `open`
+- A **user** can edit their own items, as long as the items state is `open` and the project is active
 - A **user** can delete their own items, as long as the items state is `open`
 - A **user** cannot make changes to the settings of the app
 
@@ -423,7 +423,7 @@ The **superuser** has a bit more permissions, compared to the **user**. The foll
 - A **superuser** can create, edit and delete projects and can assign other users as designated user
 - A **superuser** can edit their projects
 - A **superuser** can create items
-- A **superuser** can edit all items from all users at any state
+- A **superuser** can edit all items from all users at any state, as long as the project is active
 - A **superuser** can delete all items from all users at any state
 - A **superuser** cannot make changes to the settings of the app
 
@@ -433,7 +433,7 @@ The **adminuser** has the highest level of permissions. Elevate an **user** or a
 
 - A **adminuser** can create, edit and delete projects and can assign other users as designated user
 - A **adminuser** can create items
-- A **adminuser** can edit all items from all users at any state
+- A **adminuser** can edit all items from all users at any state, as long as the project is active
 - A **adminuser** can delete all items from all users at any state
 - A **adminuser** can make changed to the settings of the app
 - A **adminuser** can create new users and change their level
