@@ -57,6 +57,8 @@ class CRUDBoughtItem(
         id: str | None = None,  # pylint: disable=W0622
         status: str | None = None,
         project_number: str | None = None,
+        project_customer: str | None = None,
+        project_description: str | None = None,
         product_number: str | None = None,
         quantity: float | None = None,
         unit: str | None = None,
@@ -154,6 +156,8 @@ class CRUDBoughtItem(
                 self.model.status != cfg.items.bought.status.lost if ignore_lost else text(""),
                 # search filter
                 self.model.project_number.ilike(f"%{project_number}%") if project_number else text(""),
+                self.model.project_customer.ilike(f"%{project_customer}%") if project_customer else text(""),
+                self.model.project_description.ilike(f"%{project_description}%") if project_description else text(""),
                 self.model.product_number.ilike(f"%{product_number}%") if product_number else text(""),
                 self.model.partnumber.ilike(f"%{partnumber}%") if partnumber else text(""),
                 self.model.order_number.ilike(f"%{order_number}%") if order_number else text(""),
@@ -294,6 +298,12 @@ class CRUDBoughtItem(
             raise ProjectInactiveError(
                 f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to move the item to project "
+                f"#{db_obj_item.project_id}, but this project is inactive."
+            )
+        if not db_obj_item.project.is_active:
+            raise ProjectInactiveError(
+                f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update the item of project "
                 f"#{db_obj_item.project_id}, but this project is inactive."
             )
 
