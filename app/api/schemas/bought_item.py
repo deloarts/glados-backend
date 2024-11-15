@@ -76,6 +76,8 @@ class BoughtItemSchema(BoughtItemInDBBaseSchema):
     notify_on_delivery: bool
     project_id: int
     project_number: str
+    project_customer: Optional[str]
+    project_description: Optional[str]
     project_is_active: bool
     product_number: Optional[str]
     quantity: float

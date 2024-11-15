@@ -55,6 +55,8 @@ def read_bought_items(
     status: str | None = None,
     project_number: str | None = None,
     product_number: str | None = None,
+    project_customer: str | None = None,
+    project_description: str | None = None,
     quantity: float | None = None,
     unit: str | None = None,
     partnumber: str | None = None,
