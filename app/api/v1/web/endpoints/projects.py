@@ -11,7 +11,6 @@ from api.schemas.project import ProjectCreateSchema
 from api.schemas.project import ProjectSchema
 from api.schemas.project import ProjectUpdateSchema
 from crud.project import crud_project
-from db.models import ProjectModel
 from db.models import UserModel
 from db.session import get_db
 from exceptions import InsufficientPermissionsError
@@ -38,7 +37,7 @@ def read_projects(
     description: str | None = None,
     is_active: bool | None = None,
     designated_user_id: int | None = None,
-    verified: ProjectModel = Depends(verify_token),
+    verified: bool = Depends(verify_token),
 ) -> Any:
     """Retrieve all project."""
     kwargs = locals()
