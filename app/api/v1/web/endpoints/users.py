@@ -22,6 +22,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
+from locales import lang
 from security.access import create_access_token
 from sqlalchemy.orm import Session
 
@@ -49,7 +50,9 @@ def create_user(
     """Create new user."""
     user = crud_user.get_by_email(db, email=user_in.email) or crud_user.get_by_username(db, username=user_in.username)
     if user:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="The user already exists in the system")
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API_CREATE_USER_ALREADY_EXISTS
+        )
     return crud_user.create(db, current_user=current_user, obj_in=user_in)
 
 
@@ -66,14 +69,14 @@ def update_user_me(
     if user_username and user_username.id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="This username is already in use.",
+            detail=lang(current_user).API_UPDATE_USER_USERNAME_IN_USE,
         )
 
     user_email = crud_user.get_by_email(db, email=user_in.email)
     if user_email and user_email.id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="This email is already in use.",
+            detail=lang(current_user).API_UPDATE_USER_MAIL_IN_USE,
         )
 
     user = crud_user.update(db, current_user=current_user, db_obj=current_user, obj_in=user_in)
@@ -100,7 +103,7 @@ def read_user_by_id(
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="The user with this id doesn't exists in the system.",
+            detail=lang(current_user).API_READ_USER_NOT_FOUND,
         )
     if user == current_user:
         return user
@@ -119,7 +122,7 @@ def update_user(
     user = crud_user.get(db, id=user_id)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="The user with this id does not exist in the system"
+            status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API_UPDATE_USER_ID_NOT_FOUND
         )
 
     try:
@@ -127,15 +130,15 @@ def update_user(
     except PasswordCriteriaError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Password too weak",
+            detail=lang(current_user).API_UPDATE_USER_PASSWORD_WEAK,
         ) from e
     except UserAlreadyExistsError as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="A user with this username or email already exists"
+            status_code=status.HTTP_409_CONFLICT, detail=lang(current_user).API_UPDATE_USER_USERNAME_OR_MAIL_IN_USE
         ) from e
     except InsufficientPermissionsError as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to change this user"
+            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API_UPDATE_USER_NO_PERMISSION
         ) from e
 
     return updated_user
@@ -150,7 +153,7 @@ def update_user_personal_access_token(
 ) -> Any:
     """Updates the personal access token of an user."""
     if current_user.is_guestuser:
-        raise HTTPException(status_code=403, detail="A guest user cannot create an access token.")
+        raise HTTPException(status_code=403, detail=lang(current_user).API_UPDATE_USER_TOKEN_GUEST_NO_PERMISSION)
 
     # access_token = secrets.token_urlsafe(32)
     access_token = create_access_token(subject=current_user.id, expires_delta=timedelta(minutes=expires_in_minutes))
