@@ -51,7 +51,7 @@ def create_user(
     user = crud_user.get_by_email(db, email=user_in.email) or crud_user.get_by_username(db, username=user_in.username)
     if user:
         raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API_CREATE_USER_ALREADY_EXISTS
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.ALREADY_EXISTS
         )
     return crud_user.create(db, current_user=current_user, obj_in=user_in)
 
@@ -69,14 +69,14 @@ def update_user_me(
     if user_username and user_username.id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=lang(current_user).API_UPDATE_USER_USERNAME_IN_USE,
+            detail=lang(current_user).API.USER.USERNAME_IN_USE,
         )
 
     user_email = crud_user.get_by_email(db, email=user_in.email)
     if user_email and user_email.id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=lang(current_user).API_UPDATE_USER_MAIL_IN_USE,
+            detail=lang(current_user).API.USER.MAIL_IN_USE,
         )
 
     user = crud_user.update(db, current_user=current_user, db_obj=current_user, obj_in=user_in)
@@ -103,7 +103,7 @@ def read_user_by_id(
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=lang(current_user).API_READ_USER_NOT_FOUND,
+            detail=lang(current_user).API.USER.NOT_FOUND,
         )
     if user == current_user:
         return user
@@ -121,24 +121,22 @@ def update_user(
     """Update a user."""
     user = crud_user.get(db, id=user_id)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API_UPDATE_USER_ID_NOT_FOUND
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API.USER.NOT_FOUND)
 
     try:
         updated_user = crud_user.update(db, current_user=current_user, db_obj=user, obj_in=user_in)
     except PasswordCriteriaError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=lang(current_user).API_UPDATE_USER_PASSWORD_WEAK,
+            detail=lang(current_user).API.USER.PASSWORD_WEAK,
         ) from e
     except UserAlreadyExistsError as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=lang(current_user).API_UPDATE_USER_USERNAME_OR_MAIL_IN_USE
+            status_code=status.HTTP_409_CONFLICT, detail=lang(current_user).API.USER.USERNAME_OR_MAIL_IN_USE
         ) from e
     except InsufficientPermissionsError as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API_UPDATE_USER_NO_PERMISSION
+            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.USER.UPDATE_NO_PERMISSION
         ) from e
 
     return updated_user
@@ -153,7 +151,7 @@ def update_user_personal_access_token(
 ) -> Any:
     """Updates the personal access token of an user."""
     if current_user.is_guestuser:
-        raise HTTPException(status_code=403, detail=lang(current_user).API_UPDATE_USER_TOKEN_GUEST_NO_PERMISSION)
+        raise HTTPException(status_code=403, detail=lang(current_user).API.USER.TOKEN_GUEST_NO_PERMISSION)
 
     # access_token = secrets.token_urlsafe(32)
     access_token = create_access_token(subject=current_user.id, expires_delta=timedelta(minutes=expires_in_minutes))

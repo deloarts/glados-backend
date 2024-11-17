@@ -19,6 +19,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
+from locales import lang
 from multilog import log
 from sqlalchemy.orm import Session
 
@@ -58,9 +59,14 @@ def create_project(
     try:
         new_project = crud_project.create(db, db_obj_user=current_user, obj_in=project_in)
     except ProjectAlreadyExistsError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The project already exists")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=lang(current_user).API.PROJECT.ALREADY_EXISTS,
+        )
     except InsufficientPermissionsError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="A guest user cannot create projects") from e
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API.PROJECT.GUEST_USER_NO_PERMISSION
+        ) from e
 
     return new_project
 
@@ -83,7 +89,7 @@ def read_project_by_id(
     """Get a specific project by id."""
     project = crud_project.get_by_id(db, id=project_id)
     if project is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The project does not exist")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API.PROJECT.NOT_FOUND)
 
     return project
 
@@ -97,7 +103,7 @@ def read_project_by_number(
     """Get a specific project by its number."""
     project = crud_project.get_by_number(db, number=project_number)
     if project is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The project does not exist")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API.PROJECT.NOT_FOUND)
 
     return project
 
@@ -123,18 +129,18 @@ def update_project(
     """Update a project by id."""
     project = crud_project.get(db, id=project_id)
     if not project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The project does not exist")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API.PROJECT.NOT_FOUND)
 
     try:
         updated_project = crud_project.update(db, db_obj_user=current_user, db_obj=project, obj_in=project_in)
     except ProjectAlreadyExistsError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="This project number is already in use",
+            detail=lang(current_user).API.PROJECT.ALREADY_EXISTS,
         )
     except InsufficientPermissionsError as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to change this project"
+            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.PROJECT.UPDATE_NO_PERMISSION
         ) from e
 
     return updated_project
@@ -150,13 +156,13 @@ def delete_project(
     """Delete a project."""
     project = crud_project.get(db, id=project_id)
     if not project:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The project does not exist")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.PROJECT.NOT_FOUND)
 
     try:
         deleted_project = crud_project.delete(db, db_obj_project=project, db_obj_user=current_user)
     except InsufficientPermissionsError as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Only super users and admin users can delete projects"
+            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.PROJECT.DELETE_NO_PERMISSION
         ) from e
 
     return deleted_project

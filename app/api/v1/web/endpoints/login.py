@@ -12,10 +12,12 @@ from config import cfg
 from crud.user import crud_user
 from db.models import UserModel
 from db.session import get_db
+from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+from locales import lang
 from security.access import create_access_token
 from sqlalchemy.orm import Session
 
@@ -28,9 +30,9 @@ def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordR
     user = crud_user.authenticate(db, username=form_data.username, password=form_data.password)
 
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect email or password.")
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(user).API.LOGIN.INCORRECT_CREDS)
     if not crud_user.is_active(user):
-        raise HTTPException(status_code=400, detail="Inactive user.")
+        raise HTTPException(status_code=400, detail=lang(user).API.LOGIN.INACTIVE_ACCOUNT)
 
     access_token_expires = timedelta(minutes=cfg.security.expire_minutes)
     return {
