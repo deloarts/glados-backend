@@ -19,7 +19,7 @@ SECRET_KEY = secrets.token_urlsafe(32)
 SYSTEM_USER = "system"
 
 # DB
-ALEMBIC_VERSION = "824d657001b8"
+ALEMBIC_VERSION = "ed7ee21cc61e"
 
 # API
 API_WEB_V1 = "/api/web/v1"

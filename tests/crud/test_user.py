@@ -47,6 +47,7 @@ def test_create_user(db: Session) -> None:
     assert user.username == t_username
     assert user.email == t_email
     assert user.full_name == t_full_name
+    assert user.language == "enGB"
     assert user.is_active is True
     assert user.is_superuser is False
     assert user.is_adminuser is False
@@ -253,6 +254,7 @@ def test_update_user(db: Session) -> None:
         full_name=t_user.full_name,
         email=t_user.email,
         password=t_new_pass,
+        language="deAT",
     )
 
     # ----------------------------------------------
@@ -269,3 +271,4 @@ def test_update_user(db: Session) -> None:
     assert user_2
     assert t_user.email == user_2.email
     assert verify_password(t_new_pass, user_2.hashed_password)
+    assert user_2.language == "deAT"

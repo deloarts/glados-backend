@@ -10,6 +10,7 @@ from excel.xlsx_import.base import BaseExcelImport
 from fastapi import HTTPException
 from fastapi import UploadFile
 from fastapi import status
+from locales import lang
 from sqlalchemy.orm import Session
 
 
@@ -37,19 +38,26 @@ class BoughtItemExcelImport(BaseExcelImport[BoughtItemModel, BoughtItemCreateWeb
 
     def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[BoughtItemCreateWebSchema]) -> None:
         if "project" not in db_obj_in:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Column `Project` not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=lang(self.db_obj_user).API.BOUGHTITEM.IMPORT_COLUMN_X_NOT_FOUND.substitute({"x": "Project"}),
+            )
 
         project_number = db_obj_in["project"]
         project = crud_project.get_by_number(self.db, number=project_number)
         if not project:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"A project with the number {project_number} doesn't exists.",
+                detail=lang(self.db_obj_user).API.BOUGHTITEM.IMPORT_PROJECT_X_NOT_FOUND.substitute(
+                    {"x": project_number}
+                ),
             )
         if not project.is_active:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"The project with the number {project_number} is not active.",
+                detail=lang(self.db_obj_user).API.BOUGHTITEM.IMPORT_PROJECT_X_NOT_ACTIVE.substitute(
+                    {"x": project_number}
+                ),
             )
 
         del db_obj_in["project"]
