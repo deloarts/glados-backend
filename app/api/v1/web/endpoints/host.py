@@ -19,9 +19,11 @@ from api.schemas.host import HostVersionSchema
 from config import cfg
 from const import VERSION
 from db.models import UserModel
+from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
+from locales import lang
 from multilog import log
 from utilities.config_editor.bought_items import bought_item_config
 from utilities.disc_space import get_disc_space
@@ -97,8 +99,8 @@ def post_host_config_items_bought_filter(
     """Saves the given filter for bought items."""
     if filter_name in bought_item_config.filters:
         raise HTTPException(
-            status_code=406,
-            detail="A configuration with this name already exists in the system.",
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=lang(current_user).API.HOST.CONFIGURATION_ALREADY_EXISTS,
         )
     bought_item_config.add_filter(name=filter_name, filter=filter_in)
     log.info(
@@ -117,8 +119,8 @@ def update_host_config_items_bought_filter(
     """Updates the given filter for bought items."""
     if filter_name not in bought_item_config.filters:
         raise HTTPException(
-            status_code=404,
-            detail=f"Configuration {filter_name} not found.",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=lang(current_user).API.HOST.CONFIGURATION_NOT_FOUND,
         )
     bought_item_config.add_filter(name=filter_name, filter=filter_in)
     log.info(
@@ -137,8 +139,8 @@ def delete_host_config_items_bought_filter(
     """Deletes the given filter for bought items."""
     if filter_name not in bought_item_config.filters:
         raise HTTPException(
-            status_code=404,
-            detail=f"Configuration {filter_name} not found.",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=lang(current_user).API.HOST.CONFIGURATION_NOT_FOUND,
         )
     bought_item_config.remove_filter(name=filter_name)
     log.info(

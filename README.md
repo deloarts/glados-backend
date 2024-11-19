@@ -3,7 +3,7 @@
 Backend for the glados project.
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
-![version](https://img.shields.io/badge/Version-0.9.2-orange.svg?style=for-the-badge)
+![version](https://img.shields.io/badge/Version-0.10.0-orange.svg?style=for-the-badge)
 
 [![python](https://img.shields.io/badge/Python-3.10-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
@@ -268,7 +268,7 @@ git checkout {TAG_NAME}
 python -m pip install -r requirements.txt
 ```
 
-Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.9.2`.
+Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.10.0`.
 
 ### 2.3 update the config file
 
@@ -461,6 +461,7 @@ No license.
 
 ## 6 changelog
 
+**v0.10.0**: Add language and theme.  
 **v0.9.2**: Add project customer and project description to bought item api.  
 **v0.9.1**: Block item edit when project is inactive.  
 **v0.9.0**: Add unit api to bought items. Fix minor bugs.  

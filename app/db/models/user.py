@@ -21,6 +21,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
+from sqlalchemy.sql import text
 
 # For correct relations between the models, they must be imported with their native name.
 # This is the class name from the model itself.
@@ -45,6 +46,8 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    language: Mapped[str] = mapped_column(String, nullable=False, server_default="enGB")
+    theme: Mapped[str] = mapped_column(String, nullable=True, server_default="dark")
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_adminuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())

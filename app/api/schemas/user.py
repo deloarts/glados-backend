@@ -32,6 +32,8 @@ class UserCreateSchema(UserBaseSchema):
 class UserUpdateSchema(UserBaseSchema):
     """Properties to receive via API on update."""
 
+    language: Optional[str] = Field(None, min_length=1)
+    theme: Optional[str] = Field(None, min_length=1)
     password: Optional[str] = Field(None, min_length=cfg.security.min_pw_len)
 
 
@@ -46,6 +48,8 @@ class UserSchema(UserInDBBaseSchema):
     """Additional properties to return via API."""
 
     is_systemuser: bool
+    language: str
+    theme: Optional[str]
 
 
 class UserInDBSchema(UserInDBBaseSchema):
