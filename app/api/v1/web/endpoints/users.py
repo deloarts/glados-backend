@@ -162,3 +162,37 @@ def update_user_personal_access_token(
         obj_in={"personal_access_token": access_token},
     )
     return access_token
+
+
+@router.put("/me/language", response_model=UserSchema)
+def update_user_me_language(
+    *,
+    db: Session = Depends(get_db),
+    language: str,
+    current_user: UserModel = Depends(get_current_active_user),
+) -> Any:
+    """Updates the theme."""
+    updated_user = crud_user.update(
+        db,
+        current_user=current_user,
+        db_obj=current_user,
+        obj_in={"language": language},
+    )
+    return updated_user
+
+
+@router.put("/me/theme", response_model=UserSchema)
+def update_user_me_theme(
+    *,
+    db: Session = Depends(get_db),
+    theme: str,
+    current_user: UserModel = Depends(get_current_active_user),
+) -> Any:
+    """Updates the theme."""
+    updated_user = crud_user.update(
+        db,
+        current_user=current_user,
+        db_obj=current_user,
+        obj_in={"theme": theme},
+    )
+    return updated_user
