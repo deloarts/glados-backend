@@ -9,12 +9,16 @@ from typing import Any
 from typing import Dict
 from typing import Generic
 from typing import List
+from typing import Tuple
 from typing import Type
 from typing import TypeVar
 
 from crud.bought_item import crud_bought_item
 from db.base import Base
 from db.models import UserModel
+from exceptions import ExcelImportDataInvalidError
+from exceptions import ExcelImportHeaderInvalidError
+from exceptions import ExcelImportHeaderMissingError
 from fastapi import HTTPException
 from fastapi import UploadFile
 from fastapi import status
@@ -23,6 +27,7 @@ from openpyxl import load_workbook
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from pydantic import BaseModel
+from pydantic.fields import FieldInfo
 from pydantic_core import ValidationError
 from sqlalchemy.orm import Session
 
@@ -60,6 +65,13 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
         self.wb: Workbook
         self.ws: Worksheet
 
+        self._read_file()
+
+    @staticmethod
+    def _field_name_to_name_convention(field_name: str) -> str:
+        """Converts the field name to the name convention (snake case to title case)"""
+        return " ".join(i.capitalize() for i in str(field_name).split("_"))
+
     def _read_file(self) -> None:
         """Reads the data from the uploaded excel file."""
 
@@ -77,22 +89,36 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
     #         model_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
     #     return model_cols
 
-    def _get_schema_columns_by_name_convention(self) -> List[str]:
+    def _get_schema_fields_by_name_convention(self) -> List[Tuple[str, FieldInfo]]:
         schema_cols = []
-        for col in self.schema.model_fields.keys():  # type: ignore
-            schema_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
+        for field_name, field in self.schema.model_fields.items():  # type: ignore
+            schema_cols.append((self._field_name_to_name_convention(field_name), field))
         return schema_cols
 
-    def _get_header_row(self) -> int:
-        """Return the header row with EXCEL index (index starts by 1)
+    def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[CreateSchemaType]) -> None:
+        db_objs_in.append(self.schema(**db_obj_in))
 
-        Raises:
-            HTTPException: Raises status code 422 when the header isn't found or valid.
+    def _create(self, db_objs_in: List[CreateSchemaType]) -> List[ModelType]:
+        """Creates the data in the database.
+
+        Args:
+            db_objs_in (List[CreateSchemaType]): The data to create.
 
         Returns:
-            int: The header row index.
+            List[ModelType]: The created data.
         """
-        db_columns = self._get_schema_columns_by_name_convention()
+        items = []
+        for obj_in in db_objs_in:
+            items.append(
+                crud_bought_item.create(
+                    self.db, db_obj_user=self.db_obj_user, obj_in=obj_in  # type:ignore
+                )
+            )
+        return items
+
+    def get_header_row(self) -> int:
+        create_schema_fields = self._get_schema_fields_by_name_convention()
+        create_schema_fields_names = [n for n, _ in create_schema_fields]
         empty_row_count = 0
 
         for row_index in range(1, self.ws.max_row + 1):
@@ -113,31 +139,25 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
                 empty_row_count += 1
             else:
                 empty_row_count = 0
-                # if set(header_candidate) <= set(db_columns):
-                if set(header_candidate).intersection(set(db_columns)):
+                # Basic check if there are items of the header in the line
+                if set(header_candidate).intersection(set(create_schema_fields_names)):
+                    # Detail check, if every required header is present
+                    for field_name, field in create_schema_fields:
+                        if field.is_required() and field_name not in header_candidate:
+                            log.warning(f"Cannot find required field in EXCEL column: {field_name}")
+                            raise ExcelImportHeaderInvalidError(
+                                f"Header is invalid: Missing column '{field_name}'",
+                            )
                     log.debug(f"Import file header row is {row_index}")
                     return row_index
 
         log.warning(f"Failed to read header data from workbook, uploaded by user {self.db_obj_user.username!r}.")
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Header missing or invalid. Use the latest template."
-        )
+        raise ExcelImportHeaderMissingError("Header is missing")
 
-    def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[CreateSchemaType]) -> None:
-        db_objs_in.append(self.schema(**db_obj_in))
-
-    def _read_data(self) -> List[CreateSchemaType]:
-        """Reads the data from the worksheet.
-
-        Raises:
-            HTTPException: Raised if the worksheet content doesn't fit the schema.
-
-        Returns:
-            List[CreateSchemaType]: The data as schema.
-        """
+    def get_data_as_create_schema(self) -> List[CreateSchemaType]:
         db_objs_in: List[CreateSchemaType] = []
         warnings: List[dict] = []
-        header_row = self._get_header_row()
+        header_row = self.get_header_row()
 
         for row_index in range(header_row + 1, self.ws.max_row + 1):
             # Sometimes ws.max_row doesn't work correct and the
@@ -172,27 +192,8 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
 
         return db_objs_in
 
-    def _create(self, db_objs_in: List[CreateSchemaType]) -> List[ModelType]:
-        """Creates the data in the database.
-
-        Args:
-            db_objs_in (List[CreateSchemaType]): The data to create.
-
-        Returns:
-            List[ModelType]: The created data.
-        """
-        items = []
-        for obj_in in db_objs_in:
-            items.append(
-                crud_bought_item.create(
-                    self.db, db_obj_user=self.db_obj_user, obj_in=obj_in  # type:ignore
-                )
-            )
-        return items
-
-    def load(self) -> List[ModelType]:
+    def batch_create(self) -> List[ModelType]:
         """Main function for loading the data from the excel file into the database."""
-        self._read_file()
-        db_objs_in = self._read_data()
+        db_objs_in = self.get_data_as_create_schema()
         db_objs = self._create(db_objs_in)
         return db_objs

@@ -13,7 +13,6 @@ from typing import List
 from api.deps import get_current_active_user
 from api.deps import verify_token
 from api.schemas.bought_item import BoughtItemCreateWebSchema
-from api.schemas.bought_item import BoughtItemExcelExportSchema
 from api.schemas.bought_item import BoughtItemSchema
 from api.schemas.bought_item import BoughtItemUpdateWebSchema
 from config import cfg
@@ -30,6 +29,9 @@ from exceptions import BoughtItemCannotChangeToOpenError
 from exceptions import BoughtItemOfAnotherUserError
 from exceptions import BoughtItemRequiredFieldNotSetError
 from exceptions import BoughtItemUnknownStatusError
+from exceptions import ExcelImportDataInvalidError
+from exceptions import ExcelImportHeaderInvalidError
+from exceptions import ExcelImportHeaderMissingError
 from exceptions import InsufficientPermissionsError
 from exceptions import ProjectInactiveError
 from exceptions import ProjectNotFoundError
@@ -231,13 +233,27 @@ def create_bought_item(
     return item
 
 
-@router.post("/excel", response_model=List[BoughtItemSchema])
+@router.post("/excel", response_model=List[BoughtItemCreateWebSchema] | List[BoughtItemSchema])
 def create_bought_items_from_excel(
-    *, db: Session = Depends(get_db), file: UploadFile, current_user: UserModel = Depends(get_current_active_user)
+    *,
+    db: Session = Depends(get_db),
+    force_create: bool = False,
+    file: UploadFile,
+    current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
-    """Create new bought items from an excel file."""
+    """Returns the bo."""
     xlsx = BoughtItemExcelImport(db=db, db_obj_user=current_user, file=file)
-    return xlsx.load()
+    try:
+        if force_create:
+            return xlsx.batch_create()
+        else:
+            return xlsx.get_data_as_create_schema()
+    except ExcelImportHeaderInvalidError as e:
+        raise HTTPException(status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail=str(e)) from e
+    except ExcelImportHeaderMissingError as e:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    # except ExcelImportDataInvalidError as e:
+    #     raise HTTPException(status_code=sc.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)) from e
 
 
 @router.put("/{item_id}", response_model=BoughtItemSchema)
