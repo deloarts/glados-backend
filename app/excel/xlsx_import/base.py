@@ -95,8 +95,16 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
             schema_cols.append((self._field_name_to_name_convention(field_name), field))
         return schema_cols
 
-    def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[CreateSchemaType]) -> None:
-        db_objs_in.append(self.schema(**db_obj_in))
+    def _append_schema(
+        self,
+        db_obj_in: Dict[str, Any],
+        db_objs_in: List[CreateSchemaType],
+        skip_validation: bool = False,
+    ) -> None:
+        if skip_validation:
+            db_objs_in.append(db_obj_in)  # type: ignore
+        else:
+            db_objs_in.append(self.schema(**db_obj_in))
 
     def _create(self, db_objs_in: List[CreateSchemaType]) -> List[ModelType]:
         """Creates the data in the database.
@@ -154,7 +162,7 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
         log.warning(f"Failed to read header data from workbook, uploaded by user {self.db_obj_user.username!r}.")
         raise ExcelImportHeaderMissingError("Header is missing")
 
-    def get_data_as_create_schema(self) -> List[CreateSchemaType]:
+    def get_data_as_create_schema(self, skip_validation: bool = False) -> List[CreateSchemaType]:
         db_objs_in: List[CreateSchemaType] = []
         warnings: List[dict] = []
         header_row = self.get_header_row()
@@ -182,7 +190,7 @@ class BaseExcelImport(Generic[ModelType, CreateSchemaType]):
                 break
 
             try:
-                self._append_schema(db_obj_in=db_obj_in, db_objs_in=db_objs_in)
+                self._append_schema(db_obj_in=db_obj_in, db_objs_in=db_objs_in, skip_validation=skip_validation)
             except ValidationError as error:
                 warnings.append({"row": row_index, "errors": error.errors()})
 

@@ -208,6 +208,14 @@ def read_bought_item_changelog_by_id(
     return item.changes
 
 
+@router.post("/validate", response_model=BoughtItemCreateWebSchema)
+def validate_bought_item(
+    *,
+    obj_in: BoughtItemCreateWebSchema,
+) -> Any:
+    return obj_in
+
+
 @router.post("/", response_model=BoughtItemSchema)
 def create_bought_item(
     *,
@@ -233,11 +241,12 @@ def create_bought_item(
     return item
 
 
-@router.post("/excel", response_model=List[BoughtItemCreateWebSchema] | List[BoughtItemSchema])
+@router.post("/excel", response_model=List[BoughtItemCreateWebSchema] | List[BoughtItemSchema] | List[dict])
 def create_bought_items_from_excel(
     *,
     db: Session = Depends(get_db),
     force_create: bool = False,
+    skip_validation: bool = False,
     file: UploadFile,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
@@ -247,7 +256,7 @@ def create_bought_items_from_excel(
         if force_create:
             return xlsx.batch_create()
         else:
-            return xlsx.get_data_as_create_schema()
+            return xlsx.get_data_as_create_schema(skip_validation=skip_validation)
     except ExcelImportHeaderInvalidError as e:
         raise HTTPException(status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail=str(e)) from e
     except ExcelImportHeaderMissingError as e:

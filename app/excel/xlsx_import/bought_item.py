@@ -38,7 +38,12 @@ class BoughtItemExcelImport(BaseExcelImport[BoughtItemModel, BoughtItemCreateWeb
             schema_cols.append((self._field_name_to_name_convention(field_name), field))
         return schema_cols
 
-    def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[BoughtItemCreateWebSchema]) -> None:
+    def _append_schema(
+        self,
+        db_obj_in: Dict[str, Any],
+        db_objs_in: List[BoughtItemCreateWebSchema],
+        skip_validation: bool = False,
+    ) -> None:
         if "project" not in db_obj_in:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -64,4 +69,7 @@ class BoughtItemExcelImport(BaseExcelImport[BoughtItemModel, BoughtItemCreateWeb
 
         del db_obj_in["project"]
         db_obj_in["project_id"] = project.id
-        db_objs_in.append(self.schema(**db_obj_in))
+        if skip_validation:
+            db_objs_in.append(db_obj_in)  # type: ignore
+        else:
+            db_objs_in.append(self.schema(**db_obj_in))
