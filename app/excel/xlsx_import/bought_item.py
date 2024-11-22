@@ -1,6 +1,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Tuple
 
 from api.schemas.bought_item import BoughtItemCreateWebSchema
 from crud.project import crud_project
@@ -11,6 +12,7 @@ from fastapi import HTTPException
 from fastapi import UploadFile
 from fastapi import status
 from locales import lang
+from pydantic.fields import FieldInfo
 from sqlalchemy.orm import Session
 
 
@@ -28,15 +30,20 @@ class BoughtItemExcelImport(BaseExcelImport[BoughtItemModel, BoughtItemCreateWeb
     #         model_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
     #     return model_cols
 
-    def _get_schema_columns_by_name_convention(self) -> List[str]:
+    def _get_schema_fields_by_name_convention(self) -> List[Tuple[str, FieldInfo]]:
         schema_cols = []
-        for col in self.schema.model_fields.keys():  # type: ignore
-            if col == "project_id":
-                col = "project"  # Column in EXCEL file is named `Project`
-            schema_cols.append(" ".join(i.capitalize() for i in str(col).split("_")))
+        for field_name, field in self.schema.model_fields.items():  # type: ignore
+            if field_name == "project_id":
+                field_name = "project"  # Column in EXCEL file is named `Project`
+            schema_cols.append((self._field_name_to_name_convention(field_name), field))
         return schema_cols
 
-    def _append_schema(self, db_obj_in: Dict[str, Any], db_objs_in: List[BoughtItemCreateWebSchema]) -> None:
+    def _append_schema(
+        self,
+        db_obj_in: Dict[str, Any],
+        db_objs_in: List[BoughtItemCreateWebSchema],
+        skip_validation: bool = False,
+    ) -> None:
         if "project" not in db_obj_in:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -62,4 +69,7 @@ class BoughtItemExcelImport(BaseExcelImport[BoughtItemModel, BoughtItemCreateWeb
 
         del db_obj_in["project"]
         db_obj_in["project_id"] = project.id
-        db_objs_in.append(self.schema(**db_obj_in))
+        if skip_validation:
+            db_objs_in.append(db_obj_in)  # type: ignore
+        else:
+            db_objs_in.append(self.schema(**db_obj_in))
