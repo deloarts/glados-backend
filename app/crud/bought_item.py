@@ -194,7 +194,11 @@ class CRUDBoughtItem(
         return query.all()
 
     def create(
-        self, db: Session, *, db_obj_user: UserModel, obj_in: BoughtItemCreateWebSchema | BoughtItemCreatePatSchema
+        self,
+        db: Session,
+        *,
+        db_obj_user: UserModel,
+        obj_in: BoughtItemCreateWebSchema | BoughtItemCreatePatSchema,
     ) -> BoughtItemModel:
         """Create a new bought item.
 
@@ -254,6 +258,7 @@ class CRUDBoughtItem(
         data["changes"] = get_changelog(changes="Item created.", db_obj_user=db_obj_user)
 
         db_obj = BoughtItemModel(**data)
+
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)

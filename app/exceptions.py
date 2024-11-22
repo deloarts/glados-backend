@@ -71,5 +71,21 @@ class BoughtItemAlreadyPlannedError(InsufficientPermissionsError):
     ...
 
 
+class ExcelImportError(BaseError):
+    ...
+
+
+class ExcelImportHeaderMissingError(ExcelImportError):
+    ...
+
+
+class ExcelImportHeaderInvalidError(ExcelImportError):
+    ...
+
+
+class ExcelImportDataInvalidError(ExcelImportError):
+    ...
+
+
 class PasswordCriteriaError(BaseError):
     ...
