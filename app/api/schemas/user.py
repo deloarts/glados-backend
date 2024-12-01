@@ -27,14 +27,19 @@ class UserCreateSchema(UserBaseSchema):
 
     is_systemuser: Optional[bool] = False
     password: str = Field(..., min_length=cfg.security.min_pw_len)
+    rfid: Optional[str] = Field(None)
 
 
 class UserUpdateSchema(UserBaseSchema):
     """Properties to receive via API on update."""
 
+    username: Optional[str] = Field(None, min_length=1)
+    full_name: Optional[str] = Field(None, min_length=1)
+    email: Optional[str] = Field(None, min_length=1)
     language: Optional[str] = Field(None, min_length=1)
     theme: Optional[str] = Field(None, min_length=1)
     password: Optional[str] = Field(None, min_length=cfg.security.min_pw_len)
+    rfid: Optional[str] = Field(None)
 
 
 class UserInDBBaseSchema(UserBaseSchema):
@@ -56,4 +61,5 @@ class UserInDBSchema(UserInDBBaseSchema):
     """Additional properties stored in DB."""
 
     hashed_password: str
+    hashed_rfid: str
     personal_access_token: str

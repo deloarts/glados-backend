@@ -18,8 +18,8 @@ from exceptions import PasswordCriteriaError
 from exceptions import UserAlreadyExistsError
 from mail.presets import MailPreset
 from multilog import log
-from security.pwd import get_password_hash
-from security.pwd import verify_password
+from security.pwd import get_hash
+from security.pwd import verify_hash
 from sqlalchemy.orm import Session
 
 
@@ -62,6 +62,21 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         """
         return db.query(self.model).filter(self.model.email == email).first()
 
+    def get_by_rfid(self, db: Session, *, rfid: str) -> Optional[UserModel]:
+        """Returns a user by their rfid id.
+
+        Args:
+            db (Session): DB session.
+            rfid (str): The rfid id to lookup.
+
+        Returns:
+            Optional[UserModel]: The user as model.
+        """
+        users = db.query(self.model).filter(self.model.hashed_rfid != None, self.model.is_active).all()
+        for user in users:
+            if verify_hash(rfid, user.hashed_rfid):
+                return user
+
     def create(self, db: Session, *, current_user: UserModel, obj_in: UserCreateSchema) -> UserModel:
         """Creates a user.
 
@@ -75,8 +90,11 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         """
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["created"] = datetime.now(UTC)
-        data["hashed_password"] = get_password_hash(obj_in.password)
+        data["hashed_password"] = get_hash(obj_in.password)
         del data["password"]
+        if obj_in.rfid:
+            data["hashed_rfid"] = get_hash(obj_in.rfid)
+        del data["rfid"]
 
         # The systemuser can only be created by another systemuser!
         # Permissions of a systemuser cannot be edited!
@@ -162,9 +180,15 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
                     f"Blocked update of a user #{db_obj.id} ({db_obj.full_name}): "
                     f"User #{current_user.id} ({current_user.full_name}) tried to set a weak password"
                 )
-            hashed_password = get_password_hash(data["password"])
+            hashed_password = get_hash(data["password"])
             del data["password"]
             data["hashed_password"] = hashed_password
+
+        # Handle a new rfid id
+        if "rfid" in data:
+            hashed_rfid = get_hash(data["rfid"])
+            del data["rfid"]
+            data["hashed_rfid"] = hashed_rfid
 
         # The systemuser can only update itself!
         # The systemuser has fixed permissions that cannot be altered.
@@ -210,7 +234,14 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         user = self.get_by_username(db, username=username)
         if not user:
             return None
-        if not verify_password(password, str(user.hashed_password)):
+        if not verify_hash(password, str(user.hashed_password)):
+            return None
+        return user
+
+    def authenticate_rfid(self, db: Session, *, rfid: str) -> Optional[UserModel]:
+        """Authenticates a user by the rfid id"""
+        user = self.get_by_rfid(db, rfid=rfid)
+        if not user:
             return None
         return user
 
