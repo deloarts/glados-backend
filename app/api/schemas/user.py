@@ -53,11 +53,11 @@ class UserSchema(UserInDBBaseSchema):
     is_systemuser: bool
     language: str
     theme: Optional[str]
+    hashed_rfid: Optional[str]
 
 
 class UserInDBSchema(UserInDBBaseSchema):
     """Additional properties stored in DB."""
 
     hashed_password: str
-    hashed_rfid: str
     personal_access_token: str
