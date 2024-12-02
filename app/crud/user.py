@@ -94,7 +94,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         del data["password"]
         if obj_in.rfid:
             data["hashed_rfid"] = get_hash(obj_in.rfid)
-        del data["rfid"]
+            del data["rfid"]
 
         # The systemuser can only be created by another systemuser!
         # Permissions of a systemuser cannot be edited!
