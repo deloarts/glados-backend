@@ -27,14 +27,17 @@ class UserCreateSchema(UserBaseSchema):
 
     is_systemuser: Optional[bool] = False
     password: str = Field(..., min_length=cfg.security.min_pw_len)
+    rfid: Optional[str] = Field(None, min_length=8)
 
 
 class UserUpdateSchema(UserBaseSchema):
     """Properties to receive via API on update."""
 
+    full_name: Optional[str] = Field(None, min_length=1)
     language: Optional[str] = Field(None, min_length=1)
     theme: Optional[str] = Field(None, min_length=1)
     password: Optional[str] = Field(None, min_length=cfg.security.min_pw_len)
+    rfid: Optional[str] = Field(None, min_length=8)
 
 
 class UserInDBBaseSchema(UserBaseSchema):
@@ -50,6 +53,7 @@ class UserSchema(UserInDBBaseSchema):
     is_systemuser: bool
     language: str
     theme: Optional[str]
+    hashed_rfid: Optional[str]
 
 
 class UserInDBSchema(UserInDBBaseSchema):

@@ -72,6 +72,7 @@ class InitDatabase:
                 username=SYSTEM_USER,
                 email=cfg.init.mail,
                 password=cfg.init.password,
+                rfid=None,
                 full_name=cfg.init.full_name,
                 is_active=True,
                 is_superuser=True,

@@ -27,8 +27,6 @@ class ConfigSecurity:
     algorithm: str
     token_url: str
     expire_minutes: int
-    debug_api_key: str
-    debug_secret_key: str
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)

@@ -17,4 +17,4 @@ class TokenSchema(BaseModel):
 class TokenPayloadSchema(BaseModel):
     """OAuth2 token payload schema."""
 
-    sub: Optional[int] = None
+    sub: Optional[str | int | bool] = None
