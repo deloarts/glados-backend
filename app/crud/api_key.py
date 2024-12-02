@@ -32,7 +32,7 @@ class CRUDAPIKey(CRUDBase[APIKeyModel, APIKeyCreateSchema, APIKeyUpdateSchema]):
         """
         Retrieves an api key by its name.
         """
-        return db.query(self.model).filter_by(deleted=False).filter(self.model.name == name).first()
+        return db.query(self.model).filter(self.model.name == name).first()
 
     def get_multi(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[APIKeyModel]:
         """

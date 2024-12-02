@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel
+from pydantic import Field
 
 
 class APIKeyBaseSchema(BaseModel):
@@ -18,6 +19,7 @@ class APIKeyBaseSchema(BaseModel):
 class APIKeyCreateSchema(APIKeyBaseSchema):
     """Properties to receive via API on creation."""
 
+    name: str = Field(..., min_length=1)
     expiration_date: datetime
 
 

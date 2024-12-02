@@ -27,7 +27,7 @@ class UserCreateSchema(UserBaseSchema):
 
     is_systemuser: Optional[bool] = False
     password: str = Field(..., min_length=cfg.security.min_pw_len)
-    rfid: Optional[str] = Field(None)
+    rfid: Optional[str] = Field(None, min_length=8)
 
 
 class UserUpdateSchema(UserBaseSchema):
@@ -37,7 +37,7 @@ class UserUpdateSchema(UserBaseSchema):
     language: Optional[str] = Field(None, min_length=1)
     theme: Optional[str] = Field(None, min_length=1)
     password: Optional[str] = Field(None, min_length=cfg.security.min_pw_len)
-    rfid: Optional[str] = Field(None)
+    rfid: Optional[str] = Field(None, min_length=8)
 
 
 class UserInDBBaseSchema(UserBaseSchema):
