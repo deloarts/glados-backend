@@ -36,8 +36,10 @@ def login_rfid(
     rfid: str | None = None,
 ) -> Any:
     """OAuth2 compatible token login for web api, get an access token for future requests from user rfid."""
+    if not cfg.security.allow_rfid_login:
+        raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="RFID login is disabled")
     if not rfid:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Invalid value for rfid login")
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Invalid value for RFID login")
     user = crud_user.authenticate_rfid(db, rfid=rfid)
     if not user:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(user).API.LOGIN.INCORRECT_CREDS)

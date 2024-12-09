@@ -27,6 +27,7 @@ class ConfigSecurity:
     algorithm: str
     token_url: str
     expire_minutes: int
+    allow_rfid_login: bool
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
