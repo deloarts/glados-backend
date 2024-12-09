@@ -85,15 +85,29 @@ class CRUDAPIKey(CRUDBase[APIKeyModel, APIKeyCreateSchema, APIKeyUpdateSchema]):
 
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def delete(self, db: Session, *, id: int) -> Optional[APIKeyModel]:  # pylint: disable=W0622
+    def delete(self, db: Session, *, id: int, forever: bool = False) -> Optional[APIKeyModel]:  # pylint: disable=W0622
         """
-        Marks an api key as deleted. An api key will never be fully deleted.
+        Deletes an api key.
+        If forever is `False` the key will only be marked for deletion. It then will be deleted by schedule at midnight.
+
+        Args:
+            db (Session): DB session.
+            id (int): The key id.
+            forever (bool, optional): If `True`, the key will be deleted from the db, marked for deletion of `False`.
+                Defaults to `False`.
+
+        Returns:
+            Optional[APIKeyModel]: The API key model, if found.
         """
         obj = db.query(self.model).filter(self.model.id == id).first()
-        setattr(obj, self.model.deleted.name, True)
-        db.add(obj)
-        db.commit()
-        db.refresh(obj)
+        if forever:
+            db.delete(obj)
+            db.commit()
+        else:
+            setattr(obj, self.model.deleted.name, True)
+            db.add(obj)
+            db.commit()
+            db.refresh(obj)
         return obj
 
 
