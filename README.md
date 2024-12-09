@@ -5,7 +5,7 @@ Backend for the glados project.
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
 ![version](https://img.shields.io/badge/Version-0.11.0-orange.svg?style=for-the-badge)
 
-[![python](https://img.shields.io/badge/Python-3.10-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
+[![python](https://img.shields.io/badge/Python-3.11-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
 
 Glados is a resource planning software with a web ui. The frontend is located at [github.com/deloarts/glados-frontend](https://github.com/deloarts/glados-frontend).
@@ -104,17 +104,17 @@ Install build dependencies:
 sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev python3-distutils -y
 ```
 
-Download and extract python 3.10:
+Download and extract python 3.11:
 
 ```bash
-wget https://www.python.org/ftp/python/3.10.7/Python-3.10.7.tgz
-tar -xvf Python-3.10.7.tgz
+wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz
+tar -xvf Python-3.11.9.tgz
 ```
 
 Build and install python:
 
 ```bash
-cd Python-3.10.7
+cd Python-3.11.9
 sudo ./configure --enable-optimizations
 sudo make -j 2
 sudo make altinstall
@@ -127,7 +127,7 @@ Add alias to bashrc:
 sudo nano ~/.bashrc
 
 # In .bashrc file:
-alias python='python3.10'
+alias python='python3.11'
 # Save & close with CTRL+O then CTRL+X
 
 # Load bashrc
@@ -140,7 +140,7 @@ Verify the installation:
 python --version
 
 # This should print the following output:
-Python 3.10.7
+Python 3.11.9
 ```
 
 #### 1.3.2 install git
@@ -186,8 +186,6 @@ python -m pip install -r requirements.txt
 
 - Copy the `config.sample.yml` file and paste it as `config.yml` file. Then edit the config file to fit your needs.
 - Do the same for all template files in the templates folder.
-
-> ⚠️ Both keys, `debug_api_key` and `debug_secret_key`, are only for debugging.
 
 ### 1.7 create the database
 
