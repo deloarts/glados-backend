@@ -58,11 +58,11 @@ Package requirements (apt):
 
 Python venv can be created inside the installation folder as `.env`.
 
- - recommended installation folder: `/opt/glados/glados-backend/`
- - use the latest git tag
- - copy the [config.sample.yml](/config.sample.yml) file and paste it as `config.yml` file, then edit it to fit your needs
- - do the same for all template files in the templates folder
- - database migration: `python -m alembic upgrade head`
+- recommended installation folder: `/opt/glados/glados-backend/`
+- use the latest git tag
+- copy the [config.sample.yml](/config.sample.yml) file and paste it as `config.yml` file, then edit it to fit your needs
+- do the same for all template files in the templates folder
+- database migration: `python -m alembic upgrade head`
 
 ### 1.3 first login
 
