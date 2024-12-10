@@ -14,9 +14,8 @@ from api.schemas.api_key import APIKeyCreateSchema
 from api.schemas.api_key import APIKeyUpdateSchema
 from crud.base import CRUDBase
 from db.models import APIKeyModel
+from security import create_access_token
 from sqlalchemy.orm import Session
-
-from app.security import create_access_token
 
 
 class CRUDAPIKey(CRUDBase[APIKeyModel, APIKeyCreateSchema, APIKeyUpdateSchema]):

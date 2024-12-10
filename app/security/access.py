@@ -13,9 +13,8 @@ from fastapi.param_functions import Security
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.security.http import HTTPBasic
 from fastapi.security.oauth2 import OAuth2PasswordBearer
+from security import get_subject_from_access_token
 from sqlalchemy.orm import Session
-
-from app.security import get_subject_from_access_token
 
 basic_auth = HTTPBasic(auto_error=False)
 api_key_header = APIKeyHeader(name="api_key_header", auto_error=False)
