@@ -55,6 +55,7 @@ def create_user(
         full_name=full_name,
         is_adminuser=is_admin,
         is_superuser=is_super,
+        rfid=None,
     )
     user = crud_user.create(db=db, obj_in=user_in, current_user=current_user_adminuser())
     return user
@@ -123,15 +124,18 @@ def authentication_token_from_email(*, client: TestClient, email: str, db: Sessi
     user = crud_user.get_by_email(db, email=email)
     if not user:
         user_in_create = UserCreateSchema(
-            username=TEST_USERNAME,
-            email=email,
-            password=password,
-            full_name=TEST_FULL_NAME,
+            username=TEST_USERNAME, email=email, password=password, full_name=TEST_FULL_NAME, rfid=None
         )
         user = crud_user.create(db, obj_in=user_in_create, current_user=current_user_adminuser())
     else:
         user_in_update = UserUpdateSchema(
-            username=TEST_USERNAME, email=email, password=password, full_name=TEST_FULL_NAME, language="enGB"
+            username=TEST_USERNAME,
+            email=email,
+            password=password,
+            full_name=TEST_FULL_NAME,
+            language="enGB",
+            theme="dark",
+            rfid=None,
         )
         user = crud_user.update(db, db_obj=user, obj_in=user_in_update, current_user=current_user_adminuser())
 
@@ -153,5 +157,6 @@ def current_user_adminuser() -> UserModel:
             "is_adminuser": True,
             "is_systemuser": False,
             "is_guestuser": False,
+            "hashed_rfid": None,
         }
     )

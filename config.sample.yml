@@ -8,8 +8,7 @@ security:
   algorithm: HS256
   token_url: /api/web/v1/login/access-token
   expire_minutes: 3600
-  debug_api_key: myDebugAPIKey
-  debug_secret_key: myDebugSecretKey
+  allow_rfid_login: true
 
 server:
   local_url: "glados.local"

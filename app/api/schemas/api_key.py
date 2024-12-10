@@ -6,6 +6,8 @@ from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel
+from pydantic import Field
+from pydantic import computed_field
 
 
 class APIKeyBaseSchema(BaseModel):
@@ -18,6 +20,7 @@ class APIKeyBaseSchema(BaseModel):
 class APIKeyCreateSchema(APIKeyBaseSchema):
     """Properties to receive via API on creation."""
 
+    name: str = Field(..., min_length=1)
     expiration_date: datetime
 
 
@@ -35,6 +38,12 @@ class APIKeyInDBBaseSchema(APIKeyBaseSchema):
 
 class APIKeySchema(APIKeyInDBBaseSchema):
     """Additional properties to return via API."""
+
+    @computed_field
+    def expired(self) -> bool:
+        if not self.expiration_date:
+            return True
+        return datetime.now() > self.expiration_date
 
 
 class APIKeyInDBSchema(APIKeyInDBBaseSchema):

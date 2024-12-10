@@ -2,15 +2,9 @@
     Authentication & Security.
 """
 
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from typing import Any
 from typing import Optional
 
-from api.schemas.token import TokenPayloadSchema
 from config import cfg
-from const import SECRET_KEY
 from crud.api_key import crud_api_key
 from crud.user import crud_user
 from db.session import get_db
@@ -19,76 +13,37 @@ from fastapi.param_functions import Security
 from fastapi.security.api_key import APIKeyHeader
 from fastapi.security.http import HTTPBasic
 from fastapi.security.oauth2 import OAuth2PasswordBearer
-from jose import jwt
-from multilog import log
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
+
+from app.security import get_subject_from_access_token
 
 basic_auth = HTTPBasic(auto_error=False)
 api_key_header = APIKeyHeader(name="api_key_header", auto_error=False)
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=cfg.security.token_url, auto_error=False)
 
 
-def get_secret_key() -> str:
-    """
-    Returns the secret key. Return the key from the config file if the app runs in
-    debug mode, creates a new key otherwise.
-    """
-    if cfg.debug and cfg.security.debug_secret_key:
-        log.debug("Using debug secret key from config-file.")
-        return cfg.security.debug_secret_key
-    log.debug("Using generated secret key.")
-    return SECRET_KEY
+def get_user_id_from_access_token(token: str) -> Optional[int]:
+    """Returns the user id from the given token."""
+    user_id = get_subject_from_access_token(token=token, persistent=False)
+    if user_id is not None:
+        return int(user_id)
+    return None
 
 
-def create_access_token(subject: str | Any, expires_delta: Optional[timedelta] = None) -> str:
-    """Creates and returns a new reusable OAuth2 access token.
-
-    Args:
-        subject (str | Any): The subject to encode (most times the user ID).
-        expires_delta (Optional[timedelta], optional): The expiration time in minutes. \
-            Defaults to None. If None, the value from the config file is used.
-
-    Returns:
-        str: A jwt encoded access token.
-    """
-    if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
-    else:
-        expire = datetime.now(UTC) + timedelta(minutes=cfg.security.expire_minutes)
-
-    to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(to_encode, get_secret_key(), algorithm=cfg.security.algorithm)
-    return encoded_jwt
+def get_key_id_from_access_token(token: str) -> Optional[int]:
+    """Returns the api key from the given token."""
+    key_id = get_subject_from_access_token(token=token, persistent=True)
+    if key_id is not None:
+        return int(key_id)
+    return None
 
 
-def get_id_from_access_token(token: str) -> Optional[int]:
-    """Extracts the subject from the access token.
-
-    Args:
-        token (_type_): A jwt access token.
-
-    Returns:
-        Optional[int]: The subject (user id) from the given token.
-    """
-    if not token:
-        return None
-    try:
-        payload = jwt.decode(token, get_secret_key(), algorithms=[cfg.security.algorithm])
-        token_data = TokenPayloadSchema(**payload)
-    except (ValidationError, Exception):
-        return None
-    return token_data.sub  # a.k.a the id
-
-
-def validate_api_key(api_key: str = Security(api_key_header), db: Session = Depends(get_db)) -> bool:
+def validate_api_key(db: Session = Depends(get_db), token: str = Security(api_key_header)) -> bool:
     """Validates the api key."""
-    if cfg.debug and api_key == cfg.security.debug_api_key:
-        log.warning("Authorized using debug api key")
-        return True
-
-    key_in_db = crud_api_key.get_by_api_key(db, key=api_key)
-    return bool(key_in_db)
+    key_id = get_key_id_from_access_token(token)
+    if key_id is not None:
+        key = crud_api_key.get(db, id=key_id)
+    return bool(key is not None and not key.deleted and key.api_key == token)
 
 
 def validate_personal_access_token(
@@ -113,7 +68,7 @@ def validate_personal_access_token(
     Returns:
         bool: True if the validation was successful, otherwise False.
     """
-    user_id = get_id_from_access_token(token)
+    user_id = get_user_id_from_access_token(token)
     if user_id is not None:
         user = crud_user.get(db, id=user_id)
         return bool(user is not None and user.is_active and user.personal_access_token == token)
@@ -133,7 +88,7 @@ def validate_access_token(db: Session = Depends(get_db), token: str = Depends(re
     Returns:
         bool: True if the validation was successful, otherwise False.
     """
-    user_id = get_id_from_access_token(token)
+    user_id = get_user_id_from_access_token(token)
     if user_id is not None:
         user = crud_user.get(db, id=user_id)
         return bool(user is not None and user.is_active)
@@ -145,7 +100,7 @@ def validate_access_token_superuser(db: Session = Depends(get_db), token: str = 
     Validates the access token for active superusers. Same as 'validate_access_token',
     but the user must also be a superuser.
     """
-    user_id = get_id_from_access_token(token)
+    user_id = get_user_id_from_access_token(token)
     if user_id is not None:
         user = crud_user.get(db, id=user_id)
         if user is not None:
@@ -159,7 +114,7 @@ def validate_access_token_adminuser(db: Session = Depends(get_db), token: str = 
     Validates the access token for active adminusers. Same as 'validate_access_token',
     but the user must also be a adminuser.
     """
-    user_id = get_id_from_access_token(token)
+    user_id = get_user_id_from_access_token(token)
     if user_id is not None:
         user = crud_user.get(db, id=user_id)
         if user is not None:
@@ -173,7 +128,7 @@ def validate_access_token_guestuser(db: Session = Depends(get_db), token: str = 
     Validates the access token for active guestusers. Same as 'validate_access_token',
     but the user must also be a guestuser.
     """
-    user_id = get_id_from_access_token(token)
+    user_id = get_user_id_from_access_token(token)
     if user_id is not None:
         user = crud_user.get(db, id=user_id)
         if user is not None:

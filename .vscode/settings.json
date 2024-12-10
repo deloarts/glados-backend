@@ -34,6 +34,7 @@
     "pytest",
     "qualname",
     "rcfile",
+    "rfid",
     "sessionmaker",
     "sqlalchemy",
     "starlette",

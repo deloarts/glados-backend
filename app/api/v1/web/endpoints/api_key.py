@@ -2,6 +2,8 @@
     Handles all routes to the api-key-resource.
 """
 
+from datetime import UTC
+from datetime import datetime
 from typing import Any
 from typing import List
 
@@ -10,6 +12,7 @@ from api.schemas.api_key import APIKeyCreateSchema
 from api.schemas.api_key import APIKeySchema
 from crud.api_key import crud_api_key
 from db.session import get_db
+from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
@@ -82,6 +85,17 @@ def create_api_key(
     verified: bool = Depends(deps.verify_token_adminuser),
 ) -> Any:
     """Create an new api key."""
+    if crud_api_key.get_by_name(db, name=data_in.name):
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="An api key with this name already exists",
+        )
+    if data_in.expiration_date < datetime.now(UTC):
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="The expiration date cannot be in the past",
+        )
+
     return crud_api_key.create(db, obj_in=data_in)
 
 

@@ -18,7 +18,7 @@ from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from locales import lang
-from security.access import create_access_token
+from security import create_access_token
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -34,9 +34,8 @@ def login_access_token(db: Session = Depends(get_db), form_data: OAuth2PasswordR
     if not crud_user.is_active(user):
         raise HTTPException(status_code=400, detail=lang(user).API.LOGIN.INACTIVE_ACCOUNT)
 
-    access_token_expires = timedelta(minutes=cfg.security.expire_minutes)
     return {
-        "access_token": create_access_token(user.id, expires_delta=access_token_expires),
+        "access_token": create_access_token(user.id, persistent=False),
         "token_type": "bearer",
     }
 

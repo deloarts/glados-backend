@@ -23,7 +23,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from locales import lang
-from security.access import create_access_token
+from security import create_access_token
 from sqlalchemy.orm import Session
 
 router = APIRouter()
@@ -153,8 +153,9 @@ def update_user_personal_access_token(
     if current_user.is_guestuser:
         raise HTTPException(status_code=403, detail=lang(current_user).API.USER.TOKEN_GUEST_NO_PERMISSION)
 
-    # access_token = secrets.token_urlsafe(32)
-    access_token = create_access_token(subject=current_user.id, expires_delta=timedelta(minutes=expires_in_minutes))
+    access_token = create_access_token(
+        subject=current_user.id, expires_delta=timedelta(minutes=expires_in_minutes), persistent=True
+    )
     crud_user.update(
         db,
         current_user=current_user,
