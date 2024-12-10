@@ -92,8 +92,10 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         data["created"] = datetime.now(UTC)
         data["hashed_password"] = get_hash(obj_in.password)
         del data["password"]
-        if obj_in.rfid:
-            data["hashed_rfid"] = get_hash(obj_in.rfid)
+        if "rfid" in data:
+            if data["rfid"] is not None:
+                hashed_rfid = get_hash(data["rfid"])
+                data["hashed_rfid"] = hashed_rfid
             del data["rfid"]
 
         # The systemuser can only be created by another systemuser!
@@ -186,9 +188,10 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
 
         # Handle a new rfid id
         if "rfid" in data:
-            hashed_rfid = get_hash(data["rfid"])
+            if data["rfid"] is not None:
+                hashed_rfid = get_hash(data["rfid"])
+                data["hashed_rfid"] = hashed_rfid
             del data["rfid"]
-            data["hashed_rfid"] = hashed_rfid
 
         # The systemuser can only update itself!
         # The systemuser has fixed permissions that cannot be altered.

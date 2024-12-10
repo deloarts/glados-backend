@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.api.schemas.user import UserCreateSchema
 from app.api.schemas.user import UserUpdateSchema
 from app.crud.user import crud_user
-from app.security.pwd import verify_password
+from app.security.pwd import verify_hash
 from tests.utils.user import TEST_PASS
 from tests.utils.user import current_user_adminuser
 from tests.utils.user import get_test_admin_user
@@ -32,7 +32,13 @@ def test_create_user(db: Session) -> None:
         t_username = random_username()
         t_email = random_email()
 
-    t_user_in = UserCreateSchema(username=t_username, full_name=t_full_name, email=t_email, password=t_password)
+    t_user_in = UserCreateSchema(
+        username=t_username,
+        full_name=t_full_name,
+        email=t_email,
+        password=t_password,
+        rfid=None,
+    )
 
     # ----------------------------------------------
     # CREATE USER: METHODS TO TEST
@@ -98,7 +104,11 @@ def test_check_if_user_is_active(db: Session) -> None:
     # ----------------------------------------------
 
     t_user_in = UserCreateSchema(
-        username=random_username(), full_name=random_name(), email=random_email(), password=random_lower_string()
+        username=random_username(),
+        full_name=random_name(),
+        email=random_email(),
+        password=random_lower_string(),
+        rfid=None,
     )
     t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
 
@@ -126,6 +136,7 @@ def test_check_if_user_is_inactive(db: Session) -> None:
         email=random_email(),
         password=random_lower_string(),
         is_active=False,
+        rfid=None,
     )
     t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
 
@@ -153,6 +164,7 @@ def test_check_if_user_is_superuser(db: Session) -> None:
         email=random_email(),
         password=random_lower_string(),
         is_superuser=True,
+        rfid=None,
     )
     t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
 
@@ -185,6 +197,7 @@ def test_check_if_user_is_adminuser(db: Session) -> None:
         password=random_lower_string(),
         is_superuser=False,  # Even if set to false, when is_adminuser is set True, this will become True
         is_adminuser=True,
+        rfid=None,
     )
     t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
 
@@ -217,6 +230,7 @@ def test_get_user(db: Session) -> None:
         password=random_lower_string(),
         is_superuser=False,  # Even if set to false, when is_adminuser is set True, this will become True
         is_adminuser=True,
+        rfid=None,
     )
     t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
 
@@ -246,6 +260,7 @@ def test_update_user(db: Session) -> None:
         full_name=random_name(),
         email=random_email(),
         password=random_lower_string(),
+        rfid=None,
     )
     t_user = crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
     t_new_pass = random_lower_string()
@@ -255,6 +270,8 @@ def test_update_user(db: Session) -> None:
         email=t_user.email,
         password=t_new_pass,
         language="deAT",
+        theme="dark",
+        rfid=None,
     )
 
     # ----------------------------------------------
@@ -270,5 +287,5 @@ def test_update_user(db: Session) -> None:
     user_2 = crud_user.get(db, id=t_user.id)
     assert user_2
     assert t_user.email == user_2.email
-    assert verify_password(t_new_pass, user_2.hashed_password)
+    assert verify_hash(t_new_pass, user_2.hashed_password)
     assert user_2.language == "deAT"
