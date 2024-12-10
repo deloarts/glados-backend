@@ -14,29 +14,33 @@ Backend for the glados project.
 Table of contents:
 
 - [glados backend](#glados-backend)
-  - [1 installation](#1-installation)
-    - [1.1 requirements](#11-requirements)
-    - [1.2 setup](#12-setup)
-    - [1.3 first login](#13-first-login)
-  - [2 update](#2-update)
-  - [3 developing](#3-developing)
-  - [4 user levels](#4-user-levels)
-    - [4.1 user](#41-user)
-    - [4.2 superuser](#42-superuser)
-    - [4.3 adminuser](#43-adminuser)
-    - [4.4 guestuser](#44-guestuser)
-    - [4.5 systemuser](#45-systemuser)
-  - [5 license](#5-license)
-  - [6 changelog](#6-changelog)
-  - [7 to do](#7-to-do)
+  - [1 introduction](#1-introduction)
+  - [2 installation](#2-installation)
+    - [2.1 requirements](#21-requirements)
+    - [2.2 setup](#22-setup)
+    - [2.3 first login](#23-first-login)
+  - [3 update](#3-update)
+  - [4 developing](#4-developing)
+  - [5 user levels](#5-user-levels)
+    - [5.1 user](#51-user)
+    - [5.2 superuser](#52-superuser)
+    - [5.3 adminuser](#53-adminuser)
+    - [5.4 guestuser](#54-guestuser)
+    - [5.5 systemuser](#55-systemuser)
+  - [6 license](#6-license)
+  - [7 changelog](#7-changelog)
 
-## 1 installation
+## 1 introduction
+
+How to use glados? See **USAGE.md** in the **docs** at [github.com/deloarts/glados-frontend](https://github.com/deloarts/glados-frontend).
+
+## 2 installation
 
 For a guided installation see [INSTALL.md](/docs/INSTALL.md)
 
 > ✏️ Frontend and backend require the same major and minor version to work together
 
-### 1.1 requirements
+### 2.1 requirements
 
 System requirements:
 
@@ -54,7 +58,7 @@ Package requirements (apt):
 - pkg-config
 - libcairo2-dev
 
-### 1.2 setup
+### 2.2 setup
 
 Python venv can be created inside the installation folder as `.env`.
 
@@ -64,24 +68,24 @@ Python venv can be created inside the installation folder as `.env`.
 - do the same for all template files in the templates folder
 - database migration: `python -m alembic upgrade head`
 
-### 1.3 first login
+### 2.3 first login
 
 - username: `system`
 - password: The password you've setup in the `config.yml`
 
-## 2 update
+## 3 update
 
 For a guided update process see [UPDATE.md](/docs/UPDATE.md)
 
-## 3 developing
+## 4 developing
 
 For contributors: [DEV.md](/docs/DEV.md)
 
-## 4 user levels
+## 5 user levels
 
 All user levels share a common `active` state. A user must be active to login to Glados.
 
-### 4.1 user
+### 5.1 user
 
 The **user** is the default level for new users in the app. The following rules are applied to the **user**:
 
@@ -92,7 +96,7 @@ The **user** is the default level for new users in the app. The following rules 
 - A **user** can delete their own items, as long as the items state is `open`
 - A **user** cannot make changes to the settings of the app
 
-### 4.2 superuser
+### 5.2 superuser
 
 The **superuser** has a bit more permissions, compared to the **user**. The following rules are applied to the **superuser**:
 
@@ -103,7 +107,7 @@ The **superuser** has a bit more permissions, compared to the **user**. The foll
 - A **superuser** can delete all items from all users at any state
 - A **superuser** cannot make changes to the settings of the app
 
-### 4.3 adminuser
+### 5.3 adminuser
 
 The **adminuser** has the highest level of permissions. Elevate an **user** or a **superuser** to this right only if the person understands the consequences! The following rules are applied to the **adminuser**:
 
@@ -114,7 +118,7 @@ The **adminuser** has the highest level of permissions. Elevate an **user** or a
 - A **adminuser** can make changed to the settings of the app
 - A **adminuser** can create new users and change their level
 
-### 4.4 guestuser
+### 5.4 guestuser
 
 The **guestuser** has the lowest level of permissions. This user exist, so people can view the state of items. The following rules are applied to the **guestuser**:
 
@@ -123,7 +127,7 @@ The **guestuser** has the lowest level of permissions. This user exist, so peopl
 - A **guestuser** can only view items (cannot create, nor edit, nor delete)
 - A **guestuser** cannot make changed to the settings of the app
 
-### 4.5 systemuser
+### 5.5 systemuser
 
 The **systemuser** is created at DB init. The credentials for the **systemuser** must be applied in the *config.yml* file before the first run of the app. The following rules are applied to the **systemuser**:
 
@@ -131,11 +135,11 @@ The **systemuser** is created at DB init. The credentials for the **systemuser**
 - The **systemuser** has the same rights as the **adminuser**
 - The **systemuser** is a fallback user for changing the configuration
 
-## 5 license
+## 6 license
 
-No license.
+MIT
 
-## 6 changelog
+## 7 changelog
 
 **v0.11.0**: Add item validation endpoint.  
 **v0.10.0**: Add language and theme.  
@@ -167,7 +171,3 @@ No license.
 **v0.1.2**: Add order by ID.  
 **v0.1.1**: Update log handler.  
 **v0.1.0**: Initial commit.
-
-## 7 to do
-
-Using VS Code [Comment Anchors](https://marketplace.visualstudio.com/items?itemName=ExodiusStudios.comment-anchors) to keep track of to-dos.
