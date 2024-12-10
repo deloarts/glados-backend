@@ -7,7 +7,7 @@ import secrets
 import sys
 from pathlib import Path
 
-VERSION = "0.12.0"
+VERSION = "0.12.1"
 NAME = "glados"
 
 SYSTEM_USER = "system"
