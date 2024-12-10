@@ -1,7 +1,7 @@
 # glados backend
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
-![version](https://img.shields.io/badge/Version-0.11.0-orange.svg?style=for-the-badge)
+![version](https://img.shields.io/badge/Version-0.12.0-orange.svg?style=for-the-badge)
 [![python](https://img.shields.io/badge/Python-3.11-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
 
@@ -143,6 +143,7 @@ MIT
 
 ## 7 changelog
 
+**v0.12.0**: Add api key endpoint. Add rfid to user.  
 **v0.11.0**: Add item validation endpoint.  
 **v0.10.0**: Add language and theme.  
 **v0.9.2**: Add project customer and project description to bought item api.  
