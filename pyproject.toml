@@ -28,6 +28,7 @@ coloredlogs = "^15.0.1"
 openpyxl = "^3.1.5"
 opcut = "^0.4.15" # OPCUT requires chairo, refer to installation chapter in the readme
 pypdf = "^4.3.1"
+python-dateutil = "^2.9.0.post0"
 
 [tool.poetry.group.dev.dependencies]
 faker = "^27.0.0"
