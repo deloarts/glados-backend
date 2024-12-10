@@ -13,7 +13,7 @@
   - [3 pre-commit hooks](#3-pre-commit-hooks)
   - [4 api docs](#4-api-docs)
   - [5 new revision checklist](#5-new-revision-checklist)
-  - [5 to do](#5-to-do)
+  - [6 to do](#6-to-do)
 
 ## 1 repository
 
@@ -120,6 +120,6 @@ The docs can be viewed at `localhost:port/docs`, where the port is the port you'
 5. Update the **lockfile**: `poetry lock`
 6. Update the **requirements.txt**: `poetry export -f requirements.txt -o requirements.txt`
 
-## 5 to do
+## 6 to do
 
 Using VS Code [Comment Anchors](https://marketplace.visualstudio.com/items?itemName=ExodiusStudios.comment-anchors) to keep track of to-dos.
