@@ -30,12 +30,33 @@ class ConfigSecurity:
     allow_rfid_login: bool
 
 
-@dataclass(slots=True, kw_only=True, frozen=True)
+@dataclass(slots=True, kw_only=True)
+class ConfigServerSSL:
+    keyfile: str | None
+    certfile: str | None
+
+    def __init__(self, keyfile: str | None, certfile: str | None):
+        if keyfile and certfile:
+            if os.path.exists(keyfile) and os.path.exists(certfile):
+                self.keyfile = keyfile
+                self.certfile = certfile
+            else:
+                raise FileNotFoundError("SSL certificate files not found")
+        else:
+            self.keyfile = None
+            self.certfile = None
+
+
+@dataclass(slots=True, kw_only=True)
 class ConfigServer:
     local_url: str
     host: str
     port: int
+    ssl: ConfigServerSSL
     whitelist: List[str]
+
+    def __post_init__(self) -> None:
+        self.ssl = ConfigServerSSL(**dict(self.ssl))  # type: ignore
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)
