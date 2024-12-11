@@ -1,7 +1,7 @@
 # glados backend
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
-![version](https://img.shields.io/badge/Version-0.12.1-orange.svg?style=for-the-badge)
+![version](https://img.shields.io/github/v/release/deloarts/glados-backend?style=for-the-badge&color=orange)
 [![python](https://img.shields.io/badge/Python-3.11-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
 
