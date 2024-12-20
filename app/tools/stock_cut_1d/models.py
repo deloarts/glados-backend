@@ -27,7 +27,7 @@ class TargetSizeModel(BaseModel):
 class JobModel(BaseModel):
     max_length: int = Field(..., gt=0)
     cut_width: int = Field(..., ge=0)
-    target_sizes: List[TargetSizeModel] = Field(..., default_factory=list)
+    target_sizes: List[TargetSizeModel] = Field(default_factory=list)
 
     def iterate_sizes(self) -> Iterator[int]:
         """
