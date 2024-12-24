@@ -123,7 +123,7 @@ cd glados-backend
 git checkout {TAG_NAME}
 ```
 
-Enter your username and your access token when prompted. Replace `{TAG_NAME}` with the version you want to clone, e.g. `v0.12.1`.
+Enter your username and your access token when prompted. Replace `{TAG_NAME}` with the version you want to clone, e.g. `v0.12.2`.
 
 > ✏️ You can use this command to update the app as well. Just modify the tag name.
 >
