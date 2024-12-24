@@ -83,6 +83,7 @@ class InitDatabase:
 
             creator = user_in.model_dump()
             del creator["password"]
+            del creator["rfid"]
             creator["username"] = "Glados Init"
             creator["full_name"] = "-"
             creator["id"] = 0

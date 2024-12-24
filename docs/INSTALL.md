@@ -123,7 +123,7 @@ cd glados-backend
 git checkout {TAG_NAME}
 ```
 
-Enter your username and your access token when prompted. Replace `{TAG_NAME}` with the version you want to clone, e.g. `v0.12.1`.
+Enter your username and your access token when prompted. Replace `{TAG_NAME}` with the version you want to clone, e.g. `v0.12.2`.
 
 > ✏️ You can use this command to update the app as well. Just modify the tag name.
 >
@@ -163,6 +163,8 @@ security/allow_rfid_login | `bool` | Wether or not to enable authentication via 
 server/local_url | `str` | The local url, where glados can be reached. E.g. `glados.company.local` on your intranet.
 server/host | `str` | The hosts IP address (the IP behind the `local_url`)
 server/port | `int` | The port where the backend runs
+server/ssl/keyfile | `str | null` | The absolute path to the ssl key file. If set to `null` the backend accepts http-requests.
+server/ssl/certfile | `str | null` | The absolute path to the ssl certificate file. If set to `null` the backend accepts http-requests.
 server/whitelist | `list[str]` | Experimental feature, leave it as is
 schedules/database_hour | `int` | The hour when db-schedule shall run (automatically set item status to `late`, ...)
 schedules/system_hour | `int` | The hour when system-schedule shall run (disc space calculations, ...)

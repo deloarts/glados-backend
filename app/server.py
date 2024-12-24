@@ -84,4 +84,6 @@ def run():
         reload=cfg.debug,
         host=cfg.server.host,
         port=cfg.server.port,
+        ssl_keyfile=cfg.server.ssl.keyfile,
+        ssl_certfile=cfg.server.ssl.certfile,
     )
