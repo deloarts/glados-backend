@@ -52,6 +52,7 @@ class ConfigServer:
     local_url: str
     host: str
     port: int
+    static: str | None
     ssl: ConfigServerSSL
     whitelist: List[str]
 

@@ -2,6 +2,8 @@
     The fastapi init.
 """
 
+import os
+
 import uvicorn
 from api.v1.key import api_key
 from api.v1.pat import api_pat
@@ -12,6 +14,7 @@ from const import API_PAT_V1
 from const import API_WEB_V1
 from const import VERSION
 from fastapi.applications import FastAPI
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
@@ -68,13 +71,14 @@ app = FastAPI(
 app.mount(API_WEB_V1, web_api)
 app.mount(API_PAT_V1, pat_api)
 app.mount(API_KEY_V1, key_api)
-# app.mount("/", StaticFiles(directory=static_folder), name="static")
+if cfg.server.static and os.path.exists(cfg.server.static):
+    app.mount("/", StaticFiles(directory=cfg.server.static, html=True), name="static")
 
 
-@app.get("/")
-async def route_root() -> RedirectResponse:
-    """Route to the server root. Redirects to /docs."""
-    return RedirectResponse(url="/docs")
+# @app.get("/")
+# async def route_root() -> RedirectResponse:
+#     """Route to the server root. Redirects to /docs."""
+#     return RedirectResponse(url="/docs")
 
 
 def run():
