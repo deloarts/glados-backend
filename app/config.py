@@ -25,9 +25,15 @@ class ConfigLocale:
 class ConfigSecurity:
     min_pw_len: int
     algorithm: str
-    token_url: str
     expire_minutes: int
     allow_rfid_login: bool
+
+
+@dataclass(slots=True, kw_only=True)
+class ConfigServerAPI:
+    web: str
+    pat: str
+    key: str
 
 
 @dataclass(slots=True, kw_only=True)
@@ -48,14 +54,40 @@ class ConfigServerSSL:
 
 
 @dataclass(slots=True, kw_only=True)
+class ConfigServerStatic:
+    enable: bool
+    folder: str
+    url: str
+
+    def __init__(self, enable: bool | None, folder: str | None, url: str | None):
+        if enable is True and folder and url:
+            if os.path.exists(folder):
+                self.enable = enable
+                self.folder = folder
+                self.url = url
+            else:
+                raise OSError("Static folder not found")
+        else:
+            self.enable = False
+            self.folder = ""
+            self.url = ""
+
+
+@dataclass(slots=True, kw_only=True)
 class ConfigServer:
-    local_url: str
     host: str
     port: int
+    domain: str
+    api: ConfigServerAPI
+    static: ConfigServerStatic
     ssl: ConfigServerSSL
-    whitelist: List[str]
+    headers_server: bool
+    headers_proxy: bool
+    forwarded_allowed_ips: str | None
 
     def __post_init__(self) -> None:
+        self.api = ConfigServerAPI(**dict(self.api))  # type: ignore
+        self.static = ConfigServerStatic(**dict(self.static))  # type: ignore
         self.ssl = ConfigServerSSL(**dict(self.ssl))  # type: ignore
 
 

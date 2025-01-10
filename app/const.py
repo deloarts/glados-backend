@@ -7,18 +7,13 @@ import secrets
 import sys
 from pathlib import Path
 
-VERSION = "0.12.2"
+VERSION = "0.12.3"
 NAME = "glados"
 
 SYSTEM_USER = "system"
 
 # DB
 ALEMBIC_VERSION = "b8e97eca009f"
-
-# API
-API_WEB_V1 = "/api/web/v1"
-API_PAT_V1 = "/api/pat/v1"
-API_KEY_V1 = "/api/key/v1"
 
 # Paths
 ROOT = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

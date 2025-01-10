@@ -3,7 +3,7 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.const import API_WEB_V1
+from app.config import cfg
 from app.const import SYSTEM_USER
 from app.crud.user import crud_user
 from tests.utils.user import TEST_MAIL
@@ -19,7 +19,7 @@ def test_get_users_systemuser_init(client: TestClient, systemuser_token_headers:
     # GET SYSTEMUSER: METHODS TO TEST
     # ----------------------------------------------
 
-    r = client.get(f"{API_WEB_V1}/users/me", headers=systemuser_token_headers)
+    r = client.get(f"{cfg.server.api.web}/users/me", headers=systemuser_token_headers)
 
     # ----------------------------------------------
     # GET SYSTEMUSER: VALIDATION
@@ -40,7 +40,7 @@ def test_get_users_normal_user_me(client: TestClient, normal_user_token_headers:
     # GET SYSTEMUSER: METHODS TO TEST
     # ----------------------------------------------
 
-    r = client.get(f"{API_WEB_V1}/users/me", headers=normal_user_token_headers)
+    r = client.get(f"{cfg.server.api.web}/users/me", headers=normal_user_token_headers)
 
     # ----------------------------------------------
     # GET OWN USER: VALIDATION
@@ -68,7 +68,7 @@ def test_create_user_new_email(client: TestClient, systemuser_token_headers: dic
     # CREATE USER: METHODS TO TEST
     # ----------------------------------------------
 
-    r = client.post(f"{API_WEB_V1}/users/", headers=systemuser_token_headers, json=t_data)
+    r = client.post(f"{cfg.server.api.web}/users/", headers=systemuser_token_headers, json=t_data)
 
     # ----------------------------------------------
     # CREATE USER: VALIDATION
@@ -97,7 +97,7 @@ def test_get_existing_user(client: TestClient, systemuser_token_headers: dict, d
     # GET USER: METHODS TO TEST
     # ----------------------------------------------
 
-    r = client.get(f"{API_WEB_V1}/users/{t_user.id}", headers=systemuser_token_headers)
+    r = client.get(f"{cfg.server.api.web}/users/{t_user.id}", headers=systemuser_token_headers)
 
     # ----------------------------------------------
     # GET USER: VALIDATION
@@ -134,7 +134,7 @@ def test_create_user_existing_username(client: TestClient, systemuser_token_head
     # CREATE EXISTING USER: METHODS TO TEST
     # ----------------------------------------------
 
-    r = client.post(f"{API_WEB_V1}/users/", headers=systemuser_token_headers, json=data)
+    r = client.post(f"{cfg.server.api.web}/users/", headers=systemuser_token_headers, json=data)
 
     # ----------------------------------------------
     # CREATE EXISTING USER: VALIDATION
@@ -158,7 +158,7 @@ def test_create_user_by_normal_user(client: TestClient, normal_user_token_header
     # CREATE BY NORMAL USER: METHODS TO TEST
     # ----------------------------------------------
 
-    r = client.post(f"{API_WEB_V1}/users/", headers=normal_user_token_headers, json=data)
+    r = client.post(f"{cfg.server.api.web}/users/", headers=normal_user_token_headers, json=data)
 
     # ----------------------------------------------
     # CREATE BY NORMAL USER: VALIDATION
@@ -178,7 +178,7 @@ def test_retrieve_users(client: TestClient, systemuser_token_headers: dict, db: 
     # GET USERS: METHODS TO TEST
     # ----------------------------------------------
 
-    r = client.get(f"{API_WEB_V1}/users/", headers=systemuser_token_headers)
+    r = client.get(f"{cfg.server.api.web}/users/", headers=systemuser_token_headers)
     all_users = r.json()
 
     # ----------------------------------------------

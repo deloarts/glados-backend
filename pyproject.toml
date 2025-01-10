@@ -4,7 +4,7 @@ classifiers = ["Operating System :: Unix"]
 description = "Backend for the glados project."
 name = "glados"
 readme = "README.md"
-version = "0.12.2"
+version = "0.12.3"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
@@ -26,7 +26,7 @@ uvicorn = "^0.30.6"
 APScheduler = "^3.10.4"
 coloredlogs = "^15.0.1"
 openpyxl = "^3.1.5"
-opcut = "^0.4.15" # OPCUT requires chairo, refer to installation chapter in the readme
+opcut = "0.4.9" # OPCUT requires chairo, refer to installation chapter in the readme
 pypdf = "^4.3.1"
 python-dateutil = "^2.9.0.post0"
 pyyaml = "^6.0.2"
