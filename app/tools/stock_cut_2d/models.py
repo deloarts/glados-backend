@@ -5,7 +5,7 @@
 from typing import List
 from typing import Optional
 
-from opcut.common import Cut
+# from opcut.common import Cut
 from opcut.common import Method
 from pydantic import BaseModel
 from pydantic import Field
@@ -58,4 +58,4 @@ class ResultModel(BaseModel):
     params: ParameterModel = Field(...)
     used: List[UsedModel] = Field(default_factory=list)
     unused: List[UnusedModel] = Field(default_factory=list)
-    cuts: Optional[List[Cut]]
+    # cuts: Optional[List[Cut]]
