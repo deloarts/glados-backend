@@ -51,7 +51,7 @@ class MailPreset:
     @staticmethod
     def send_welcome_mail(email: str, full_name: str, username: str, password: str) -> None:
         """Send a welcome mail for new users."""
-        local_url = cfg.server.local_url
+        local_url = cfg.server.domain
         log.info(f"Sending welcome email to {email!r}...")
         body = render_template(template_file=Path(TEMPLATES, cfg.templates.mail_welcome), **locals())
         receiver = Receiver(to=[email])

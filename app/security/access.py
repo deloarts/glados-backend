@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 basic_auth = HTTPBasic(auto_error=False)
 api_key_header = APIKeyHeader(name="api_key_header", auto_error=False)
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=cfg.security.token_url, auto_error=False)
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{cfg.server.api.web}/login/access-token", auto_error=False)
 
 
 def get_user_id_from_access_token(token: str) -> Optional[int]:

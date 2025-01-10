@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.api.schemas.user import UserCreateSchema
 from app.api.schemas.user import UserUpdateSchema
-from app.const import API_WEB_V1
+from app.config import cfg
 from app.crud.user import crud_user
 from app.db.models import UserModel
 from tests.utils.utils import random_email
@@ -32,7 +32,7 @@ TEST_ADMIN_FULL_NAME = "Administrator Usor"
 def user_authentication_headers(*, client: TestClient, username: str, password: str) -> Dict[str, str]:
     data = {"username": username, "password": password}
 
-    r = client.post(f"{API_WEB_V1}/login/access-token", data=data)
+    r = client.post(f"{cfg.server.api.web}/login/access-token", data=data)
     response = r.json()
     auth_token = response["access_token"]
     headers = {"Authorization": f"Bearer {auth_token}"}

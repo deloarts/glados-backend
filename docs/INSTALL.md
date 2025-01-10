@@ -160,12 +160,17 @@ security/algorithm | `str` | The algorithm used for creating access tokens
 security/token_url | `str` | The api where the token can be retrieved
 security/expire_minutes | `int` | The expiration time for non-persistent tokens in minutes
 security/allow_rfid_login | `bool` | Wether or not to enable authentication via RFID (this is experimental and doesn't meet security standards)
-server/local_url | `str` | The local url, where glados can be reached. E.g. `glados.company.local` on your intranet.
 server/host | `str` | The hosts IP address (the IP behind the `local_url`)
 server/port | `int` | The port where the backend runs
-server/ssl/keyfile | `str | null` | The absolute path to the ssl key file. If set to `null` the backend accepts http-requests.
-server/ssl/certfile | `str | null` | The absolute path to the ssl certificate file. If set to `null` the backend accepts http-requests.
-server/whitelist | `list[str]` | Experimental feature, leave it as is
+server/domain | `str` | The url, where glados can be reached. E.g. `glados.company.local` on your intranet
+server/static/enable | `bool` | Enable static file serving
+server/static/folder | `str` | The folder where the static files can be found
+server/static/url | `str` | The url from where the static files are returned
+server/ssl/keyfile | `str or null` | The absolute path to the ssl key file. If set to `null` the backend accepts http-requests
+server/ssl/certfile | `str or null` | The absolute path to the ssl certificate file. If set to `null` the backend accepts http-requests
+server/headers_server | `bool` | Allow server headers
+server/headers_proxy | `bool` | Allow proxy headers
+server/forwarded_allowed_ips | `str` | The allowed IPs (required when using nginx)
 schedules/database_hour | `int` | The hour when db-schedule shall run (automatically set item status to `late`, ...)
 schedules/system_hour | `int` | The hour when system-schedule shall run (disc space calculations, ...)
 schedules/email_notification_hour | `int` | The hour when users shall be notified by mail (item status updated, ...)
