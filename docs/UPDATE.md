@@ -27,7 +27,7 @@ git checkout {TAG_NAME}
 python -m pip install -r requirements.txt
 ```
 
-Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.12.2`.
+Where `{TAG_NAME}` is the version of the app you want to use, e.g. `v0.12.3`.
 
 ## 3 update the config file
 
