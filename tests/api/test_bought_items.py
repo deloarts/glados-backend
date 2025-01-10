@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.config import cfg
-from app.const import API_WEB_V1
 from tests.utils.bought_item import create_random_item
 from tests.utils.project import get_test_project
 from tests.utils.utils import random_bought_item_name
@@ -33,7 +32,7 @@ def test_create_item(client: TestClient, normal_user_token_headers: dict, db: Se
     # CREATE ITEM: METHODS TO TEST
     # ----------------------------------------------
 
-    response = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data)
+    response = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data)
 
     # ----------------------------------------------
     # CREATE ITEM: VALIDATION
@@ -103,8 +102,8 @@ def test_create_item_missing_project(client: TestClient, normal_user_token_heade
     # CREATE ITEM MISSING PROJECT: METHODS TO TEST
     # ----------------------------------------------
 
-    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
-    response_2 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
+    response_1 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_2 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
 
     # ----------------------------------------------
     # CREATE ITEM MISSING PROJECT: VALIDATION
@@ -131,8 +130,8 @@ def test_create_item_missing_quantity(client: TestClient, normal_user_token_head
     # CREATE ITEM MISSING QTY: METHODS TO TEST
     # ----------------------------------------------
 
-    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
-    response_2 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
+    response_1 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_2 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
 
     # ----------------------------------------------
     # CREATE ITEM MISSING QTY: VALIDATION
@@ -159,8 +158,8 @@ def test_create_item_missing_unit(client: TestClient, normal_user_token_headers:
     # CREATE ITEM MISSING UNIT: METHODS TO TEST
     # ----------------------------------------------
 
-    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
-    response_2 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
+    response_1 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_2 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_2)
 
     # ----------------------------------------------
     # CREATE ITEM MISSING UNIT: VALIDATION
@@ -183,7 +182,7 @@ def test_create_item_missing_partnumber(client: TestClient, normal_user_token_he
     # CREATE ITEM MISSING PARTNUMBER: METHODS TO TEST
     # ----------------------------------------------
 
-    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_1 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
 
     # ----------------------------------------------
     # CREATE ITEM MISSING PARTNUMBER: VALIDATION
@@ -205,7 +204,7 @@ def test_create_item_missing_order_number(client: TestClient, normal_user_token_
     # CREATE ITEM MISSING ORDER NUMBER: METHODS TO TEST
     # ----------------------------------------------
 
-    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_1 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
 
     # ----------------------------------------------
     # CREATE ITEM MISSING ORDER NUMBER: VALIDATION
@@ -227,7 +226,7 @@ def test_create_item_missing_manufacturer(client: TestClient, normal_user_token_
     # CREATE ITEM MISSING MANUFACTURER: METHODS TO TEST
     # ----------------------------------------------
 
-    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_1 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
 
     # ----------------------------------------------
     # CREATE ITEM MISSING MANUFACTURER: VALIDATION
@@ -249,7 +248,7 @@ def test_create_item_extra_field(client: TestClient, normal_user_token_headers: 
     # CREATE ITEM EXTRA FIELD: METHODS TO TEST
     # ----------------------------------------------
 
-    response_1 = client.post(f"{API_WEB_V1}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
+    response_1 = client.post(f"{cfg.server.api.web}/items/bought/", headers=normal_user_token_headers, json=t_data_1)
 
     # ----------------------------------------------
     # CREATE ITEM EXTRA FIELD: VALIDATION
@@ -269,7 +268,7 @@ def test_read_item(client: TestClient, normal_user_token_headers: dict, db: Sess
     # GET ITEM: METHODS TO TEST
     # ----------------------------------------------
 
-    response = client.get(f"{API_WEB_V1}/items/bought/{item.id}", headers=normal_user_token_headers)
+    response = client.get(f"{cfg.server.api.web}/items/bought/{item.id}", headers=normal_user_token_headers)
 
     # ----------------------------------------------
     # GET ITEM: VALIDATION

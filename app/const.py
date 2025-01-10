@@ -15,11 +15,6 @@ SYSTEM_USER = "system"
 # DB
 ALEMBIC_VERSION = "b8e97eca009f"
 
-# API
-API_WEB_V1 = "/api/web/v1"
-API_PAT_V1 = "/api/pat/v1"
-API_KEY_V1 = "/api/key/v1"
-
 # Paths
 ROOT = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PERSISTENT_KEY_FILE = Path(ROOT, "persistent.secret")

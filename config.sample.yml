@@ -6,20 +6,27 @@ locale:
 security:
   min_pw_len: 8
   algorithm: HS256
-  token_url: /api/web/v1/login/access-token
   expire_minutes: 3600
   allow_rfid_login: true
 
 server:
-  local_url: "glados.local"
   host: 0.0.0.0
   port: 5000
-  static: "/path/to/static"
+  domain: "glados.local"
+  api:
+    web: "/api/web/v1"
+    pat: "/api/pat/v1"
+    key: "/api/key/v1"
+  static:
+    enable: false
+    folder: "/path/to/static"
+    url: "/"
   ssl:
     keyfile: "/path/to/keyfile.key"
     certfile: "/path/to/certfile.crt"
-  whitelist:
-    - "127.0.0.1"
+  headers_server: true
+  headers_proxy: true
+  forwarded_allowed_ips: null
 
 schedules:
   database_hour: 0

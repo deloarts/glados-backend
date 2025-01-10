@@ -7,7 +7,6 @@ from faker import Faker
 from fastapi.testclient import TestClient
 
 from app.config import cfg
-from app.const import API_WEB_V1
 from app.const import SYSTEM_USER
 
 fake = Faker()
@@ -64,7 +63,7 @@ def get_systemuser_token_headers(client: TestClient) -> Dict[str, str]:
         "username": SYSTEM_USER,
         "password": cfg.init.password,
     }
-    r = client.post(f"{API_WEB_V1}/login/access-token", data=login_data)
+    r = client.post(f"{cfg.server.api.web}/login/access-token", data=login_data)
     tokens = r.json()
     a_token = tokens["access_token"]
     headers = {"Authorization": f"Bearer {a_token}"}
