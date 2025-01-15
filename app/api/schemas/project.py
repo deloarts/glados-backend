@@ -7,6 +7,7 @@ from typing import Optional
 
 from config import cfg
 from pydantic import BaseModel
+from pydantic import ConfigDict
 from pydantic import Field
 
 
@@ -34,6 +35,9 @@ class ProjectInDBBaseSchema(ProjectBaseSchema):
 
     id: int
     created: datetime
+
+    # Required for pagination
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProjectSchema(ProjectInDBBaseSchema):

@@ -6,12 +6,14 @@
 # pylint: disable=R0914
 
 import datetime
+from math import ceil
 from pathlib import Path
 from typing import Any
 from typing import List
 
 from api.deps import get_current_active_user
 from api.deps import verify_token
+from api.schemas import PageSchema
 from api.schemas.bought_item import BoughtItemCreateWebSchema
 from api.schemas.bought_item import BoughtItemSchema
 from api.schemas.bought_item import BoughtItemUpdateWebSchema
@@ -48,7 +50,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/", response_model=List[BoughtItemSchema])
+@router.get("/", response_model=PageSchema[BoughtItemSchema])
 def read_bought_items(
     db: Session = Depends(get_db),
     skip: int | None = None,
@@ -97,9 +99,14 @@ def read_bought_items(
     """Retrieve bought items."""
     kwargs = locals()
     kwargs.pop("verified")
-    items = crud_bought_item.get_multi(**kwargs)
-    log.debug(f"Found {len(items)} items with filter {kwargs}")
-    return items
+    count, bought_items = crud_bought_item.get_multi(**kwargs)
+    return PageSchema(
+        items=[BoughtItemSchema.model_validate(i) for i in bought_items],
+        total=count,
+        limit=limit if limit else count,
+        skip=skip if skip else 0,
+        pages=ceil(count / (limit if limit else count)),
+    )
 
 
 @router.get("/excel", response_class=FileResponse)
@@ -150,8 +157,8 @@ def read_bought_items_excel(
     kwargs = locals()
     kwargs.pop("current_user")
 
-    data = crud_bought_item.get_multi(**kwargs)
-    export_handler = BoughtItemExcelExport(data=data)
+    count, items = crud_bought_item.get_multi(**kwargs)
+    export_handler = BoughtItemExcelExport(data=items)
     path = export_handler.save()
 
     if not path.exists():
