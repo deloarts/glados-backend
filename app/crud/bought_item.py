@@ -7,6 +7,7 @@
 from datetime import date
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 from api.schemas.bought_item import BoughtItemCreatePatSchema
 from api.schemas.bought_item import BoughtItemCreateWebSchema
@@ -92,7 +93,7 @@ class CRUDBoughtItem(
         ignore_delivered: bool | None = None,
         ignore_canceled: bool | None = None,
         ignore_lost: bool | None = None,
-    ) -> List[BoughtItemModel]:
+    ) -> Tuple[int, List[BoughtItemModel]]:
         """Returns a list of bought items by the given filter params."""
 
         def build_order_by(keyword: str | None) -> TextClause:
@@ -186,12 +187,12 @@ class CRUDBoughtItem(
                 self.model.storage_place.ilike(f"%{storage_place}%") if storage_place else text(""),
             )
             .join(ProjectModel, self.model.project)
-            .order_by(order_by)
-            .offset(skip)
-            .limit(limit)
         )
-        # log.debug(str(query))
-        return query.all()
+
+        items: List[BoughtItemModel] = query.order_by(order_by).offset(skip).limit(limit).all()
+        # log.debug(f"Items: {[i.__dict__ for i in items]}")
+        total: int = query.count()
+        return total, items
 
     def create(
         self,

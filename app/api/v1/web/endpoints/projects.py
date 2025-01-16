@@ -7,6 +7,7 @@ from typing import List
 
 from api.deps import get_current_active_user
 from api.deps import verify_token
+from api.schemas import PageSchema
 from api.schemas.project import ProjectCreateSchema
 from api.schemas.project import ProjectSchema
 from api.schemas.project import ProjectUpdateSchema
@@ -26,7 +27,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ProjectSchema])
+@router.get("/", response_model=PageSchema[ProjectSchema])
 def read_projects(
     db: Session = Depends(get_db),
     skip: int | None = None,
@@ -43,9 +44,13 @@ def read_projects(
     """Retrieve all project."""
     kwargs = locals()
     kwargs.pop("verified")
-    projects = crud_project.get_multi(**kwargs)
-    log.debug(f"Found {len(projects)} projects with filter {kwargs}")
-    return projects
+    count, projects = crud_project.get_multi(**kwargs)
+    return PageSchema(
+        items=[ProjectSchema.model_validate(i) for i in projects],
+        total=count,
+        limit=limit if limit else count,
+        skip=skip if skip else 0,
+    )
 
 
 @router.post("/", response_model=ProjectSchema)
