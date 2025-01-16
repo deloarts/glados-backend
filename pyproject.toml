@@ -4,7 +4,7 @@ classifiers = ["Operating System :: Unix"]
 description = "Backend for the glados project."
 name = "glados"
 readme = "README.md"
-version = "0.12.3"
+version = "0.13.0"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]

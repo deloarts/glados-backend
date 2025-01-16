@@ -1101,54 +1101,53 @@ files = [
 
 [[package]]
 name = "hat-aio"
-version = "0.7.10"
+version = "0.7.11"
 description = "Hat async utility library"
 category = "main"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "hat_aio-0.7.10-cp310.cp311.cp312-none-any.whl", hash = "sha256:285fa4543f126012f1a4ba433bd054fa7c957d44df2fd27bcee125101ce3a6e4"},
+    {file = "hat_aio-0.7.11-cp310.cp311.cp312.cp313-none-any.whl", hash = "sha256:02aa523ccced09a350056606ec50d875f9055ffebc89ecec6a7210647f36932c"},
 ]
 
 [package.extras]
-dev = ["hat-doit (>=0.15.13,<0.16.0)"]
+dev = ["hat-doit (>=0.15.18,<0.16.0)"]
 
 [[package]]
 name = "hat-json"
-version = "0.5.28"
+version = "0.5.29"
 description = "Hat JSON library"
 category = "main"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "hat_json-0.5.28-cp310.cp311.cp312-none-any.whl", hash = "sha256:aaf0e5554d6786913fd431f46e9dd0e02444c804bf52f7fa90992b43b82464dc"},
+    {file = "hat_json-0.5.29-cp310.cp311.cp312.cp313-none-any.whl", hash = "sha256:8c55cfb763ff0c16f8d7c1b220a556b85fad888ee62af58a78f0b6784a56b8e6"},
 ]
 
 [package.dependencies]
-hat-util = ">=0.6.16,<0.7.0"
+hat-util = ">=0.6.17,<0.7.0"
 jsonpatch = ">=1.33,<2.0"
-jsonschema = ">=4.22.0,<4.23.0"
-pyyaml = ">=6.0.1,<6.1.0"
+jsonschema = ">=4.23.0,<4.24.0"
+pyyaml = ">=6.0.2,<6.1.0"
 referencing = ">=0.35.1,<0.36.0"
-tomli = ">=2.0.1,<2.1.0"
 tomli_w = ">=1.0.0,<1.1.0"
 
 [package.extras]
-dev = ["hat-doit (>=0.15.16,<0.16.0)"]
+dev = ["hat-doit (>=0.15.18,<0.16.0)", "sphinxcontrib-programoutput (>=0.17)"]
 
 [[package]]
 name = "hat-util"
-version = "0.6.16"
+version = "0.6.17"
 description = "Hat utility library"
 category = "main"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "hat_util-0.6.16-cp310.cp311.cp312-none-any.whl", hash = "sha256:c2fdb3087465e42bf284db2ff14cfec7dbc1fb0e22eee5ccc5ea0c1f53d6b920"},
+    {file = "hat_util-0.6.17-cp310.cp311.cp312.cp313-none-any.whl", hash = "sha256:7c09d9747d12419f1eca2f61ec30d9188e9fbde117c34cef8e46adec66601bc0"},
 ]
 
 [package.extras]
-dev = ["hat-doit (>=0.15.14,<0.16.0)"]
+dev = ["hat-doit (>=0.15.18,<0.16.0)"]
 
 [[package]]
 name = "httpcore"
@@ -1317,14 +1316,14 @@ files = [
 
 [[package]]
 name = "jsonschema"
-version = "4.22.0"
+version = "4.23.0"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jsonschema-4.22.0-py3-none-any.whl", hash = "sha256:ff4cfd6b1367a40e7bc6411caec72effadd3db0bbe5017de188f2d6108335802"},
-    {file = "jsonschema-4.22.0.tar.gz", hash = "sha256:5b22d434a45935119af990552c862e5d6d564e8f6601206b305a61fdf661a2b7"},
+    {file = "jsonschema-4.23.0-py3-none-any.whl", hash = "sha256:fbadb6f8b144a8f8cf9f0b89ba94501d143e50411a1278633f56a7acf7fd5566"},
+    {file = "jsonschema-4.23.0.tar.gz", hash = "sha256:d71497fef26351a33265337fa77ffeb82423f3ea21283cd9467bb03999266bc4"},
 ]
 
 [package.dependencies]
@@ -1335,7 +1334,7 @@ rpds-py = ">=0.7.1"
 
 [package.extras]
 format = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3987", "uri-template", "webcolors (>=1.11)"]
-format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=1.11)"]
+format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-validator", "rfc3986-validator (>0.1.0)", "uri-template", "webcolors (>=24.6.0)"]
 
 [[package]]
 name = "jsonschema-specifications"
@@ -2605,18 +2604,6 @@ anyio = ">=3.4.0,<5"
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
-name = "tomli"
-version = "2.0.2"
-description = "A lil' TOML parser"
-category = "main"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "tomli-2.0.2-py3-none-any.whl", hash = "sha256:2ebe24485c53d303f690b0ec092806a085f07af5a5aa1464f3931eec36caaa38"},
-    {file = "tomli-2.0.2.tar.gz", hash = "sha256:d46d457a85337051c36524bc5349dd91b1877838e2979ac5ced3e710ed8a60ed"},
-]
-
-[[package]]
 name = "tomli-w"
 version = "1.0.0"
 description = "A lil' TOML writer"
@@ -2721,14 +2708,14 @@ standard = ["colorama (>=0.4)", "httptools (>=0.5.0)", "python-dotenv (>=0.13)",
 
 [[package]]
 name = "virtualenv"
-version = "20.28.1"
+version = "20.29.0"
 description = "Virtual Python Environment builder"
 category = "dev"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "virtualenv-20.28.1-py3-none-any.whl", hash = "sha256:412773c85d4dab0409b83ec36f7a6499e72eaf08c80e81e9576bca61831c71cb"},
-    {file = "virtualenv-20.28.1.tar.gz", hash = "sha256:5d34ab240fdb5d21549b76f9e8ff3af28252f5499fb6d6f031adac4e5a8c5329"},
+    {file = "virtualenv-20.29.0-py3-none-any.whl", hash = "sha256:c12311863497992dc4b8644f8ea82d3b35bb7ef8ee82e6630d76d0197c39baf9"},
+    {file = "virtualenv-20.29.0.tar.gz", hash = "sha256:6345e1ff19d4b1296954cee076baaf58ff2a12a84a338c62b02eda39f20aa982"},
 ]
 
 [package.dependencies]
