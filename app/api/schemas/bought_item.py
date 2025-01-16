@@ -68,6 +68,9 @@ class BoughtItemInDBBaseSchema(BoughtItemBaseSchema):
     created: date
     creator_id: int
 
+    # Required for pagination
+    model_config = ConfigDict(from_attributes=True)
+
 
 class BoughtItemSchema(BoughtItemInDBBaseSchema):
     """Additional properties to return to api."""
@@ -103,6 +106,16 @@ class BoughtItemSchema(BoughtItemInDBBaseSchema):
     receiver_full_name: Optional[str]
     delivery_date: Optional[date]
     storage_place: Optional[str]
+
+
+# class BoughtItemPageSchema(BaseModel):
+#     """Properties to receive via API on creation from "BoughtItem"."""
+
+#     items: List[BoughtItemSchema]
+#     total: int
+#     limit: int
+#     skip: int
+#     pages: int
 
 
 class BoughtItemInDBSchema(BoughtItemInDBBaseSchema):

@@ -143,6 +143,7 @@ MIT
 
 ## 7 changelog
 
+**v0.13.0**: Add pagination.  
 **v0.12.3**: Add proxy config.  
 **v0.12.2**: Add rfid auth. Fix user init error.  
 **v0.12.1**: Fix import error.  

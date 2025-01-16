@@ -15,7 +15,7 @@ from multilog import log
 
 @dataclass(slots=True, kw_only=True)
 class ConfigBoughtItemsFilter:
-    limit: str = field(default="100")
+    limit: int | None = field(default=None)
     ignoreDelivered: bool = False
     ignoreCanceled: bool = False
     ignoreLost: bool = False
