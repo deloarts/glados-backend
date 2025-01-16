@@ -8,6 +8,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 from api.schemas.project import ProjectCreateSchema
 from api.schemas.project import ProjectUpdateSchema
@@ -38,7 +39,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         description: str | None = None,
         is_active: bool | None = None,
         designated_user_id: int | None = None,
-    ) -> List[ProjectModel]:
+    ) -> Tuple[int, List[ProjectModel]]:
         """Returns a list of projects.
 
         Args:
@@ -56,7 +57,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         Returns:
             List[ProjectModel]: The data as list of the model. Excludes `deleted` projects.
         """
-        return (
+        query = (
             db.query(self.model)
             .filter_by(
                 deleted=False,
@@ -70,11 +71,11 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
                 self.model.customer.ilike(f"%{customer}%") if customer else text(""),
                 self.model.description.ilike(f"%{description}%") if description else text(""),
             )
-            .order_by(desc(self.model.number))
-            .offset(skip)
-            .limit(limit)
-            .all()
         )
+
+        items: List[ProjectModel] = query.order_by(desc(self.model.number)).offset(skip).limit(limit).all()
+        total: int = query.count()
+        return total, items
 
     def get_by_id(self, db: Session, *, id: int) -> Optional[ProjectModel]:
         """Returns a project by its ID.

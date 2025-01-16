@@ -6,7 +6,6 @@
 # pylint: disable=R0914
 
 import datetime
-from math import ceil
 from pathlib import Path
 from typing import Any
 from typing import List
@@ -31,7 +30,6 @@ from exceptions import BoughtItemCannotChangeToOpenError
 from exceptions import BoughtItemOfAnotherUserError
 from exceptions import BoughtItemRequiredFieldNotSetError
 from exceptions import BoughtItemUnknownStatusError
-from exceptions import ExcelImportDataInvalidError
 from exceptions import ExcelImportHeaderInvalidError
 from exceptions import ExcelImportHeaderMissingError
 from exceptions import InsufficientPermissionsError
@@ -105,7 +103,6 @@ def read_bought_items(
         total=count,
         limit=limit if limit else count,
         skip=skip if skip else 0,
-        pages=ceil(count / (limit if limit else count)),
     )
 
 
