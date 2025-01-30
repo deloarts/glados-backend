@@ -32,8 +32,8 @@ router = APIRouter()
 @router.get("/", response_model=List[UserSchema])
 def read_users(
     db: Session = Depends(get_db),
-    skip: int = 0,
-    limit: int = 100,
+    skip: int | None = None,
+    limit: int | None = None,
     verified: UserModel = Depends(verify_token),
 ) -> Any:
     """Retrieve all users."""
