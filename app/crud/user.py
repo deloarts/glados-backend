@@ -16,6 +16,7 @@ from db.models import UserModel
 from exceptions import InsufficientPermissionsError
 from exceptions import PasswordCriteriaError
 from exceptions import UserAlreadyExistsError
+from locales import Locales
 from mail.presets import MailPreset
 from multilog import log
 from security.pwd import get_hash
@@ -85,9 +86,22 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             current_user (UserModel): The current user who creates a new user.
             obj_in (UserCreateSchema): The user data as schema.
 
+        Raises:
+            UserAlreadyExistsError: A user with this username exists.
+            UserAlreadyExistsError: A user with this email exists.
+
         Returns:
             UserModel: The newly created user.
         """
+        if self.get_by_username(db, username=obj_in.username):
+            raise UserAlreadyExistsError(
+                f"Blocked creation of a user: User with username {obj_in.username!r} already exists."
+            )
+        if self.get_by_email(db, email=obj_in.email):
+            raise UserAlreadyExistsError(
+                f"Blocked creation of a user: User with email {obj_in.email!r} already exists."
+            )
+
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["created"] = datetime.now(UTC)
         data["hashed_password"] = get_hash(obj_in.password)
@@ -125,9 +139,15 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             f"by {current_user.username!r} (Name={current_user.full_name!r}, ID={current_user.id})."
         )
 
-        MailPreset.send_welcome_mail(
-            email=db_obj.email, full_name=db_obj.full_name, username=db_obj.username, password=obj_in.password
-        )
+        try:
+            MailPreset.send_welcome_mail(
+                email=db_obj.email,
+                full_name=db_obj.full_name,
+                username=db_obj.username,
+                password=obj_in.password,
+            )
+        except Exception as e:
+            log.error(f"Error sending welcome mail to {db_obj.email!r}: {e}")
 
         return db_obj
 
@@ -192,6 +212,12 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
                 hashed_rfid = get_hash(data["rfid"])
                 data["hashed_rfid"] = hashed_rfid
             del data["rfid"]
+
+        # Handle missing data
+        if "language" not in data or data["language"] is None:
+            data["language"] = Locales.EN_GB.value
+        if "theme" not in data or data["theme"] is None:
+            data["theme"] = "dark"
 
         # The systemuser can only update itself!
         # The systemuser has fixed permissions that cannot be altered.
