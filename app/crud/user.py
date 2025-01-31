@@ -16,6 +16,7 @@ from db.models import UserModel
 from exceptions import InsufficientPermissionsError
 from exceptions import PasswordCriteriaError
 from exceptions import UserAlreadyExistsError
+from locales import Locales
 from mail.presets import MailPreset
 from multilog import log
 from security.pwd import get_hash
@@ -211,6 +212,12 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
                 hashed_rfid = get_hash(data["rfid"])
                 data["hashed_rfid"] = hashed_rfid
             del data["rfid"]
+
+        # Handle missing data
+        if "language" not in data or data["language"] is None:
+            data["language"] = Locales.EN_GB.value
+        if "theme" not in data or data["theme"] is None:
+            data["theme"] = "dark"
 
         # The systemuser can only update itself!
         # The systemuser has fixed permissions that cannot be altered.
