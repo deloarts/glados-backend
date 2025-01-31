@@ -1,5 +1,7 @@
 # install glados backend
 
+> ✏️ This guide assumes you have full system access. Glados will be installed in the `/opt/` folder. If you don't have permissions to this folder, keep in mind to change the installations paths as you go. Further this guide is in sync with the config file. If you choose to change default paths or filenames in the config, do it here also.
+
 - [install glados backend](#install-glados-backend)
   - [1 system requirements](#1-system-requirements)
   - [2 filesystem](#2-filesystem)
@@ -17,13 +19,11 @@
   - [9 create the service](#9-create-the-service)
   - [10 first login](#10-first-login)
 
-
 ## 1 system requirements
 
 - Unix (tested on Debian 11)
-- Approx. 250GB free space
-- Sudo rights required
-- Open port at TCP 5000
+- Approx. 25GB free space (this can change in the future)
+- An open TCP port
 - Python 3.11
 
 ## 2 filesystem
@@ -33,27 +33,32 @@
 Create the glados app directory:
 
 ```bash
-sudo mkdir /opt/glados
+mkdir /opt/glados
 ```
 
 > ✏️ All bash commands for the glados directory refer to /opt/glados. If you change this, you'll have to keep in mind to change /opt/glados to your path.
 
 ### 2.2 glados database backup directory
 
-This can be any folder on the system, but it can also be a mounted share. Here's an example on how to mount a Windows share:
+Create the required backup folder. Default is:
 
 ```bash
-sudo apt install cifs-utils nfs-common -y
-sudo mkdir /mnt/glados-backup
+mkdir /mnt/glados-backup
 ```
 
-In the following chapters you'll find a description on how to create an alias for creating the mount.
+The backup destination can be any folder on the system, but it can also be a mounted share. You most likely want to use cifs for this:
+
+```bash
+apt install cifs-utils nfs-common -y
+```
+
+If you decide to use a network mount you must enable it in the config file `filesystem/db_backup/is_mount = true`. Keep in mind that Glados doesn't mount the network share on its own, this is your responsibility.
 
 ## 3 software requirements
 
 ```bash
-sudo apt update -y
-sudo apt install gcc pkg-config libcairo2-dev -y
+apt update -y
+apt install gcc pkg-config libcairo2-dev -y
 ```
 
 ### 3.1 install python
@@ -61,7 +66,7 @@ sudo apt install gcc pkg-config libcairo2-dev -y
 Install build dependencies:
 
 ```bash
-sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev python3-distutils -y
+apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev python3-distutils -y
 ```
 
 Download and extract python 3.11:
@@ -75,16 +80,16 @@ Build and install python:
 
 ```bash
 cd Python-3.11.9
-sudo ./configure --enable-optimizations
-sudo make -j 2
-sudo make altinstall
+./configure --enable-optimizations
+make -j 2
+make altinstall
 ```
 
 Add alias to bashrc:
 
 ```bash
 # Open file
-sudo nano ~/.bashrc
+nano ~/.bashrc
 
 # In .bashrc file:
 alias python='python3.11'
@@ -106,7 +111,7 @@ Python 3.11.9
 ### 3.2 install git
 
 ```bash
-sudo apt install git -y
+apt install git -y
 ```
 
 ## 4 clone the repository
@@ -118,7 +123,7 @@ To perform this you'll need:
 
 ```bash
 cd /opt/glados
-sudo git clone https://github.com/deloarts/glados-backend.git
+git clone https://github.com/deloarts/glados-backend.git
 cd glados-backend
 git checkout {TAG_NAME}
 ```
@@ -128,7 +133,7 @@ Enter your username and your access token when prompted. Replace `{TAG_NAME}` wi
 > ✏️ You can use this command to update the app as well. Just modify the tag name.
 >
 > ⚠️ Only clone the repository with a published version tag!
-> 
+>
 > ✏️ The glados backend lives now in `/opt/glados/glados-backend/`.
 
 ## 5 create the environment
@@ -137,7 +142,7 @@ Create your python env and install all dependencies:
 
 ```bash
 cd /opt/glados/glados-backend
-sudo python -m venv .env
+python -m venv .env
 source .env/bin/activate
 python -m pip install -r requirements.txt
 ```
@@ -224,6 +229,8 @@ init/full_name | `str` | The full name of the system user (should be a generic u
 init/mail | `str` | The mail of the system user
 init/password | `str` | The password for the system user
 
+> ✏️ The system user will be created from the `init` section. Those credentials will be applied on every startup of Glados. If you forgot your system user credentials, you can reset them to the config-file's content by simply restarting the app.
+
 ## 7 create the database
 
 To create the database run:
@@ -239,19 +246,19 @@ python -m alembic upgrade head
 To be able to run all startup scripts, you'll need to make them executable:
 
 ```bash
-sudo chmod +x /opt/glados/glados-backend/scripts/glados-welcome.sh
-sudo chmod +x /opt/glados/glados-backend/scripts/glados-aliases.sh
+chmod +x /opt/glados/glados-backend/scripts/glados-welcome.sh
+chmod +x /opt/glados/glados-backend/scripts/glados-aliases.sh
 ```
 
 Now you have to create an alias and a run-command to your .bashrc file:
 
 ```bash
-sudo nano ~/.bashrc
+nano ~/.bashrc
 
 # Append the following lines at the end
 # Glados
 alias watch-glados-service='watch -c SYSTEMD_COLORS=1 systemctl status glados.service'
-alias mount-glados-backup='sudo mount -t cifs "//{SHARE_HOST}/{SHARE_NAME}" "/mnt/glados-backup" -o username={WINDOWS_USER}'
+alias mount-glados-backup='mount -t cifs "//{SHARE_HOST}/{SHARE_NAME}" "/mnt/glados-backup" -o username={WINDOWS_USER}'
 bash /opt/glados/glados-backend/scripts/glados-welcome.sh
 source /opt/glados/glados-backend/scripts/glados-aliases.sh
 ```
@@ -265,9 +272,9 @@ source /opt/glados/glados-backend/scripts/glados-aliases.sh
 Copy the glados.service file into /etc/systemd/system/:
 
 ```bash
-sudo cp /opt/glados/glados-backend/services/glados.service /etc/systemd/system/glados.service
-sudo systemctl enable glados.service
-sudo systemctl start glados.service
+cp /opt/glados/glados-backend/services/glados.service /etc/systemd/system/glados.service
+systemctl enable glados.service
+systemctl start glados.service
 ```
 
 ## 10 first login
