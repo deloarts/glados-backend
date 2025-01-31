@@ -8,6 +8,7 @@ import sys
 from typing import Generator
 
 from api.schemas.user import UserCreateSchema
+from api.schemas.user import UserUpdateSchema
 from config import cfg
 from const import ALEMBIC_VERSION
 from const import DB_DEVELOPMENT
@@ -90,8 +91,18 @@ class InitDatabase:
             creator["hashed_password"] = "not_relevant_because_temp"
             creator["is_systemuser"] = True
 
-            user = crud_user.create(
-                db,
-                obj_in=user_in,
-                current_user=UserModel(**creator),
+            crud_user.create(db, obj_in=user_in, current_user=UserModel(**creator))
+
+        # Update from config file
+        else:
+            log.info("Updating system user from config file.")
+            user_in = UserUpdateSchema(
+                username=SYSTEM_USER,
+                full_name=cfg.init.full_name,
+                email=cfg.init.mail,
+                password=cfg.init.password,
+                rfid=None,
+                language=None,
+                theme=None,
             )
+            crud_user.update(db, db_obj=user, obj_in=user_in, current_user=user)
