@@ -47,9 +47,8 @@ For a guided installation see [INSTALL.md](/docs/INSTALL.md)
 System requirements:
 
 - Unix (tested on Debian 11)
-- Approx. 250GB free space
-- Sudo rights required
-- Open port at TCP 5000
+- Approx. 25GB free space (this can change in the future)
+- An open TCP port
 - Python 3.11
 
 Package requirements (apt):
