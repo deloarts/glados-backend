@@ -9,6 +9,9 @@ from exceptions import BoughtItemAlreadyPlannedError
 from exceptions import BoughtItemCannotChangeToOpenError
 from exceptions import BoughtItemOfAnotherUserError
 from exceptions import BoughtItemUnknownStatusError
+from exceptions import InsufficientPermissionsError
+from exceptions import ProjectInactiveError
+from exceptions import ProjectNotFoundError
 from sqlalchemy.orm import Session
 
 from tests.utils.bought_item import create_random_item
@@ -16,6 +19,7 @@ from tests.utils.project import create_random_project
 from tests.utils.project import get_test_project
 from tests.utils.user import create_random_user
 from tests.utils.user import get_test_admin_user
+from tests.utils.user import get_test_guest_user
 from tests.utils.user import get_test_super_user
 from tests.utils.user import get_test_user
 from tests.utils.utils import random_bought_item_name
@@ -270,16 +274,35 @@ def test_update_item_assign_new_project(db: Session) -> None:
     # UPDATE ITEM: PREPARATION
     # ----------------------------------------------
 
-    t_item = create_random_item(db, test_fn_name=test_update_item.__name__)
+    t_normal_user = get_test_user(db)
+    t_project = get_test_project(db)
+    t_item = create_random_item(db, test_fn_name=test_update_item.__name__, user=t_normal_user, project=t_project)
     # About t_item:
     #   This item will be created by the test user (get_test_user utils method) and
     #   it will be assigned to the test project (get_test_project utils method).
-    t_normal_user = get_test_user(db)
-    t_project = get_test_project(db)
+
     t_project_new = create_random_project(db)
+    t_project_new_inactive = create_random_project(db)
+    t_project_new_inactive.is_active = False
 
     item_in = BoughtItemUpdateWebSchema(
         project_id=t_project_new.id,
+        quantity=t_item.quantity,
+        unit=t_item.unit,
+        partnumber=t_item.partnumber,
+        order_number=t_item.order_number,
+        manufacturer=t_item.manufacturer,
+    )
+    item_in_inactive_project = BoughtItemUpdateWebSchema(
+        project_id=t_project_new_inactive.id,
+        quantity=t_item.quantity,
+        unit=t_item.unit,
+        partnumber=t_item.partnumber,
+        order_number=t_item.order_number,
+        manufacturer=t_item.manufacturer,
+    )
+    item_in_non_existing_project = BoughtItemUpdateWebSchema(
+        project_id=9999999,
         quantity=t_item.quantity,
         unit=t_item.unit,
         partnumber=t_item.partnumber,
@@ -292,6 +315,14 @@ def test_update_item_assign_new_project(db: Session) -> None:
     # ----------------------------------------------
 
     item_out = crud_bought_item.update(db=db, db_obj_user=t_normal_user, obj_in=item_in, db_obj_item=t_item)
+
+    with pytest.raises(ProjectNotFoundError):
+        crud_bought_item.update(
+            db=db, db_obj_user=t_normal_user, obj_in=item_in_non_existing_project, db_obj_item=t_item
+        )
+
+    with pytest.raises(ProjectInactiveError):
+        crud_bought_item.update(db=db, db_obj_user=t_normal_user, obj_in=item_in_inactive_project, db_obj_item=t_item)
 
     # ----------------------------------------------
     # UPDATE ITEM: VALIDATION
@@ -310,10 +341,10 @@ def test_delete_item_same_user(db: Session) -> None:
     # ----------------------------------------------
     # DELETE ITEM (SAME USER): PREPARATION
     # ----------------------------------------------
-    t_item = create_random_item(db, test_fn_name=test_delete_item_same_user.__name__)
+    t_normal_user = get_test_user(db)
+    t_item = create_random_item(db, test_fn_name=test_delete_item_same_user.__name__, user=t_normal_user)
     # About t_item:
     #   t_item is created by t_normal_user, so t_normal_user can delete the item.
-    t_normal_user = get_test_user(db)
 
     # ----------------------------------------------
     # DELETE ITEM (SAME USER): METHODS TO TEST
@@ -332,15 +363,102 @@ def test_delete_item_same_user(db: Session) -> None:
     assert item in t_normal_user.created_bought_items
 
 
+def test_delete_planned_item_same_user(db: Session) -> None:
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (SAME USER): PREPARATION
+    # ----------------------------------------------
+    t_normal_user = get_test_user(db)
+    t_item = create_random_item(db, test_fn_name=test_delete_planned_item_same_user.__name__, user=t_normal_user)
+    # About t_item:
+    #   t_item is created by t_normal_user, so t_normal_user cannot delete it if it's planned (status != 'open').
+    crud_bought_item.update_status(
+        db=db, db_obj_user=t_normal_user, db_obj_item=t_item, status=cfg.items.bought.status.requested
+    )
+
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (SAME USER): METHODS TO TEST
+    # ----------------------------------------------
+
+    # Let the user who created the item delete it
+    with pytest.raises(BoughtItemAlreadyPlannedError):
+        crud_bought_item.delete(db=db, db_obj_user=t_normal_user, db_obj_item=t_item)
+
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (SAME USER): VALIDATION
+    # ----------------------------------------------
+
+    item = crud_bought_item.get(db=db, id=t_item.id)
+    assert item
+    assert item.deleted is False
+    assert item in t_normal_user.created_bought_items
+
+
+def test_delete_item_super_user(db: Session) -> None:
+    # ----------------------------------------------
+    # DELETE ITEM (SUPER USER): PREPARATION
+    # ----------------------------------------------
+    t_normal_user = get_test_user(db)
+    t_super_user = get_test_super_user(db)
+    t_item = create_random_item(db, test_fn_name=test_delete_item_super_user.__name__, user=t_normal_user)
+    # About t_item:
+    #   t_item is created by t_normal_user, an super user is allowed to delete it.
+
+    # ----------------------------------------------
+    # DELETE ITEM (SUPER USER): METHODS TO TEST
+    # ----------------------------------------------
+
+    # Let the super user delete the item of the normal user
+    crud_bought_item.delete(db=db, db_obj_user=t_super_user, db_obj_item=t_item)
+
+    # ----------------------------------------------
+    # DELETE ITEM (SUPER USER): VALIDATION
+    # ----------------------------------------------
+
+    item = crud_bought_item.get(db=db, id=t_item.id)
+    assert item
+    assert item.deleted is True
+    assert item in t_normal_user.created_bought_items
+
+
+def test_delete_planned_item_super_user(db: Session) -> None:
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (SUPER USER): PREPARATION
+    # ----------------------------------------------
+    t_normal_user = get_test_user(db)
+    t_super_user = get_test_super_user(db)
+    t_item = create_random_item(db, test_fn_name=test_delete_planned_item_super_user.__name__, user=t_normal_user)
+    # About t_item:
+    #   t_item is created by t_normal_user, an super user is allowed to delete it (even if it's planned)
+    crud_bought_item.update_status(
+        db=db, db_obj_user=t_normal_user, db_obj_item=t_item, status=cfg.items.bought.status.requested
+    )
+
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (SUPER USER): METHODS TO TEST
+    # ----------------------------------------------
+
+    # Let the super user delete the item of the normal user
+    crud_bought_item.delete(db=db, db_obj_user=t_super_user, db_obj_item=t_item)
+
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (SUPER USER): VALIDATION
+    # ----------------------------------------------
+
+    item = crud_bought_item.get(db=db, id=t_item.id)
+    assert item
+    assert item.deleted is True
+    assert item in t_normal_user.created_bought_items
+
+
 def test_delete_item_admin_user(db: Session) -> None:
     # ----------------------------------------------
     # DELETE ITEM (ADMIN USER): PREPARATION
     # ----------------------------------------------
-    t_item = create_random_item(db, test_fn_name=test_delete_item_admin_user.__name__)
-    # About t_item:
-    #   t_item is created by t_normal_user, an admin user is allowed to delete it.
     t_normal_user = get_test_user(db)
     t_admin_user = get_test_admin_user(db)
+    t_item = create_random_item(db, test_fn_name=test_delete_item_admin_user.__name__, user=t_normal_user)
+    # About t_item:
+    #   t_item is created by t_normal_user, an admin user is allowed to delete it.
 
     # ----------------------------------------------
     # DELETE ITEM (ADMIN USER): METHODS TO TEST
@@ -359,15 +477,45 @@ def test_delete_item_admin_user(db: Session) -> None:
     assert item in t_normal_user.created_bought_items
 
 
+def test_delete_planned_item_admin_user(db: Session) -> None:
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (ADMIN USER): PREPARATION
+    # ----------------------------------------------
+    t_normal_user = get_test_user(db)
+    t_admin_user = get_test_admin_user(db)
+    t_item = create_random_item(db, test_fn_name=test_delete_planned_item_admin_user.__name__, user=t_normal_user)
+    # About t_item:
+    #   t_item is created by t_normal_user, an admin user is allowed to delete it (even if it's planned)
+    crud_bought_item.update_status(
+        db=db, db_obj_user=t_normal_user, db_obj_item=t_item, status=cfg.items.bought.status.requested
+    )
+
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (ADMIN USER): METHODS TO TEST
+    # ----------------------------------------------
+
+    # Let the admin user delete the item of the normal user
+    crud_bought_item.delete(db=db, db_obj_user=t_admin_user, db_obj_item=t_item)
+
+    # ----------------------------------------------
+    # DELETE PLANNED ITEM (ADMIN USER): VALIDATION
+    # ----------------------------------------------
+
+    item = crud_bought_item.get(db=db, id=t_item.id)
+    assert item
+    assert item.deleted is True
+    assert item in t_normal_user.created_bought_items
+
+
 def test_delete_item_another_user(db: Session) -> None:
     # ----------------------------------------------
     # DELETE ITEM (ANOTHER USER): PREPARATION
     # ----------------------------------------------
-    t_item = create_random_item(db, test_fn_name=test_delete_item_another_user.__name__)
-    # About t_item:
-    #   t_item is created by t_normal_user, if t_another_normal_user tries to delete the item, an exception is raised.
     t_normal_user = get_test_user(db)
     t_another_normal_user = create_random_user(db)
+    t_item = create_random_item(db, test_fn_name=test_delete_item_another_user.__name__, user=t_normal_user)
+    # About t_item:
+    #   t_item is created by t_normal_user, if t_another_normal_user tries to delete the item, an exception is raised.
 
     # ----------------------------------------------
     # DELETE ITEM (ANOTHER USER): METHODS TO TEST
@@ -379,6 +527,34 @@ def test_delete_item_another_user(db: Session) -> None:
 
     # ----------------------------------------------
     # DELETE ITEM (ANOTHER USER): VALIDATION
+    # ----------------------------------------------
+
+    item = crud_bought_item.get(db=db, id=t_item.id)
+    assert item
+    assert item.deleted is False
+    assert item in t_normal_user.created_bought_items
+
+
+def test_delete_item_guest_user(db: Session) -> None:
+    # ----------------------------------------------
+    # DELETE ITEM (GUEST USER): PREPARATION
+    # ----------------------------------------------
+    t_normal_user = get_test_user(db)
+    t_guest_user = get_test_guest_user(db)
+    t_item = create_random_item(db, test_fn_name=test_delete_item_guest_user.__name__, user=t_normal_user)
+    # About t_item:
+    #   t_item is created by t_normal_user, if t_guest_user tries to delete the item, an exception is raised.
+
+    # ----------------------------------------------
+    # DELETE ITEM (GUEST USER): METHODS TO TEST
+    # ----------------------------------------------
+
+    # Let the t_guest_user delete the item of the normal user. This is not allowed.
+    with pytest.raises(InsufficientPermissionsError):
+        crud_bought_item.delete(db=db, db_obj_user=t_guest_user, db_obj_item=t_item)
+
+    # ----------------------------------------------
+    # DELETE ITEM (GUEST USER): VALIDATION
     # ----------------------------------------------
 
     item = crud_bought_item.get(db=db, id=t_item.id)
