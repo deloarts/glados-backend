@@ -18,15 +18,19 @@ from tests.utils.utils import random_username
 TEST_USERNAME = "test"
 TEST_PASS = "12345678"  # much safe
 TEST_MAIL = "test@glados.com"
-TEST_FULL_NAME = "Periclitatio Usor"
+TEST_FULL_NAME = "Normal User"
 
 TEST_SUPER_USERNAME = "super"
 TEST_SUPER_MAIL = "super@glados.com"
-TEST_SUPER_FULL_NAME = "Superiorum Usor"
+TEST_SUPER_FULL_NAME = "Super User"
 
 TEST_ADMIN_USERNAME = "admin"
 TEST_ADMIN_MAIL = "admin@glados.com"
-TEST_ADMIN_FULL_NAME = "Administrator Usor"
+TEST_ADMIN_FULL_NAME = "Admin User"
+
+TEST_GUEST_USERNAME = "guest"
+TEST_GUEST_MAIL = "guest@glados.com"
+TEST_GUEST_FULL_NAME = "Guest User"
 
 
 def user_authentication_headers(*, client: TestClient, username: str, password: str) -> Dict[str, str]:
@@ -47,6 +51,7 @@ def create_user(
     full_name: str,
     is_super: bool = False,
     is_admin: bool = False,
+    is_guest: bool = False,
 ) -> UserModel:
     user_in = UserCreateSchema(
         username=username,
@@ -55,6 +60,7 @@ def create_user(
         full_name=full_name,
         is_adminuser=is_admin,
         is_superuser=is_super,
+        is_guestuser=is_guest,
         rfid=None,
     )
     user = crud_user.create(db=db, obj_in=user_in, current_user=current_user_adminuser())
@@ -110,6 +116,21 @@ def get_test_admin_user(db: Session) -> UserModel:
             full_name=TEST_ADMIN_FULL_NAME,
             is_super=True,
             is_admin=True,
+        )
+    return user
+
+
+def get_test_guest_user(db: Session) -> UserModel:
+    """Returns the test user with guest privileges, creates it if doesn't exists."""
+    user = crud_user.get_by_username(db, username=TEST_GUEST_USERNAME)
+    if not user:
+        return create_user(
+            db=db,
+            email=TEST_GUEST_MAIL,
+            password=TEST_PASS,
+            username=TEST_GUEST_USERNAME,
+            full_name=TEST_GUEST_FULL_NAME,
+            is_guest=True,
         )
     return user
 

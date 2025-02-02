@@ -47,9 +47,8 @@ For a guided installation see [INSTALL.md](/docs/INSTALL.md)
 System requirements:
 
 - Unix (tested on Debian 11)
-- Approx. 250GB free space
-- Sudo rights required
-- Open port at TCP 5000
+- Approx. 25GB free space (this can change in the future)
+- An open TCP port
 - Python 3.11
 
 Package requirements (apt):
@@ -143,6 +142,7 @@ MIT
 
 ## 7 changelog
 
+**v0.13.1**: Fix deps issue.  
 **v0.13.0**: Add pagination.  
 **v0.12.3**: Add proxy config.  
 **v0.12.2**: Add rfid auth. Fix user init error.  

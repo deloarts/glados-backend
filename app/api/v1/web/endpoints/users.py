@@ -32,8 +32,8 @@ router = APIRouter()
 @router.get("/", response_model=List[UserSchema])
 def read_users(
     db: Session = Depends(get_db),
-    skip: int = 0,
-    limit: int = 100,
+    skip: int | None = None,
+    limit: int | None = None,
     verified: UserModel = Depends(verify_token),
 ) -> Any:
     """Retrieve all users."""
@@ -48,12 +48,13 @@ def create_user(
     current_user: UserModel = Depends(get_current_active_adminuser),
 ) -> Any:
     """Create new user."""
-    user = crud_user.get_by_email(db, email=user_in.email) or crud_user.get_by_username(db, username=user_in.username)
-    if user:
+    try:
+        new_user = crud_user.create(db, current_user=current_user, obj_in=user_in)
+    except UserAlreadyExistsError as e:
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.ALREADY_EXISTS
-        )
-    return crud_user.create(db, current_user=current_user, obj_in=user_in)
+        ) from e
+    return new_user
 
 
 @router.put("/me", response_model=UserSchema)
@@ -65,22 +66,26 @@ def update_user_me(
 ) -> Any:
     """Update own user."""
 
-    user_username = crud_user.get_by_username(db, username=user_in.username)
-    if user_username and user_username.id != current_user.id:
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API.USER.NOT_FOUND)
+
+    try:
+        updated_user = crud_user.update(db, current_user=current_user, db_obj=current_user, obj_in=user_in)
+    except PasswordCriteriaError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=lang(current_user).API.USER.USERNAME_IN_USE,
-        )
-
-    user_email = crud_user.get_by_email(db, email=user_in.email)
-    if user_email and user_email.id != current_user.id:
+            detail=lang(current_user).API.USER.PASSWORD_WEAK,
+        ) from e
+    except UserAlreadyExistsError as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=lang(current_user).API.USER.MAIL_IN_USE,
-        )
+            status_code=status.HTTP_409_CONFLICT, detail=lang(current_user).API.USER.USERNAME_OR_MAIL_IN_USE
+        ) from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.USER.UPDATE_NO_PERMISSION
+        ) from e
 
-    user = crud_user.update(db, current_user=current_user, db_obj=current_user, obj_in=user_in)
-    return user
+    return updated_user
 
 
 @router.get("/me", response_model=UserSchema)

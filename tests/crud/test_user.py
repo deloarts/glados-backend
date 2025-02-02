@@ -1,12 +1,13 @@
 import pytest
+from api.schemas.user import UserCreateSchema
+from api.schemas.user import UserUpdateSchema
+from crud.user import crud_user
+from exceptions import UserAlreadyExistsError
 from fastapi.encoders import jsonable_encoder
+from security.pwd import verify_hash
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.api.schemas.user import UserCreateSchema
-from app.api.schemas.user import UserUpdateSchema
-from app.crud.user import crud_user
-from app.security.pwd import verify_hash
 from tests.utils.user import TEST_PASS
 from tests.utils.user import current_user_adminuser
 from tests.utils.user import get_test_admin_user
@@ -60,7 +61,7 @@ def test_create_user(db: Session) -> None:
     assert user.is_systemuser is False
     assert hasattr(user, "hashed_password")
 
-    with pytest.raises(IntegrityError):
+    with pytest.raises(UserAlreadyExistsError):
         # Cannot create same user twice
         crud_user.create(db, obj_in=t_user_in, current_user=current_user_adminuser())
 
