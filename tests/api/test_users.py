@@ -1,11 +1,11 @@
 from typing import Dict
 
+from config import cfg
+from const import SYSTEM_USER
+from crud.user import crud_user
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.config import cfg
-from app.const import SYSTEM_USER
-from app.crud.user import crud_user
 from tests.utils.user import TEST_MAIL
 from tests.utils.user import get_test_user
 from tests.utils.utils import random_email

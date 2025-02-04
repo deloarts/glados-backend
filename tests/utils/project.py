@@ -65,7 +65,7 @@ def create_random_project(db: Session) -> ProjectModel:
 
 
 def get_test_project(db: Session) -> ProjectModel:
-    """Returns the test project, creates it if doesn't exists."""
+    """Returns the test project, creates it if doesn't exists. Designates the normal test user."""
     admin_user = crud_user.get_by_username(db, username=TEST_ADMIN_USERNAME)
     normal_user = crud_user.get_by_username(db, username=TEST_USERNAME)
     if not admin_user:

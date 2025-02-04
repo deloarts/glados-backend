@@ -52,6 +52,7 @@ class deAT:
             UPDATE_NO_PERMISSION = "Du kannst dieses Projekt nicht bearbeiten"
             DELETE_NO_PERMISSION = "Du kannst dieses Projekt nicht löschen"
             GUEST_USER_NO_PERMISSION = "Gastbenutzer können keine Projekte anlegen"
+            DESIGNATE_NOT_EXISTS = "Der zugeteilte Benutzer existiert nicht"
 
         class USER:
             ALREADY_EXISTS = "Der Benutzer existiert bereits im System"

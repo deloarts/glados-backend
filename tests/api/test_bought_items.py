@@ -1,9 +1,9 @@
 import copy
 
+from config import cfg
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.config import cfg
 from tests.utils.bought_item import create_random_item
 from tests.utils.project import get_test_project
 from tests.utils.utils import random_bought_item_name

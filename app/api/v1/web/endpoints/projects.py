@@ -16,6 +16,7 @@ from db.models import UserModel
 from db.session import get_db
 from exceptions import InsufficientPermissionsError
 from exceptions import ProjectAlreadyExistsError
+from exceptions import UserDoesNotExistError
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -70,7 +71,11 @@ def create_project(
         )
     except InsufficientPermissionsError as e:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API.PROJECT.GUEST_USER_NO_PERMISSION
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.PROJECT.GUEST_USER_NO_PERMISSION
+        ) from e
+    except UserDoesNotExistError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=lang(current_user).API.PROJECT.DESIGNATE_NOT_EXISTS
         ) from e
 
     return new_project

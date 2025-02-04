@@ -52,6 +52,7 @@ class enGB:
             UPDATE_NO_PERMISSION = "You are not allowed to change this project"
             DELETE_NO_PERMISSION = "You are not allowed to delete this project"
             GUEST_USER_NO_PERMISSION = "A guest user cannot create projects"
+            DESIGNATE_NOT_EXISTS = "The designated user does not exist"
 
         class USER:
             ALREADY_EXISTS = "The user already exists in the system"

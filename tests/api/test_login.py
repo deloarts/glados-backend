@@ -1,9 +1,8 @@
 from typing import Dict
 
+from config import cfg
+from const import SYSTEM_USER
 from fastapi.testclient import TestClient
-
-from app.config import cfg
-from app.const import SYSTEM_USER
 
 
 def test_get_access_token(client: TestClient) -> None:
