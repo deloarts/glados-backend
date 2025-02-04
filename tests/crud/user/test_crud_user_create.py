@@ -1,3 +1,7 @@
+"""
+    CRUD tests (CREATE ONLY) for the user model
+"""
+
 import pytest
 from api.schemas.user import UserCreateSchema
 from const import SERVER_DEFAULT_LANGUAGE

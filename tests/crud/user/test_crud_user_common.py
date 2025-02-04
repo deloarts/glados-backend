@@ -1,3 +1,7 @@
+"""
+    CRUD tests (COMMON METHODS ONLY) for the user model
+"""
+
 from api.schemas.user import UserCreateSchema
 from crud.user import crud_user
 from sqlalchemy.orm import Session

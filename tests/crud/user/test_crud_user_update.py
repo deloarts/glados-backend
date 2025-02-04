@@ -1,3 +1,7 @@
+"""
+    CRUD tests (UPDATE ONLY) for the user model
+"""
+
 import pytest
 from api.schemas.user import UserCreateSchema
 from api.schemas.user import UserUpdateSchema

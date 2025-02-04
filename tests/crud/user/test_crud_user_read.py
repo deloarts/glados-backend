@@ -1,3 +1,7 @@
+"""
+    CRUD tests (READ ONLY) for the user model
+"""
+
 from api.schemas.user import UserCreateSchema
 from crud.user import crud_user
 from fastapi.encoders import jsonable_encoder
