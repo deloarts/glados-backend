@@ -13,9 +13,11 @@ from api.schemas.user import UserUpdateSchema
 from config import cfg
 from crud.base import CRUDBase
 from db.models import UserModel
+from exceptions import EmailAlreadyExistsError
 from exceptions import InsufficientPermissionsError
 from exceptions import PasswordCriteriaError
-from exceptions import UserAlreadyExistsError
+from exceptions import RfidAlreadyExistsError
+from exceptions import UsernameAlreadyExistsError
 from locales import Locales
 from mail.presets import MailPreset
 from multilog import log
@@ -87,19 +89,23 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             obj_in (UserCreateSchema): The user data as schema.
 
         Raises:
-            UserAlreadyExistsError: A user with this username exists.
-            UserAlreadyExistsError: A user with this email exists.
+            UsernameAlreadyExistsError: A user with this username exists.
+            EmailAlreadyExistsError: A user with this email exists.
 
         Returns:
             UserModel: The newly created user.
         """
         if self.get_by_username(db, username=obj_in.username):
-            raise UserAlreadyExistsError(
+            raise UsernameAlreadyExistsError(
                 f"Blocked creation of a user: User with username {obj_in.username!r} already exists."
             )
         if self.get_by_email(db, email=obj_in.email):
-            raise UserAlreadyExistsError(
+            raise EmailAlreadyExistsError(
                 f"Blocked creation of a user: User with email {obj_in.email!r} already exists."
+            )
+        if obj_in.rfid and self.get_by_rfid(db, rfid=obj_in.rfid):
+            raise RfidAlreadyExistsError(
+                f"Blocked creation of a user: The given RFID is already assigned to an account."
             )
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
@@ -163,8 +169,9 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             obj_in (UserUpdateSchema | Dict[str, Any]): The new data.
 
         Raises:
-            UserAlreadyExistsError: A user with this username exists.
-            UserAlreadyExistsError: A user with this email exists.
+            UsernameAlreadyExistsError: A user with this username exists.
+            EmailAlreadyExistsError: A user with this email exists.
+            RfidAlreadyExistsError: A user with this rfid exists.
             PasswordCriteriaError: Password too weak.
             InsufficientPermissionsError: System user cannot be updated by another user.
 
@@ -178,10 +185,10 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             and (existing_user := self.get_by_username(db, username=data["username"]))
             and existing_user.id != db_obj.id
         ):
-            raise UserAlreadyExistsError(
+            raise UsernameAlreadyExistsError(
                 f"Blocked update of a user #{db_obj.id} ({db_obj.username}): "
-                f"User #{current_user.id} ({current_user.full_name}) tried to update, but a user with this username "
-                "already exists."
+                f"User #{current_user.id} ({current_user.full_name}) tried to update this users username to "
+                f"{data['username']}, but another user with this username already exists."
             )
 
         if (
@@ -189,10 +196,10 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             and (existing_user := self.get_by_email(db, email=data["email"]))
             and existing_user.id != db_obj.id
         ):
-            raise UserAlreadyExistsError(
+            raise EmailAlreadyExistsError(
                 f"Blocked update of a user #{db_obj.id} ({db_obj.username}): "
-                f"User #{current_user.id} ({current_user.full_name}) tried to update, but a user with this mail "
-                "already exists."
+                f"User #{current_user.id} ({current_user.full_name}) tried to update this users mail to "
+                f"{data['email']}, but another user with this mail already exists."
             )
 
         # Handle a new password
@@ -209,6 +216,13 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         # Handle a new rfid id
         if "rfid" in data:
             if data["rfid"] is not None:
+                user_from_rfid = self.get_by_rfid(db, rfid=data["rfid"])
+                if user_from_rfid and user_from_rfid.id != db_obj.id:
+                    raise RfidAlreadyExistsError(
+                        f"Blocked update of a user #{db_obj.id} ({db_obj.username}): "
+                        f"User #{current_user.id} ({current_user.full_name}) tried to update, but the given RFID is "
+                        "already assigned to an account."
+                    )
                 hashed_rfid = get_hash(data["rfid"])
                 data["hashed_rfid"] = hashed_rfid
             del data["rfid"]

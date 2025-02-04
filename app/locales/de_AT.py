@@ -58,6 +58,7 @@ class deAT:
             NOT_FOUND = "Dieser Benutzer existiert nicht"
             USERNAME_IN_USE = "Der Benutzername ist bereits vergeben"
             MAIL_IN_USE = "Die Mailaddresse ist bereits in Verwendung"
+            RFID_IN_USE = "Diese RFID ist bereits einem Konto zugeordnet"
             USERNAME_OR_MAIL_IN_USE = "Dieser Benutzername oder diese Mail sind in Verwendung"
             ID_NOT_FOUND = "Ein Benutzer mit dieser ID existiert nicht"
             PASSWORD_WEAK = "Dieses Passwort ist nicht sicher"

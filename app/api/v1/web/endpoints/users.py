@@ -15,9 +15,11 @@ from api.schemas.user import UserUpdateSchema
 from crud.user import crud_user
 from db.models import UserModel
 from db.session import get_db
+from exceptions import EmailAlreadyExistsError
 from exceptions import InsufficientPermissionsError
 from exceptions import PasswordCriteriaError
-from exceptions import UserAlreadyExistsError
+from exceptions import RfidAlreadyExistsError
+from exceptions import UsernameAlreadyExistsError
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -50,9 +52,17 @@ def create_user(
     """Create new user."""
     try:
         new_user = crud_user.create(db, current_user=current_user, obj_in=user_in)
-    except UserAlreadyExistsError as e:
+    except UsernameAlreadyExistsError as e:
         raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.ALREADY_EXISTS
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.USERNAME_IN_USE
+        ) from e
+    except EmailAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.MAIL_IN_USE
+        ) from e
+    except RfidAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.RFID_IN_USE
         ) from e
     return new_user
 
@@ -76,9 +86,17 @@ def update_user_me(
             status_code=status.HTTP_409_CONFLICT,
             detail=lang(current_user).API.USER.PASSWORD_WEAK,
         ) from e
-    except UserAlreadyExistsError as e:
+    except UsernameAlreadyExistsError as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=lang(current_user).API.USER.USERNAME_OR_MAIL_IN_USE
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.USERNAME_IN_USE
+        ) from e
+    except EmailAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.MAIL_IN_USE
+        ) from e
+    except RfidAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.RFID_IN_USE
         ) from e
     except InsufficientPermissionsError as e:
         raise HTTPException(
@@ -135,9 +153,17 @@ def update_user(
             status_code=status.HTTP_409_CONFLICT,
             detail=lang(current_user).API.USER.PASSWORD_WEAK,
         ) from e
-    except UserAlreadyExistsError as e:
+    except UsernameAlreadyExistsError as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=lang(current_user).API.USER.USERNAME_OR_MAIL_IN_USE
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.USERNAME_IN_USE
+        ) from e
+    except EmailAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.MAIL_IN_USE
+        ) from e
+    except RfidAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.USER.RFID_IN_USE
         ) from e
     except InsufficientPermissionsError as e:
         raise HTTPException(
