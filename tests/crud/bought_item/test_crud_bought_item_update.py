@@ -2,6 +2,8 @@
     CRUD tests (UPDATE ONLY) for the bought item model
 """
 
+from datetime import date
+
 import pytest
 from api.schemas.bought_item import BoughtItemUpdateWebSchema
 from config import cfg
@@ -93,6 +95,8 @@ def test_update_item(db: Session) -> None:
     assert item_out.manufacturer == t_manufacturer
     assert item_out.creator_id == t_item.creator_id  # mus be unchanged
 
+    assert item_out.changed == date.today()
+
     assert item_out in t_user.created_bought_items
     assert item_out in t_project.bought_items
 
@@ -169,6 +173,7 @@ def test_update_item_status(db: Session) -> None:
 
     assert item_out
     assert item_out.id == t_item.id  # must be unchanged
+    assert item_out.changed == date.today()
 
     assert item_out in t_normal_user.created_bought_items
     assert item_out not in t_normal_user.requested_bought_items
@@ -250,7 +255,7 @@ def test_update_item_assign_new_project(db: Session) -> None:
     # UPDATE ITEM: METHODS TO TEST
     # ----------------------------------------------
 
-    item_out = crud_bought_item.update(db=db, db_obj_user=t_normal_user, obj_in=item_in, db_obj_item=t_item)
+    crud_bought_item.update(db=db, db_obj_user=t_normal_user, obj_in=item_in, db_obj_item=t_item)
 
     with pytest.raises(ProjectNotFoundError):
         crud_bought_item.update(
@@ -264,9 +269,13 @@ def test_update_item_assign_new_project(db: Session) -> None:
     # UPDATE ITEM: VALIDATION
     # ----------------------------------------------
 
+    item_out = crud_bought_item.get(db, id=t_item.id)
+
+    assert item_out
     assert item_out.id == t_item.id  # must be unchanged
     assert item_out.project == t_project_new
     assert item_out.project_id == t_project_new.id
+    assert item_out.changed == date.today()
 
     assert t_item in t_normal_user.created_bought_items
     assert t_item in t_project_new.bought_items
