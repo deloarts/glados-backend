@@ -233,9 +233,16 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
         if "theme" not in data or data["theme"] is None:
             data["theme"] = "dark"
 
-        # The systemuser can only update itself!
-        # The systemuser has fixed permissions that cannot be altered.
-        if db_obj.is_systemuser:
+        # Handling permissions
+        # Only system- and admin-users can edit permissions (ignore given permissions)
+        if not current_user.is_adminuser and not current_user.is_systemuser:
+            data["is_active"] = db_obj.is_active
+            data["is_superuser"] = db_obj.is_superuser
+            data["is_adminuser"] = db_obj.is_adminuser
+            data["is_guestuser"] = db_obj.is_guestuser
+
+        # The systemuser can only update itself and has fixed permissions that cannot be altered
+        elif db_obj.is_systemuser:
             if db_obj.id != current_user.id:
                 raise InsufficientPermissionsError(
                     f"Blocked update of a user #{db_obj.id} ({db_obj.full_name}): "
@@ -245,6 +252,13 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             data["is_superuser"] = True
             data["is_adminuser"] = True
             data["is_guestuser"] = False
+
+        # And a user cannot change their own permission
+        elif db_obj.id == current_user.id:
+            data["is_active"] = db_obj.is_active
+            data["is_superuser"] = db_obj.is_superuser
+            data["is_adminuser"] = db_obj.is_adminuser
+            data["is_guestuser"] = db_obj.is_guestuser
 
         # A adminuser has all permissions and is no guestuser
         elif "is_adminuser" in data and data["is_adminuser"]:

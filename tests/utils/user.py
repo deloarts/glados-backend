@@ -15,10 +15,15 @@ from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
 from tests.utils.utils import random_username
 
-TEST_USERNAME = "test"
 TEST_PASS = "12345678"  # much safe
+
+TEST_USERNAME = "test"
 TEST_MAIL = "test@glados.com"
 TEST_FULL_NAME = "Normal User"
+
+TEST_INACTIVE_USERNAME = "inactive"
+TEST_INACTIVE_MAIL = "inactive@glados.com"
+TEST_INACTIVE_FULL_NAME = "Inactive User"
 
 TEST_SUPER_USERNAME = "super"
 TEST_SUPER_MAIL = "super@glados.com"
@@ -84,7 +89,27 @@ def get_test_user(db: Session) -> UserModel:
     """Returns the test user, creates it if doesn't exists."""
     user = crud_user.get_by_username(db, username=TEST_USERNAME)
     if not user:
-        return create_user(db=db, email=TEST_MAIL, password=TEST_PASS, username=TEST_USERNAME, full_name=TEST_FULL_NAME)
+        return create_user(
+            db=db,
+            email=TEST_MAIL,
+            password=TEST_PASS,
+            username=TEST_USERNAME,
+            full_name=TEST_FULL_NAME,
+        )
+    return user
+
+
+def get_test_user_inactive(db: Session) -> UserModel:
+    """Returns the inactive test user, creates it if doesn't exists."""
+    user = crud_user.get_by_username(db, username=TEST_INACTIVE_USERNAME)
+    if not user:
+        return create_user(
+            db=db,
+            email=TEST_INACTIVE_MAIL,
+            password=TEST_PASS,
+            username=TEST_INACTIVE_USERNAME,
+            full_name=TEST_INACTIVE_FULL_NAME,
+        )
     return user
 
 
@@ -133,34 +158,6 @@ def get_test_guest_user(db: Session) -> UserModel:
             is_guest=True,
         )
     return user
-
-
-def authentication_token_from_email(*, client: TestClient, email: str, db: Session) -> Dict[str, str]:
-    """
-    Return a valid token for the user with given email.
-
-    If the user doesn't exist it is created first.
-    """
-    password = random_lower_string()
-    user = crud_user.get_by_email(db, email=email)
-    if not user:
-        user_in_create = UserCreateSchema(
-            username=TEST_USERNAME, email=email, password=password, full_name=TEST_FULL_NAME, rfid=None
-        )
-        user = crud_user.create(db, obj_in=user_in_create, current_user=current_user_adminuser())
-    else:
-        user_in_update = UserUpdateSchema(
-            username=TEST_USERNAME,
-            email=email,
-            password=password,
-            full_name=TEST_FULL_NAME,
-            language="enGB",
-            theme="dark",
-            rfid=None,
-        )
-        user = crud_user.update(db, db_obj=user, obj_in=user_in_update, current_user=current_user_adminuser())
-
-    return user_authentication_headers(client=client, username=TEST_USERNAME, password=password)
 
 
 def current_user_adminuser() -> UserModel:
