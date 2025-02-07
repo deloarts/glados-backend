@@ -18,6 +18,8 @@ from sqlalchemy.orm import Session
 from tests.utils.user import TEST_PASS
 from tests.utils.user import current_user_adminuser
 from tests.utils.user import get_test_admin_user
+from tests.utils.user import get_test_guest_user
+from tests.utils.user import get_test_super_user
 from tests.utils.user import get_test_user
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
@@ -395,3 +397,251 @@ def test_update_system_user(db: Session) -> None:
 
     with pytest.raises(InsufficientPermissionsError):
         crud_user.update(db, db_obj=system_user, obj_in=t_user_in_update, current_user=current_user_adminuser())
+
+
+def test_update_user_own_permissions(db: Session) -> None:
+    """
+    Test the update of a user's own permissions.
+    This test performs the following steps:
+
+    1. Preparation: Retrieve a test user from the database and create an update schema with modified attributes.
+    2. Methods to Test: Call the `update` method from the `crud_user` module to update the user's information.
+    3. Validation: Retrieve the updated user from the database and assert that the changes have been applied correctly.
+
+    Args:
+        db (Session): The database session used for the test.
+
+    Asserts:
+        - The user exists in the database.
+        - The user's ID remains unchanged.
+        - The user's `is_active` attribute is set to True.
+        - The user's `is_superuser` attribute is set to False.
+        - The user's `is_adminuser` attribute is set to False.
+        - The user's `is_guestuser` attribute is set to False.
+    """
+
+    # ----------------------------------------------
+    # UPDATE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user = get_test_user(db)
+
+    t_user_in_update = UserUpdateSchema(
+        username=t_user.username,
+        full_name=t_user.full_name,
+        email=t_user.email,
+        password=TEST_PASS,
+        language="deAT",
+        theme="dark",
+        rfid=None,
+        is_active=False,
+        is_superuser=True,
+        is_adminuser=True,
+        is_guestuser=True,
+    )
+
+    # ----------------------------------------------
+    # UPDATE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    crud_user.update(db, db_obj=t_user, obj_in=t_user_in_update, current_user=t_user)
+
+    # ----------------------------------------------
+    # UPDATE USER: VALIDATION
+    # ----------------------------------------------
+
+    user = crud_user.get(db, id=t_user.id)
+    assert user
+    assert user.id == t_user.id
+    assert user.is_active is True
+    assert user.is_superuser is False
+    assert user.is_adminuser is False
+    assert user.is_guestuser is False
+
+
+def test_update_super_user_own_permissions(db: Session) -> None:
+    """
+    Test case for updating a super user's own permissions.
+
+    This test performs the following steps:
+    1. Preparation: Retrieves a test super user from the database and creates an update schema with modified attributes.
+    2. Methods to Test: Calls the `update` method from the `crud_user` module to update the user's information.
+    3. Validation: Retrieves the updated user from the database and asserts that the user's attributes have been correctly updated.
+
+    Args:
+        db (Session): The database session used for the test.
+
+    Asserts:
+        - The user exists in the database.
+        - The user's ID remains unchanged.
+        - The user's `is_active` attribute is True.
+        - The user's `is_superuser` attribute is True.
+        - The user's `is_adminuser` attribute is False.
+        - The user's `is_guestuser` attribute is False.
+    """
+
+    # ----------------------------------------------
+    # UPDATE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user = get_test_super_user(db)
+
+    t_user_in_update = UserUpdateSchema(
+        username=t_user.username,
+        full_name=t_user.full_name,
+        email=t_user.email,
+        password=TEST_PASS,
+        language="deAT",
+        theme="dark",
+        rfid=None,
+        is_active=False,
+        is_superuser=False,
+        is_adminuser=True,
+        is_guestuser=True,
+    )
+
+    # ----------------------------------------------
+    # UPDATE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    crud_user.update(db, db_obj=t_user, obj_in=t_user_in_update, current_user=t_user)
+
+    # ----------------------------------------------
+    # UPDATE USER: VALIDATION
+    # ----------------------------------------------
+
+    user = crud_user.get(db, id=t_user.id)
+    assert user
+    assert user.id == t_user.id
+    assert user.is_active is True
+    assert user.is_superuser is True
+    assert user.is_adminuser is False
+    assert user.is_guestuser is False
+
+
+def test_update_admin_user_own_permissions(db: Session) -> None:
+    """
+    Test the update of an admin user's own permissions.
+
+    This test verifies that an admin user cannot change their own permissions
+    to lower their access level. Specifically, it ensures that the user remains
+    active, a superuser, and an admin user, even if the update request attempts
+    to change these attributes.
+
+    Args:
+        db (Session): The database session used for the test.
+
+    Steps:
+        1. Retrieve a test admin user from the database.
+        2. Prepare an update schema with modified user attributes.
+        3. Attempt to update the user with the new attributes.
+        4. Validate that the user's critical permissions (is_active, is_superuser,
+           is_adminuser) remain unchanged, while other attributes are updated
+           as specified.
+
+    Asserts:
+        - The user exists in the database.
+        - The user's ID remains unchanged.
+        - The user's 'is_active' attribute remains True.
+        - The user's 'is_superuser' attribute remains True.
+        - The user's 'is_adminuser' attribute remains True.
+        - The user's 'is_guestuser' attribute is updated to False.
+    """
+
+    # ----------------------------------------------
+    # UPDATE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user = get_test_admin_user(db)
+
+    t_user_in_update = UserUpdateSchema(
+        username=t_user.username,
+        full_name=t_user.full_name,
+        email=t_user.email,
+        password=TEST_PASS,
+        language="deAT",
+        theme="dark",
+        rfid=None,
+        is_active=False,
+        is_superuser=False,
+        is_adminuser=False,
+        is_guestuser=True,
+    )
+
+    # ----------------------------------------------
+    # UPDATE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    crud_user.update(db, db_obj=t_user, obj_in=t_user_in_update, current_user=t_user)
+
+    # ----------------------------------------------
+    # UPDATE USER: VALIDATION
+    # ----------------------------------------------
+
+    user = crud_user.get(db, id=t_user.id)
+    assert user
+    assert user.id == t_user.id
+    assert user.is_active is True
+    assert user.is_superuser is True
+    assert user.is_adminuser is True
+    assert user.is_guestuser is False
+
+
+def test_update_guest_user_own_permissions(db: Session) -> None:
+    """
+    Test the update of a guest user's own permissions.
+
+    This test performs the following steps:
+    1. Preparation: Retrieve a test guest user from the database and create an update schema with new user details.
+    2. Methods to Test: Call the `update` method from `crud_user` to update the user's information.
+    3. Validation: Retrieve the updated user from the database and assert that the user's details have been updated correctly.
+
+    Args:
+        db (Session): The database session used for the test.
+
+    Asserts:
+        - The user exists in the database.
+        - The user's ID remains unchanged.
+        - The user's `is_active` status is `True`.
+        - The user's `is_superuser` status is `False`.
+        - The user's `is_adminuser` status is `False`.
+        - The user's `is_guestuser` status is `True`.
+    """
+
+    # ----------------------------------------------
+    # UPDATE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user = get_test_guest_user(db)
+
+    t_user_in_update = UserUpdateSchema(
+        username=t_user.username,
+        full_name=t_user.full_name,
+        email=t_user.email,
+        password=TEST_PASS,
+        language="deAT",
+        theme="dark",
+        rfid=None,
+        is_active=False,
+        is_superuser=True,
+        is_adminuser=True,
+        is_guestuser=False,
+    )
+
+    # ----------------------------------------------
+    # UPDATE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    crud_user.update(db, db_obj=t_user, obj_in=t_user_in_update, current_user=t_user)
+
+    # ----------------------------------------------
+    # UPDATE USER: VALIDATION
+    # ----------------------------------------------
+
+    user = crud_user.get(db, id=t_user.id)
+    assert user
+    assert user.id == t_user.id
+    assert user.is_active is True
+    assert user.is_superuser is False
+    assert user.is_adminuser is False
+    assert user.is_guestuser is True
