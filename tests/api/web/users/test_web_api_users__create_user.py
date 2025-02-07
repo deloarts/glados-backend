@@ -10,8 +10,8 @@ from crud.user import crud_user
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from tests.utils.user import TEST_MAIL
-from tests.utils.user import TEST_USERNAME
+from tests.utils.user import TEST_USER_MAIL
+from tests.utils.user import TEST_USER_USERNAME
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
@@ -143,7 +143,7 @@ def test_create_user__admin_user__existing_username(client: TestClient, admin_us
     data = {
         "email": random_email(),
         "password": random_lower_string(),
-        "username": TEST_USERNAME,
+        "username": TEST_USER_USERNAME,
         "full_name": random_name(),
     }
 
@@ -167,7 +167,7 @@ def test_create_user__admin_user__existing_mail(client: TestClient, admin_user_t
     # ----------------------------------------------
 
     data = {
-        "email": TEST_MAIL,
+        "email": TEST_USER_MAIL,
         "password": random_lower_string(),
         "username": random_username(),
         "full_name": random_name(),

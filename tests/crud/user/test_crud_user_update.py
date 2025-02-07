@@ -15,7 +15,7 @@ from exceptions import UsernameAlreadyExistsError
 from security.pwd import verify_hash
 from sqlalchemy.orm import Session
 
-from tests.utils.user import TEST_PASS
+from tests.utils.user import TEST_PASSWORD
 from tests.utils.user import current_user_adminuser
 from tests.utils.user import get_test_admin_user
 from tests.utils.user import get_test_guest_user
@@ -212,7 +212,7 @@ def test_update_user_existing_mail(db: Session) -> None:
         username=normal_user.username,
         full_name=normal_user.full_name,
         email=admin_user.email,
-        password=TEST_PASS,
+        password=TEST_PASSWORD,
         language="deAT",
         theme="dark",
         rfid=None,
@@ -290,7 +290,7 @@ def test_update_user_existing_rfid(db: Session) -> None:
         username=admin_user.username,
         full_name=admin_user.full_name,
         email=admin_user.email,
-        password=TEST_PASS,
+        password=TEST_PASSWORD,
         language="deAT",
         theme="dark",
         rfid=t_rfid,
@@ -385,7 +385,7 @@ def test_update_system_user(db: Session) -> None:
         username=system_user.username,
         full_name=system_user.full_name,
         email=system_user.email,
-        password=TEST_PASS,
+        password=TEST_PASSWORD,
         language="deAT",
         theme="dark",
         rfid=None,
@@ -430,7 +430,7 @@ def test_update_user_own_permissions(db: Session) -> None:
         username=t_user.username,
         full_name=t_user.full_name,
         email=t_user.email,
-        password=TEST_PASS,
+        password=TEST_PASSWORD,
         language="deAT",
         theme="dark",
         rfid=None,
@@ -490,7 +490,7 @@ def test_update_super_user_own_permissions(db: Session) -> None:
         username=t_user.username,
         full_name=t_user.full_name,
         email=t_user.email,
-        password=TEST_PASS,
+        password=TEST_PASSWORD,
         language="deAT",
         theme="dark",
         rfid=None,
@@ -558,7 +558,7 @@ def test_update_admin_user_own_permissions(db: Session) -> None:
         username=t_user.username,
         full_name=t_user.full_name,
         email=t_user.email,
-        password=TEST_PASS,
+        password=TEST_PASSWORD,
         language="deAT",
         theme="dark",
         rfid=None,
@@ -618,7 +618,7 @@ def test_update_guest_user_own_permissions(db: Session) -> None:
         username=t_user.username,
         full_name=t_user.full_name,
         email=t_user.email,
-        password=TEST_PASS,
+        password=TEST_PASSWORD,
         language="deAT",
         theme="dark",
         rfid=None,

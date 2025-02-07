@@ -11,8 +11,8 @@ from fastapi.testclient import TestClient
 
 from tests.utils.user import TEST_ADMIN_MAIL
 from tests.utils.user import TEST_GUEST_MAIL
-from tests.utils.user import TEST_MAIL
 from tests.utils.user import TEST_SUPER_MAIL
+from tests.utils.user import TEST_USER_MAIL
 
 READ_USER_ME_API = f"{cfg.server.api.web}/users/me"
 
@@ -53,7 +53,7 @@ def test_read_user_me__normal_user(client: TestClient, normal_user_token_headers
     assert response_schema.is_adminuser is False
     assert response_schema.is_systemuser is False
     assert response_schema.is_guestuser is False
-    assert response_schema.email == TEST_MAIL
+    assert response_schema.email == TEST_USER_MAIL
 
 
 def test_read_user_me__super_user(client: TestClient, super_user_token_headers: Dict[str, str]) -> None:
@@ -129,7 +129,6 @@ def test_read_user_me__guest_user(client: TestClient, guest_user_token_headers: 
 
 
 def test_read_user_me__system_user(client: TestClient, systemuser_token_headers: Dict[str, str]) -> None:
-
     # ----------------------------------------------
     # GET USER ME: METHODS TO TEST
     # ----------------------------------------------

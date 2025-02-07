@@ -12,8 +12,8 @@ from sqlalchemy.orm import Session
 
 from tests.utils.user import TEST_ADMIN_MAIL
 from tests.utils.user import TEST_GUEST_MAIL
-from tests.utils.user import TEST_MAIL
 from tests.utils.user import TEST_SUPER_MAIL
+from tests.utils.user import TEST_USER_MAIL
 from tests.utils.user import get_test_admin_user
 from tests.utils.user import get_test_guest_user
 from tests.utils.user import get_test_super_user
@@ -76,7 +76,7 @@ def test_update_user_me__normal_user(
     assert response_schema.is_adminuser is False
     assert response_schema.is_systemuser is False
     assert response_schema.is_guestuser is False
-    assert response_schema.email == TEST_MAIL
+    assert response_schema.email == TEST_USER_MAIL
 
 
 def test_update_user_me__super_user(client: TestClient, super_user_token_headers: Dict[str, str], db: Session) -> None:

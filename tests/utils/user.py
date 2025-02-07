@@ -15,11 +15,11 @@ from tests.utils.utils import random_lower_string
 from tests.utils.utils import random_name
 from tests.utils.utils import random_username
 
-TEST_PASS = "12345678"  # much safe
+TEST_PASSWORD = "12345678"  # much safe
 
-TEST_USERNAME = "test"
-TEST_MAIL = "test@glados.com"
-TEST_FULL_NAME = "Normal User"
+TEST_USER_USERNAME = "test"
+TEST_USER_MAIL = "test@glados.com"
+TEST_USER_FULL_NAME = "Normal User"
 
 TEST_INACTIVE_USERNAME = "inactive"
 TEST_INACTIVE_MAIL = "inactive@glados.com"
@@ -87,14 +87,14 @@ def create_random_user(db: Session) -> UserModel:
 
 def get_test_user(db: Session) -> UserModel:
     """Returns the test user, creates it if doesn't exists."""
-    user = crud_user.get_by_username(db, username=TEST_USERNAME)
+    user = crud_user.get_by_username(db, username=TEST_USER_USERNAME)
     if not user:
         return create_user(
             db=db,
-            email=TEST_MAIL,
-            password=TEST_PASS,
-            username=TEST_USERNAME,
-            full_name=TEST_FULL_NAME,
+            email=TEST_USER_MAIL,
+            password=TEST_PASSWORD,
+            username=TEST_USER_USERNAME,
+            full_name=TEST_USER_FULL_NAME,
         )
     return user
 
@@ -106,7 +106,7 @@ def get_test_user_inactive(db: Session) -> UserModel:
         return create_user(
             db=db,
             email=TEST_INACTIVE_MAIL,
-            password=TEST_PASS,
+            password=TEST_PASSWORD,
             username=TEST_INACTIVE_USERNAME,
             full_name=TEST_INACTIVE_FULL_NAME,
         )
@@ -120,7 +120,7 @@ def get_test_super_user(db: Session) -> UserModel:
         return create_user(
             db=db,
             email=TEST_SUPER_MAIL,
-            password=TEST_PASS,
+            password=TEST_PASSWORD,
             username=TEST_SUPER_USERNAME,
             full_name=TEST_SUPER_FULL_NAME,
             is_super=True,
@@ -136,7 +136,7 @@ def get_test_admin_user(db: Session) -> UserModel:
         return create_user(
             db=db,
             email=TEST_ADMIN_MAIL,
-            password=TEST_PASS,
+            password=TEST_PASSWORD,
             username=TEST_ADMIN_USERNAME,
             full_name=TEST_ADMIN_FULL_NAME,
             is_super=True,
@@ -152,7 +152,7 @@ def get_test_guest_user(db: Session) -> UserModel:
         return create_user(
             db=db,
             email=TEST_GUEST_MAIL,
-            password=TEST_PASS,
+            password=TEST_PASSWORD,
             username=TEST_GUEST_USERNAME,
             full_name=TEST_GUEST_FULL_NAME,
             is_guest=True,
