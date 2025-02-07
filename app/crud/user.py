@@ -242,6 +242,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             data["is_guestuser"] = db_obj.is_guestuser
 
         # The systemuser can only update itself and has fixed permissions that cannot be altered
+        # FIXME: Currently it's possible to create another system user. This should be forbidden in the future.
         elif db_obj.is_systemuser:
             if db_obj.id != current_user.id:
                 raise InsufficientPermissionsError(

@@ -6,6 +6,9 @@ from config import cfg
 from const import SYSTEM_USER
 from fastapi.testclient import TestClient
 
+import alembic
+import alembic.command
+import alembic.config
 from app.db.session import InitDatabase
 from app.db.session import SessionLocal
 from app.server import app
@@ -33,6 +36,9 @@ def client() -> Generator:
 
 
 def pytest_sessionstart():
+    alembic_config = alembic.config.Config("alembic.ini")
+    alembic.command.upgrade(alembic_config, "head")
+
     InitDatabase()
 
     db = SessionLocal()

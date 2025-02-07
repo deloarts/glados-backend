@@ -67,6 +67,15 @@ def create_user(
     return new_user
 
 
+@router.get("/me", response_model=UserSchema)
+def read_user_me(
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(get_current_active_user),
+) -> Any:
+    """Get current user."""
+    return current_user
+
+
 @router.put("/me", response_model=UserSchema)
 def update_user_me(
     *,
@@ -104,15 +113,6 @@ def update_user_me(
         ) from e
 
     return updated_user
-
-
-@router.get("/me", response_model=UserSchema)
-def read_user_me(
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_active_user),
-) -> Any:
-    """Get current user."""
-    return current_user
 
 
 @router.get("/{user_id}", response_model=UserSchema)

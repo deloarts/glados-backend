@@ -20,6 +20,7 @@ TEST_PASSWORD = "12345678"  # much safe
 TEST_USER_USERNAME = "test"
 TEST_USER_MAIL = "test@glados.com"
 TEST_USER_FULL_NAME = "Normal User"
+TEST_USER_RFID = "1223334444"
 
 TEST_INACTIVE_USERNAME = "inactive"
 TEST_INACTIVE_MAIL = "inactive@glados.com"
@@ -50,10 +51,11 @@ def user_authentication_headers(*, client: TestClient, username: str, password: 
 
 def create_user(
     db: Session,
-    email: str,
-    password: str,
     username: str,
+    email: str,
     full_name: str,
+    password: str,
+    rfid: str | None = None,
     is_super: bool = False,
     is_admin: bool = False,
     is_guest: bool = False,
@@ -66,7 +68,7 @@ def create_user(
         is_adminuser=is_admin,
         is_superuser=is_super,
         is_guestuser=is_guest,
-        rfid=None,
+        rfid=rfid,
     )
     user = crud_user.create(db=db, obj_in=user_in, current_user=current_user_adminuser())
     return user
@@ -95,6 +97,7 @@ def get_test_user(db: Session) -> UserModel:
             password=TEST_PASSWORD,
             username=TEST_USER_USERNAME,
             full_name=TEST_USER_FULL_NAME,
+            rfid=TEST_USER_RFID,
         )
     return user
 
