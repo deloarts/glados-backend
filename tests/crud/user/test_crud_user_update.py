@@ -5,6 +5,7 @@
 import pytest
 from api.schemas.user import UserCreateSchema
 from api.schemas.user import UserUpdateSchema
+from const import Themes
 from crud.user import crud_user
 from exceptions import EmailAlreadyExistsError
 from exceptions import InsufficientPermissionsError
@@ -12,6 +13,7 @@ from exceptions import PasswordCriteriaError
 from exceptions import RfidAlreadyExistsError
 from exceptions import UserError
 from exceptions import UsernameAlreadyExistsError
+from locales import Locales
 from security.pwd import verify_hash
 from sqlalchemy.orm import Session
 
@@ -91,8 +93,8 @@ def test_update_user(db: Session) -> None:
         full_name=t_new_full_name,
         email=t_new_email,
         password=t_new_password,
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=None,
     )
 
@@ -113,8 +115,8 @@ def test_update_user(db: Session) -> None:
     assert user_2.email == t_new_email
     assert user_2.full_name == t_new_full_name
     assert verify_hash(t_new_password, user_2.hashed_password)
-    assert user_2.language == "deAT"
-    assert user_2.theme == "dark"
+    assert user_2.language == Locales.DE_AT.value
+    assert user_2.theme == Themes.DARK.value
 
 
 def test_update_user_existing_username(db: Session) -> None:
@@ -151,8 +153,8 @@ def test_update_user_existing_username(db: Session) -> None:
         full_name=normal_user.full_name,
         email=normal_user.email,
         password="12345678",
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=None,
     )
 
@@ -213,8 +215,8 @@ def test_update_user_existing_mail(db: Session) -> None:
         full_name=normal_user.full_name,
         email=admin_user.email,
         password=TEST_PASSWORD,
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=None,
     )
 
@@ -291,8 +293,8 @@ def test_update_user_existing_rfid(db: Session) -> None:
         full_name=admin_user.full_name,
         email=admin_user.email,
         password=TEST_PASSWORD,
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=t_rfid,
     )
 
@@ -344,8 +346,8 @@ def test_update_user_password_criteria(db: Session) -> None:
         "full_name": t_normal_user.full_name,
         "email": t_normal_user.email,
         "password": t_password,
-        "language": "deAT",
-        "theme": "dark",
+        "language": Locales.DE_AT.value,
+        "theme": Themes.DARK.value,
         "rfid": None,
     }
 
@@ -386,8 +388,8 @@ def test_update_system_user(db: Session) -> None:
         full_name=system_user.full_name,
         email=system_user.email,
         password=TEST_PASSWORD,
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=None,
     )
 
@@ -431,8 +433,8 @@ def test_update_user_own_permissions(db: Session) -> None:
         full_name=t_user.full_name,
         email=t_user.email,
         password=TEST_PASSWORD,
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=None,
         is_active=False,
         is_superuser=True,
@@ -491,8 +493,8 @@ def test_update_super_user_own_permissions(db: Session) -> None:
         full_name=t_user.full_name,
         email=t_user.email,
         password=TEST_PASSWORD,
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=None,
         is_active=False,
         is_superuser=False,
@@ -559,8 +561,8 @@ def test_update_admin_user_own_permissions(db: Session) -> None:
         full_name=t_user.full_name,
         email=t_user.email,
         password=TEST_PASSWORD,
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=None,
         is_active=False,
         is_superuser=False,
@@ -619,8 +621,8 @@ def test_update_guest_user_own_permissions(db: Session) -> None:
         full_name=t_user.full_name,
         email=t_user.email,
         password=TEST_PASSWORD,
-        language="deAT",
-        theme="dark",
+        language=Locales.DE_AT.value,
+        theme=Themes.DARK.value,
         rfid=None,
         is_active=False,
         is_superuser=True,
@@ -645,3 +647,107 @@ def test_update_guest_user_own_permissions(db: Session) -> None:
     assert user.is_superuser is False
     assert user.is_adminuser is False
     assert user.is_guestuser is True
+
+
+def test_update_user_invalid_language(db: Session) -> None:
+    """
+    Test case for updating a user with an invalid language.
+
+    This test ensures that when attempting to update a user's language to an invalid value,
+    the language remains unchanged and defaults to the expected value.
+
+    Steps:
+        1. Retrieve a test user from the database.
+        2. Create an update schema with an invalid language ("esperanto").
+        3. Attempt to update the user with the invalid language.
+        4. Retrieve the user from the database and validate that the language has not changed.
+
+    Args:
+        db (Session): The database session used for the test.
+
+    Assertions:
+        - The user object is retrieved successfully.
+        - The user's ID remains unchanged.
+        - The user's language remains as the default value (Locales.EN_GB.value).
+    """
+
+    # ----------------------------------------------
+    # UPDATE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user = get_test_user(db)
+
+    t_user_in_update = UserUpdateSchema(
+        username=t_user.username,
+        full_name=t_user.full_name,
+        email=t_user.email,
+        password=TEST_PASSWORD,
+        language="esperanto",
+        theme=Themes.DARK.value,
+        rfid=None,
+    )
+
+    # ----------------------------------------------
+    # UPDATE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    crud_user.update(db, db_obj=t_user, obj_in=t_user_in_update, current_user=t_user)
+
+    # ----------------------------------------------
+    # UPDATE USER: VALIDATION
+    # ----------------------------------------------
+
+    user = crud_user.get(db, id=t_user.id)
+    assert user
+    assert user.id == t_user.id
+    assert user.language == Locales.EN_GB.value
+
+
+def test_update_user_invalid_theme(db: Session) -> None:
+    """
+    Test updating a user with an invalid theme.
+
+    This test ensures that when attempting to update a user's theme to an invalid value,
+    the theme is set to a default or fallback value.
+
+    Steps:
+    1. Retrieve a test user from the database.
+    2. Create an update schema with an invalid theme value ("darklight").
+    3. Attempt to update the user with the invalid theme.
+    4. Retrieve the updated user from the database.
+    5. Validate that the user's theme is set to the default or expected value (Themes.DARK.value).
+
+    Args:
+        db (Session): The database session used for the test.
+    """
+
+    # ----------------------------------------------
+    # UPDATE USER: PREPARATION
+    # ----------------------------------------------
+
+    t_user = get_test_user(db)
+
+    t_user_in_update = UserUpdateSchema(
+        username=t_user.username,
+        full_name=t_user.full_name,
+        email=t_user.email,
+        password=TEST_PASSWORD,
+        language=Locales.EN_GB.value,
+        theme="darklight",
+        rfid=None,
+    )
+
+    # ----------------------------------------------
+    # UPDATE USER: METHODS TO TEST
+    # ----------------------------------------------
+
+    crud_user.update(db, db_obj=t_user, obj_in=t_user_in_update, current_user=t_user)
+
+    # ----------------------------------------------
+    # UPDATE USER: VALIDATION
+    # ----------------------------------------------
+
+    user = crud_user.get(db, id=t_user.id)
+    assert user
+    assert user.id == t_user.id
+    assert user.theme == Themes.DARK.value

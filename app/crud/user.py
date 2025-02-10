@@ -11,6 +11,7 @@ from typing import Optional
 from api.schemas.user import UserCreateSchema
 from api.schemas.user import UserUpdateSchema
 from config import cfg
+from const import Themes
 from crud.base import CRUDBase
 from db.models import UserModel
 from exceptions import EmailAlreadyExistsError
@@ -228,9 +229,9 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             del data["rfid"]
 
         # Handle missing data
-        if "language" not in data or data["language"] is None:
+        if "language" not in data or data["language"] is None or data["language"] not in Locales.__members__:
             data["language"] = Locales.EN_GB.value
-        if "theme" not in data or data["theme"] is None:
+        if "theme" not in data or data["theme"] is None or data["theme"] not in Themes.__members__:
             data["theme"] = "dark"
 
         # Handling permissions

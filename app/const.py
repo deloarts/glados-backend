@@ -4,7 +4,8 @@ Const
 
 import os
 import secrets
-import sys
+from enum import Enum
+from enum import unique
 from pathlib import Path
 
 VERSION = "0.13.1"
@@ -55,3 +56,10 @@ else:
 
 if not SECRET_KEY_PERSISTENT:
     raise ValueError("Persistent secret key error: Key is None")
+
+
+# Themes
+@unique
+class Themes(str, Enum):
+    DARK = "dark"
+    LIGHT = "light"
