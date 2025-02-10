@@ -12,6 +12,7 @@ from api.deps import verify_token
 from api.schemas.user import UserCreateSchema
 from api.schemas.user import UserSchema
 from api.schemas.user import UserUpdateSchema
+from const import Themes
 from crud.user import crud_user
 from db.models import UserModel
 from db.session import get_db
@@ -218,7 +219,7 @@ def update_user_me_language(
 def update_user_me_theme(
     *,
     db: Session = Depends(get_db),
-    theme: str,
+    theme: Themes,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the theme."""
