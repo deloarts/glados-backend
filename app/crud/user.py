@@ -229,9 +229,9 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             del data["rfid"]
 
         # Handle missing data
-        if "language" not in data or data["language"] is None or data["language"] not in Locales.__members__:
+        if "language" not in data or data["language"] is None or data["language"] not in Locales._value2member_map_:
             data["language"] = Locales.EN_GB.value
-        if "theme" not in data or data["theme"] is None or data["theme"] not in Themes.__members__:
+        if "theme" not in data or data["theme"] is None or data["theme"] not in Themes._value2member_map_:
             data["theme"] = "dark"
 
         # Handling permissions
