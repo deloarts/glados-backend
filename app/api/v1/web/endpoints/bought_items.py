@@ -518,7 +518,7 @@ def update_bought_item_optional_field(
 
 
 @router.put("/{item_id}/field/date/{field_name}", response_model=BoughtItemSchema)
-def update_bought_item_desired_delivery_date(
+def update_bought_item_date_field(
     *,
     db: Session = Depends(get_db),
     item_id: int,
