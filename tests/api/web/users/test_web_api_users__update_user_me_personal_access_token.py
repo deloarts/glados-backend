@@ -1,5 +1,5 @@
 """
-    TEST WEB API -- USERS -- READ USER ME -- PERSONAL ACCESS TOKEN
+    TEST WEB API -- USERS -- UPDATE USER ME -- PERSONAL ACCESS TOKEN
 """
 
 from typing import Dict
