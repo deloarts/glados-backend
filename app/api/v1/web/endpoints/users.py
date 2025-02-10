@@ -24,6 +24,7 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
+from locales import Locales
 from locales import lang
 from security import create_access_token
 from sqlalchemy.orm import Session
@@ -200,7 +201,7 @@ def update_user_personal_access_token(
 def update_user_me_language(
     *,
     db: Session = Depends(get_db),
-    language: str,
+    language: Locales,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the theme."""
