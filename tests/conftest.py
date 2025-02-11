@@ -36,6 +36,8 @@ def client() -> Generator:
 
 
 def pytest_sessionstart():
+    assert cfg.debug is True
+
     alembic_config = alembic.config.Config("alembic.ini")
     alembic.command.upgrade(alembic_config, "head")
 

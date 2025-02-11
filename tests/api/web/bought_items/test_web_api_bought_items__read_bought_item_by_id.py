@@ -42,13 +42,13 @@ def test_read_item_by_id__unauthorized(client: TestClient) -> None:
     """
 
     # ----------------------------------------------
-    # GET USER ME: METHODS TO TEST
+    # METHODS TO TEST
     # ----------------------------------------------
 
     response = client.get(f"{READ_ITEM_BY_ID_API}/1", headers={})
 
     # ----------------------------------------------
-    # GET OWN USER: VALIDATION
+    # VALIDATION
     # ----------------------------------------------
 
     assert response
@@ -76,20 +76,20 @@ def test_read_item_by_id__normal_user(client: TestClient, normal_user_token_head
     """
 
     # ----------------------------------------------
-    # GET ITEM: PREPARATION
+    # PREPARATION
     # ----------------------------------------------
 
     item = create_random_item(db)
 
     # ----------------------------------------------
-    # GET ITEM: METHODS TO TEST
+    # METHODS TO TEST
     # ----------------------------------------------
 
     response = client.get(f"{READ_ITEM_BY_ID_API}/{item.id}", headers=normal_user_token_headers)
     responseScheme = BoughtItemSchema(**response.json())
 
     # ----------------------------------------------
-    # GET ITEM: VALIDATION
+    # VALIDATION
     # ----------------------------------------------
 
     assert response
@@ -130,20 +130,20 @@ def test_read_item_by_id__super_user(client: TestClient, super_user_token_header
     """
 
     # ----------------------------------------------
-    # GET ITEM: PREPARATION
+    # PREPARATION
     # ----------------------------------------------
 
     item = create_random_item(db)
 
     # ----------------------------------------------
-    # GET ITEM: METHODS TO TEST
+    # METHODS TO TEST
     # ----------------------------------------------
 
     response = client.get(f"{READ_ITEM_BY_ID_API}/{item.id}", headers=super_user_token_headers)
     responseScheme = BoughtItemSchema(**response.json())
 
     # ----------------------------------------------
-    # GET ITEM: VALIDATION
+    # VALIDATION
     # ----------------------------------------------
 
     assert response
@@ -174,20 +174,20 @@ def test_read_item_by_id__admin_user(client: TestClient, admin_user_token_header
     """
 
     # ----------------------------------------------
-    # GET ITEM: PREPARATION
+    # PREPARATION
     # ----------------------------------------------
 
     item = create_random_item(db)
 
     # ----------------------------------------------
-    # GET ITEM: METHODS TO TEST
+    # METHODS TO TEST
     # ----------------------------------------------
 
     response = client.get(f"{READ_ITEM_BY_ID_API}/{item.id}", headers=admin_user_token_headers)
     responseScheme = BoughtItemSchema(**response.json())
 
     # ----------------------------------------------
-    # GET ITEM: VALIDATION
+    # VALIDATION
     # ----------------------------------------------
 
     assert response
@@ -213,20 +213,20 @@ def test_read_item_by_id__guest_user(client: TestClient, guest_user_token_header
     """
 
     # ----------------------------------------------
-    # GET ITEM: PREPARATION
+    # PREPARATION
     # ----------------------------------------------
 
     item = create_random_item(db)
 
     # ----------------------------------------------
-    # GET ITEM: METHODS TO TEST
+    # METHODS TO TEST
     # ----------------------------------------------
 
     response = client.get(f"{READ_ITEM_BY_ID_API}/{item.id}", headers=guest_user_token_headers)
     responseScheme = BoughtItemSchema(**response.json())
 
     # ----------------------------------------------
-    # GET ITEM: VALIDATION
+    # VALIDATION
     # ----------------------------------------------
 
     assert response
@@ -255,13 +255,13 @@ def test_read_item_by_id__normal_user__not_found(
     """
 
     # ----------------------------------------------
-    # GET ITEM: METHODS TO TEST
+    # METHODS TO TEST
     # ----------------------------------------------
 
     response = client.get(f"{READ_ITEM_BY_ID_API}/0", headers=normal_user_token_headers)
 
     # ----------------------------------------------
-    # GET ITEM: VALIDATION
+    # VALIDATION
     # ----------------------------------------------
 
     assert response.status_code == 404
@@ -285,13 +285,13 @@ def test_read_item_by_id__normal_user__invalid_query_param(client: TestClient, n
     """
 
     # ----------------------------------------------
-    # GET ITEM: METHODS TO TEST
+    # METHODS TO TEST
     # ----------------------------------------------
 
     response = client.get(f"{READ_ITEM_BY_ID_API}/A", headers=normal_user_token_headers)
 
     # ----------------------------------------------
-    # GET ITEM: VALIDATION
+    # VALIDATION
     # ----------------------------------------------
 
     assert response.status_code == 422
