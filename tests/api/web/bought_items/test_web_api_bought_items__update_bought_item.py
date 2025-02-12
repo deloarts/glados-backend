@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from tests.utils.bought_item import create_random_item
 from tests.utils.project import create_project
+from tests.utils.user import get_test_guest_user
 from tests.utils.user import get_test_super_user
 from tests.utils.user import get_test_user
 from tests.utils.utils import random_lower_string
@@ -208,6 +209,52 @@ def test_update_item_by_id__normal_user__not_found(
     assert response
     assert response.status_code == 404
     assert response.json()["detail"] == lang(get_test_user(db)).API.BOUGHTITEM.ITEM_NOT_FOUND
+
+
+def test_update_item_by_id__normal_user__invalid_id(
+    client: TestClient, normal_user_token_headers: Dict[str, str]
+) -> None:
+    """
+    Test updating an item by ID with an invalid ID for a normal user.
+
+    This test verifies that when a normal user attempts to update an item using
+    an invalid ID (non-integer), the API responds with a 422 Unprocessable Entity
+    status code and the appropriate error message indicating that the ID should
+    be a valid integer.
+
+    Args:
+        client (TestClient): The test client to simulate API requests.
+        normal_user_token_headers (Dict[str, str]): The headers containing the normal user's authentication token.
+
+    Asserts:
+        - The response is not None.
+        - The response status code is 422.
+        - The error detail indicates the location of the error is in the path.
+        - The error detail specifies that the 'item_id' should be a valid integer.
+        - The error message indicates that the input should be a valid integer and unable to parse string as an integer.
+    """
+
+    # ----------------------------------------------
+    # METHODS TO TEST
+    # ----------------------------------------------
+
+    response = client.put(
+        f"{UPDATE_ITEM_BY_ID}/A",
+        headers=normal_user_token_headers,
+        params={"status": cfg.items.bought.status.ordered},
+    )
+
+    # ----------------------------------------------
+    # VALIDATION
+    # ----------------------------------------------
+
+    assert response
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["loc"][0] == "path"
+    assert response.json()["detail"][0]["loc"][1] == "item_id"
+    assert (
+        response.json()["detail"][0]["msg"] == "Input should be a valid integer, unable to parse string as an integer"
+    )
 
 
 def test_update_item_by_id__normal_user__project_not_found(
@@ -721,4 +768,4 @@ def test_update_item_by_id__guest_user(
 
     assert response
     assert response.status_code == 403
-    assert response.json()["detail"] == lang(get_test_user(db)).API.BOUGHTITEM.UPDATE_NO_PERMISSION
+    assert response.json()["detail"] == lang(get_test_guest_user(db)).API.BOUGHTITEM.UPDATE_NO_PERMISSION
