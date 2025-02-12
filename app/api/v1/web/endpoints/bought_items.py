@@ -523,7 +523,7 @@ def update_bought_item_date_field(
     db: Session = Depends(get_db),
     item_id: int,
     field_name: DateFieldName,
-    date: datetime.date,
+    value: datetime.date,
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates a date field an item."""
@@ -540,7 +540,7 @@ def update_bought_item_date_field(
 
     try:
         updated_item = crud_bought_item.update_field(
-            db, db_obj_user=current_user, db_obj_item=item, db_field=db_field, value=date
+            db, db_obj_user=current_user, db_obj_item=item, db_field=db_field, value=value
         )
     except BoughtItemAlreadyPlannedError as e:
         raise HTTPException(
