@@ -10,6 +10,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 from typing import List
+from typing import Literal
 
 from api.deps import get_current_active_user
 from api.deps import verify_token
@@ -50,8 +51,6 @@ router = APIRouter()
 
 
 class RequiredFieldName(str, Enum):
-    quantity = "quantity"
-    unit = "unit"
     partnumber = "partnumber"
     order_number = "order-number"
     manufacturer = "manufacturer"
@@ -63,7 +62,7 @@ class OptionalFieldName(str, Enum):
     weblink = "weblink"
     note_general = "note-general"
     note_supplier = "note-supplier"
-    storage_place = "storage"
+    storage_place = "storage-place"
 
 
 class DateFieldName(str, Enum):
@@ -334,7 +333,7 @@ def update_bought_item_status(
     *,
     db: Session = Depends(get_db),
     item_id: int,
-    status: str,
+    status: Literal[*cfg.items.bought.status.values],  # type: ignore
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates the status of an item."""
@@ -409,6 +408,88 @@ def update_bought_item_project(
     return updated_item
 
 
+@router.put("/{item_id}/unit", response_model=BoughtItemSchema)
+def update_bought_item_unit(
+    *,
+    db: Session = Depends(get_db),
+    item_id: int,
+    unit: Literal[*cfg.items.bought.units.values],  # type: ignore
+    current_user: UserModel = Depends(get_current_active_user),
+) -> Any:
+    """Updates the unit of an item. The value must be set."""
+    item = crud_bought_item.get(db, id=item_id)
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail=lang(current_user).API.BOUGHTITEM.ITEM_NOT_FOUND)
+
+    try:
+        updated_item = crud_bought_item.update_required_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.unit, value=unit
+        )
+    except BoughtItemRequiredFieldNotSetError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.BOUGHTITEM.VALUE_MUST_BE_SET
+        ) from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.CANNOT_CHANGE_PLANNED_ITEM
+        ) from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.CANNOT_CHANGE_OTHER_USER_ITEM
+        ) from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.UPDATE_NO_PERMISSION
+        ) from e
+    except ProjectInactiveError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.PROJECT_INACTIVE
+        ) from e
+
+    return updated_item
+
+
+@router.put("/{item_id}/quantity", response_model=BoughtItemSchema)
+def update_bought_item_quantity(
+    *,
+    db: Session = Depends(get_db),
+    item_id: int,
+    quantity: int | float,
+    current_user: UserModel = Depends(get_current_active_user),
+) -> Any:
+    """Updates the quantity of an item. The value must be set."""
+    item = crud_bought_item.get(db, id=item_id)
+    if not item:
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail=lang(current_user).API.BOUGHTITEM.ITEM_NOT_FOUND)
+
+    try:
+        updated_item = crud_bought_item.update_required_field(
+            db, db_obj_user=current_user, db_obj_item=item, db_field=BoughtItemModel.quantity, value=quantity
+        )
+    except BoughtItemRequiredFieldNotSetError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_406_NOT_ACCEPTABLE, detail=lang(current_user).API.BOUGHTITEM.VALUE_MUST_BE_SET
+        ) from e
+    except BoughtItemAlreadyPlannedError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.CANNOT_CHANGE_PLANNED_ITEM
+        ) from e
+    except BoughtItemOfAnotherUserError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.CANNOT_CHANGE_OTHER_USER_ITEM
+        ) from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.UPDATE_NO_PERMISSION
+        ) from e
+    except ProjectInactiveError as e:
+        raise HTTPException(
+            status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.PROJECT_INACTIVE
+        ) from e
+
+    return updated_item
+
+
 @router.put("/{item_id}/field/required/{field_name}", response_model=BoughtItemSchema)
 def update_bought_item_required_field(
     *,
@@ -419,11 +500,7 @@ def update_bought_item_required_field(
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Updates a required field an item. The value must be set."""
-    if field_name is RequiredFieldName.quantity:
-        db_field = BoughtItemModel.quantity
-    elif field_name is RequiredFieldName.unit:
-        db_field = BoughtItemModel.unit
-    elif field_name is RequiredFieldName.partnumber:
+    if field_name is RequiredFieldName.partnumber:
         db_field = BoughtItemModel.partnumber
     elif field_name is RequiredFieldName.order_number:
         db_field = BoughtItemModel.order_number
