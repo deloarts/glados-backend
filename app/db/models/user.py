@@ -27,6 +27,7 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import false
 from sqlalchemy.sql import text
+from sqlalchemy.sql import true
 
 # For correct relations between the models, they must be imported with their native name.
 # This is the class name from the model itself.
@@ -66,12 +67,12 @@ class User(Base):
     work_hours_per_week: Mapped[float] = mapped_column(Float, nullable=True)
     auto_break_from: Mapped[time] = mapped_column(Time, nullable=True)
     auto_break_to: Mapped[time] = mapped_column(Time, nullable=True)
-    auto_logout: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    auto_logout: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
 
     # relations
     user_time: Mapped[List["UserTime"]] = relationship(
         "db.models.user_time.UserTime",
-        back_populates="user_id",
+        back_populates="user",
         foreign_keys="db.models.user_time.UserTime.user_id",
     )
 
