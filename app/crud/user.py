@@ -233,6 +233,16 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
             data["language"] = Locales.EN_GB.value
         if "theme" not in data or data["theme"] is None or data["theme"] not in Themes._value2member_map_:
             data["theme"] = "dark"
+        if "auto_break_from" in data and "auto_break_to" not in data or data["auto_break_to"] is None:
+            try:
+                data["auto_break_to"] = data["auto_break_from"]
+            except Exception as e:
+                ...
+        if "auto_break_to" in data and "auto_break_from" not in data or data["auto_break_from"] is None:
+            try:
+                data["auto_break_from"] = data["auto_break_to"]
+            except Exception as e:
+                ...
 
         # Handling permissions
         # Only system- and admin-users can edit permissions (ignore given permissions)

@@ -3,6 +3,7 @@
 """
 
 from datetime import datetime
+from datetime import time
 from typing import Optional
 
 from config import cfg
@@ -16,6 +17,12 @@ class UserBaseSchema(BaseModel):
     username: str = Field(..., min_length=1)
     full_name: str = Field(..., min_length=1)
     email: str = Field(..., min_length=1)
+
+    work_hours_per_week: Optional[float] = Field(default=None)
+    auto_break_from: Optional[time] = Field(default=None)
+    auto_break_to: Optional[time] = Field(default=None)
+    auto_logout: Optional[bool] = True
+
     is_active: Optional[bool] = True
     is_adminuser: Optional[bool] = False
     is_superuser: Optional[bool] = False
@@ -26,6 +33,7 @@ class UserCreateSchema(UserBaseSchema):
     """Properties to receive via API on creation."""
 
     is_systemuser: Optional[bool] = False
+
     password: str = Field(..., min_length=cfg.security.min_pw_len)
     rfid: Optional[str] = Field(None, min_length=8)
 
