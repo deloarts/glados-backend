@@ -10,6 +10,7 @@ from api.v1.web.endpoints import logs
 from api.v1.web.endpoints import projects
 from api.v1.web.endpoints import tools_stock_cut_1d
 from api.v1.web.endpoints import tools_stock_cut_2d
+from api.v1.web.endpoints import user_time
 from api.v1.web.endpoints import users
 from fastapi.routing import APIRouter
 
@@ -20,6 +21,7 @@ api_router.include_router(host.router, prefix="/host", tags=["host"])
 api_router.include_router(logs.router, prefix="/logs", tags=["logs"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
+api_router.include_router(user_time.router, prefix="/user-time", tags=["user-time"])
 api_router.include_router(bought_items.router, prefix="/items/bought", tags=["bought-items"])
 api_router.include_router(tools_stock_cut_1d.router, prefix="/tools/stock-cut", tags=["tools-stock-cut"])
 api_router.include_router(tools_stock_cut_2d.router, prefix="/tools/stock-cut", tags=["tools-stock-cut"])
