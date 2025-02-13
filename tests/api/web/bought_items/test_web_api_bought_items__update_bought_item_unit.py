@@ -313,8 +313,8 @@ def test_update_item_unit__super_user__of_another_user(
     # PREPARATION
     # ----------------------------------------------
 
-    t_super = get_test_super_user(db)
-    t_item = create_random_item(db, user=t_super)
+    t_user = get_test_user(db)
+    t_item = create_random_item(db, user=t_user)
 
     # ----------------------------------------------
     # METHODS TO TEST
@@ -366,8 +366,8 @@ def test_update_item_unit__admin_user__of_another_user(
     # PREPARATION
     # ----------------------------------------------
 
-    t_super = get_test_super_user(db)
-    t_item = create_random_item(db, user=t_super)
+    t_user = get_test_user(db)
+    t_item = create_random_item(db, user=t_user)
 
     # ----------------------------------------------
     # METHODS TO TEST

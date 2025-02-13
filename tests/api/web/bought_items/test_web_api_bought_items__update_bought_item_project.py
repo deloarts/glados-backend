@@ -658,8 +658,8 @@ def test_update_item_project__super_user__of_another_user(
     # ----------------------------------------------
 
     t_project = create_random_project(db)
-    t_super = get_test_super_user(db)
-    t_item = create_random_item(db, user=t_super)
+    t_user = get_test_user(db)
+    t_item = create_random_item(db, user=t_user)
     assert t_item not in t_project.bought_items
 
     # ----------------------------------------------
@@ -713,8 +713,8 @@ def test_update_item_project__admin_user__of_another_user(
     # ----------------------------------------------
 
     t_project = create_random_project(db)
-    t_super = get_test_super_user(db)
-    t_item = create_random_item(db, user=t_super)
+    t_user = get_test_user(db)
+    t_item = create_random_item(db, user=t_user)
     assert t_item not in t_project.bought_items
 
     # ----------------------------------------------
