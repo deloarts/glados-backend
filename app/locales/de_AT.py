@@ -52,12 +52,14 @@ class deAT:
             UPDATE_NO_PERMISSION = "Du kannst dieses Projekt nicht bearbeiten"
             DELETE_NO_PERMISSION = "Du kannst dieses Projekt nicht löschen"
             GUEST_USER_NO_PERMISSION = "Gastbenutzer können keine Projekte anlegen"
+            DESIGNATE_NOT_EXISTS = "Der zugeteilte Benutzer existiert nicht"
 
         class USER:
             ALREADY_EXISTS = "Der Benutzer existiert bereits im System"
             NOT_FOUND = "Dieser Benutzer existiert nicht"
             USERNAME_IN_USE = "Der Benutzername ist bereits vergeben"
             MAIL_IN_USE = "Die Mailaddresse ist bereits in Verwendung"
+            RFID_IN_USE = "Diese RFID ist bereits einem Konto zugeordnet"
             USERNAME_OR_MAIL_IN_USE = "Dieser Benutzername oder diese Mail sind in Verwendung"
             ID_NOT_FOUND = "Ein Benutzer mit dieser ID existiert nicht"
             PASSWORD_WEAK = "Dieses Passwort ist nicht sicher"

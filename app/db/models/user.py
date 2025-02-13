@@ -12,6 +12,8 @@ from typing import TYPE_CHECKING
 from typing import List
 from typing import Optional
 
+from const import SERVER_DEFAULT_LANGUAGE
+from const import SERVER_DEFAULT_THEME
 from db.base import Base
 from sqlalchemy import Boolean
 from sqlalchemy import DateTime
@@ -47,8 +49,8 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     hashed_rfid: Mapped[str] = mapped_column(String, unique=True, nullable=True)
-    language: Mapped[str] = mapped_column(String, nullable=False, server_default="enGB")
-    theme: Mapped[str] = mapped_column(String, nullable=True, server_default="dark")
+    language: Mapped[str] = mapped_column(String, nullable=False, server_default=SERVER_DEFAULT_LANGUAGE)
+    theme: Mapped[str] = mapped_column(String, nullable=True, server_default=SERVER_DEFAULT_THEME)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_adminuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())

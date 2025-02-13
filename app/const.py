@@ -4,7 +4,8 @@ Const
 
 import os
 import secrets
-import sys
+from enum import Enum
+from enum import unique
 from pathlib import Path
 
 VERSION = "0.13.1"
@@ -14,6 +15,8 @@ SYSTEM_USER = "system"
 
 # DB
 ALEMBIC_VERSION = "b8e97eca009f"
+SERVER_DEFAULT_LANGUAGE = "enGB"
+SERVER_DEFAULT_THEME = "dark"
 
 # Paths
 ROOT = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -35,11 +38,10 @@ N_MAX = 500  # around 1 million with n^2
 SOLVER_TIMEOUT = 10  # seconds
 
 # Security
-# generating a new secret_key on every application start ensures that all users
+# Non-persistent-key: generating a new secret_key on every application start ensures that all users
 # are logged out automatically when the app restarts.
-# if this is not wanted you have to add the secret key to the config.yml file
-# at position security/secret_key.
-# leave the value from the config-file empty if you want to use the secret_key from this module.
+# Persistent-key: the secret_key is stored in a file and is used on every application start. This ensures
+# that api-keys and user-api-keys are still valid after a restart.
 SECRET_KEY_NON_PERSISTENT = secrets.token_urlsafe(32)
 SECRET_KEY_PERSISTENT = None
 
@@ -54,3 +56,10 @@ else:
 
 if not SECRET_KEY_PERSISTENT:
     raise ValueError("Persistent secret key error: Key is None")
+
+
+# Themes
+@unique
+class Themes(str, Enum):
+    DARK = "dark"
+    LIGHT = "light"

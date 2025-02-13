@@ -13,10 +13,12 @@ from typing import Tuple
 from api.schemas.project import ProjectCreateSchema
 from api.schemas.project import ProjectUpdateSchema
 from crud.base import CRUDBase
+from crud.user import crud_user
 from db.models import ProjectModel
 from db.models import UserModel
 from exceptions import InsufficientPermissionsError
 from exceptions import ProjectAlreadyExistsError
+from exceptions import UserDoesNotExistError
 from multilog import log
 from sqlalchemy import desc
 from sqlalchemy import text
@@ -101,7 +103,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         """
         return db.query(self.model).filter(self.model.number == number).first()
 
-    def get_by_designated_user_id(self, db: Session, *, user_id: int) -> Optional[List[ProjectModel]]:
+    def get_by_designated_user_id(self, db: Session, *, user_id: int) -> List[ProjectModel]:
         """Returns all projects from the designated user.
 
         Args:
@@ -113,7 +115,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         """
         return db.query(self.model).filter(self.model.designated_user_id == user_id).all()
 
-    def get_by_product_number(self, db: Session, *, product_number: str) -> Optional[List[ProjectModel]]:
+    def get_by_product_number(self, db: Session, *, product_number: str) -> List[ProjectModel]:
         """Returns all projects from a product number.
 
         Args:
@@ -136,6 +138,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         Raises:
             ProjectAlreadyExistsError: A project with this number already exists.
             InsufficientPermissionsError: The user is not allowed to create the project.
+            UserDoesNotExistError: The designated user does not exist.
 
         Returns:
             ProjectModel: The newly created project as model.
@@ -151,6 +154,13 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
             raise InsufficientPermissionsError(
                 f"Blocked creation of a project ({obj_in.number}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to create, but has not enough permissions."
+            )
+
+        if not crud_user.get_by_id(db, id=obj_in.designated_user_id):
+            raise UserDoesNotExistError(
+                f"Blocked creation of a project ({obj_in.number}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to create, but the designated user does not "
+                "exist."
             )
 
         # When a normal user creates a project they cannot assign another user.
@@ -192,6 +202,7 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
         Raises:
             ProjectAlreadyExistsError: A project with the given number already exists.
             InsufficientPermissionsError: The user is not allowed to alter the data.
+            UserDoesNotExistError: The designated user does not exist.
 
         Returns:
             ProjectModel: The updated data as model.
@@ -207,6 +218,13 @@ class CRUDProject(CRUDBase[ProjectModel, ProjectCreateSchema, ProjectUpdateSchem
                 f"Blocked update of a project #{db_obj.id} ({db_obj.number}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update, but project with this number "
                 "already exists."
+            )
+
+        if "designated_user_id" not in data or not crud_user.get_by_id(db, id=data["designated_user_id"]):
+            raise UserDoesNotExistError(
+                f"Blocked update of a project #{db_obj.id} ({db_obj.number}): "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update, but the designated user does not "
+                "exist."
             )
 
         if (
