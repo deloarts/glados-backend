@@ -1,8 +1,8 @@
 """add_user_time_table
 
-Revision ID: db07c6ea0cc1
+Revision ID: 8723510377cf
 Revises: b8e97eca009f
-Create Date: 2025-02-13 09:40:17.681895
+Create Date: 2025-02-13 10:13:27.394990
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "db07c6ea0cc1"
+revision = "8723510377cf"
 down_revision = "b8e97eca009f"
 branch_labels = None
 depends_on = None
@@ -35,7 +35,7 @@ def upgrade() -> None:
         batch_op.add_column(sa.Column("work_hours_per_week", sa.Float(), nullable=True))
         batch_op.add_column(sa.Column("auto_break_from", sa.Time(), nullable=True))
         batch_op.add_column(sa.Column("auto_break_to", sa.Time(), nullable=True))
-        batch_op.add_column(sa.Column("auto_logout", sa.Boolean(), nullable=False))
+        batch_op.add_column(sa.Column("auto_logout", sa.Boolean(), server_default=sa.text("1"), nullable=False))
 
     # ### end Alembic commands ###
 
