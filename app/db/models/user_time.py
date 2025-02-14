@@ -6,12 +6,14 @@
 
 from datetime import datetime
 from typing import TYPE_CHECKING
+from typing import Optional
 
 from db.base import Base
 from sqlalchemy import DateTime
 from sqlalchemy import Float
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -33,6 +35,7 @@ class UserTime(Base):
     # data given by user
     login: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     logout: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    note: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # relations
     user_id: Mapped[int] = mapped_column(

@@ -18,9 +18,11 @@ from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
 from exceptions import InsufficientPermissionsError
 from exceptions import LoginTimeRequiredError
+from fastapi.encoders import jsonable_encoder
 from multilog import log
 from sqlalchemy import desc
 from sqlalchemy import text
+from sqlalchemy.orm import InstrumentedAttribute
 from sqlalchemy.orm import Session
 
 
@@ -100,6 +102,32 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             f"by {db_obj_user.username} (Name={db_obj_user.full_name}, ID={db_obj_user.id})."
         )
         return user_time
+
+    def update_field(
+        self,
+        db: Session,
+        *,
+        db_obj_user: UserModel,
+        db_obj: UserTimeModel,
+        db_field: InstrumentedAttribute,
+        value: bool | int | float | str | date,
+    ) -> UserTimeModel:
+        if db_obj_user.id != db_obj.user_id:
+            raise InsufficientPermissionsError(
+                f"Blocked update of user time entry #{db_obj.id}: "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to update an entry of another user."
+            )
+
+        field_name = db_field.description
+        field_value = jsonable_encoder(db_obj)[field_name]
+        if value == field_value:
+            return db_obj
+
+        data = {field_name: value}
+        obj = super().update(db, db_obj=db_obj, obj_in=data)
+
+        log.info(f"User {db_obj_user.username!r} updated the field {field_name!r} of their time logger #{db_obj.id}")
+        return obj
 
     def delete(self, db: Session, *, db_obj_user: UserModel, db_obj: UserTimeModel) -> Optional[UserTimeModel]:
         if db_obj_user.id != db_obj.user_id:

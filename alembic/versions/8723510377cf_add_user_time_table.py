@@ -5,6 +5,7 @@ Revises: b8e97eca009f
 Create Date: 2025-02-13 10:13:27.394990
 
 """
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -21,10 +22,11 @@ def upgrade() -> None:
     op.create_table(
         "user_time_table",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("duration_minutes", sa.Float(), nullable=True),
+        sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("login", sa.DateTime(), nullable=True),
         sa.Column("logout", sa.DateTime(), nullable=True),
-        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("duration_minutes", sa.Float(), nullable=True),
+        sa.Column("note", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(["user_id"], ["user_table.id"], name="fk_user_time_table_user_id_user_table"),
         sa.PrimaryKeyConstraint("id"),
     )

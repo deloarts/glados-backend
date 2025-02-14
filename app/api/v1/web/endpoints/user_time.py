@@ -3,6 +3,7 @@
 """
 
 from datetime import date
+from enum import Enum
 from typing import Any
 from typing import List
 
@@ -14,6 +15,7 @@ from api.schemas.user_time import UserTimeSchema
 from api.schemas.user_time import UserTimeUpdateSchema
 from crud.user_time import crud_user_time
 from db.models import UserModel
+from db.models import UserTimeModel
 from db.session import get_db
 from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
@@ -27,6 +29,10 @@ from multilog import log
 from sqlalchemy.orm import Session
 
 router = APIRouter()
+
+
+class OptionalFieldName(str, Enum):
+    note = "note"
 
 
 @router.get("/", response_model=PageSchema[UserTimeSchema])
@@ -111,6 +117,35 @@ def update_user_time_entry(
 ) -> Any:
     """Update a user time entry by id."""
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+@router.put("/{entry_id}/field/optional/{field_name}", response_model=UserTimeSchema)
+def update_user_time_optional_field(
+    *,
+    db: Session = Depends(get_db),
+    entry_id: int,
+    field_name: OptionalFieldName,
+    value: str,
+    current_user: UserModel = Depends(get_current_active_user),
+) -> Any:
+    """Updates an optional field an item. The value can be empty."""
+    if field_name is OptionalFieldName.note:
+        db_field = UserTimeModel.note
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Field not found")
+
+    time_entry = crud_user_time.get(db, id=entry_id)
+    if not time_entry:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found")
+
+    try:
+        updated_item = crud_user_time.update_field(
+            db, db_obj_user=current_user, db_obj=time_entry, db_field=db_field, value=value
+        )
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No permission to update entry") from e
+
+    return updated_item
 
 
 @router.delete("/{entry_id}", response_model=UserTimeSchema)

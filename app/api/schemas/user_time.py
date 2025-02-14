@@ -14,6 +14,7 @@ class UserTimeBaseSchema(BaseModel):
 
     login: Optional[datetime]
     logout: Optional[datetime]
+    note: Optional[str]
 
 
 class UserTimeCreateSchema(UserTimeBaseSchema):
