@@ -56,7 +56,7 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             )
         )
 
-        items: List[UserTimeModel] = query.order_by(desc(self.model.id)).offset(skip).limit(limit).all()
+        items: List[UserTimeModel] = query.order_by(desc(self.model.login)).offset(skip).limit(limit).all()
         total: int = query.count()
         return total, items
 
@@ -163,11 +163,50 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         if not db_obj:
             raise AlreadyLoggedOutError(f"User #{db_obj_user.id} tried to logout, but is already logged out.")
 
-        duration_minutes = (timestamp - db_obj.login.replace(tzinfo=UTC)).total_seconds() / 60
+        login_time = db_obj.login.replace(tzinfo=UTC)
+        logout_time = timestamp.replace(tzinfo=UTC)
+
+        if db_obj_user.auto_break_from and db_obj_user.auto_break_to:
+            auto_break_from = datetime.combine(date.today(), db_obj_user.auto_break_from).replace(tzinfo=UTC)
+            auto_break_to = datetime.combine(date.today(), db_obj_user.auto_break_to).replace(tzinfo=UTC)
+
+            if login_time < auto_break_from and logout_time > auto_break_to:
+
+                # Duration for time before auto-break (update db entry)
+                duration_minutes_bb = (auto_break_from - login_time).total_seconds() / 60
+                user_time_bb = super().update(
+                    db,
+                    db_obj=db_obj,
+                    obj_in={
+                        "logout": auto_break_from,
+                        "duration_minutes": duration_minutes_bb,
+                    },
+                )
+
+                # Duration for time after auto-break (new db entry)
+                duration_minutes_ab = (logout_time - auto_break_to).total_seconds() / 60
+                user_time_ab = UserTimeModel(
+                    **{
+                        "user_id": db_obj_user.id,
+                        "login": auto_break_to,
+                        "logout": logout_time,
+                        "duration_minutes": duration_minutes_ab,
+                    }
+                )
+                db.add(user_time_ab)
+                db.commit()
+                db.refresh(user_time_ab)
+                log.info(
+                    f"Logged out user #{db_obj_user.id} ({db_obj_user.full_name}) at {logout_time} with "
+                    "automatic break."
+                )
+                return user_time_ab
+
+        duration_minutes = (logout_time - login_time).total_seconds() / 60
         user_time = super().update(
-            db, db_obj=db_obj, obj_in={"logout": timestamp, "duration_minutes": duration_minutes}
+            db, db_obj=db_obj, obj_in={"logout": logout_time, "duration_minutes": duration_minutes}
         )
-        log.info(f"Logged out user #{db_obj_user.id} ({db_obj_user.full_name}) at {timestamp}.")
+        log.info(f"Logged out user #{db_obj_user.id} ({db_obj_user.full_name}) at {logout_time}.")
         return user_time
 
 
