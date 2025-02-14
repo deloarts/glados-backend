@@ -120,7 +120,18 @@ def update_user_time_entry(
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Update a user time entry by id."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    entry = crud_user_time.get(db, id=entry_id)
+    if not entry:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Time entry not found")
+
+    try:
+        update_entry = crud_user_time.update(db, db_obj_user=current_user, db_obj=entry, obj_in=data_in)
+    except LoginTimeRequiredError as e:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login time required") from e
+    except InsufficientPermissionsError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot update another users entry") from e
+
+    return update_entry
 
 
 @router.put("/{entry_id}/field/optional/{field_name}", response_model=UserTimeSchema)
