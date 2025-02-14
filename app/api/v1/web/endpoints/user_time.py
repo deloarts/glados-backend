@@ -20,6 +20,7 @@ from db.session import get_db
 from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
 from exceptions import InsufficientPermissionsError
+from exceptions import LoginTimeRequiredError
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -67,7 +68,10 @@ def create_user_time_entry(
     current_user: UserModel = Depends(get_current_active_user),
 ) -> Any:
     """Create new user time entry."""
-    raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+    try:
+        return crud_user_time.create(db, db_obj_user=current_user, obj_in=data_in)
+    except LoginTimeRequiredError as e:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login time required") from e
 
 
 @router.post("/login", response_model=UserTimeSchema)

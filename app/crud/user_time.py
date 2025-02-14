@@ -66,6 +66,10 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["user_id"] = db_obj_user.id
+        if obj_in.logout:
+            data["duration_minutes"] = (
+                obj_in.logout.replace(tzinfo=UTC) - obj_in.login.replace(tzinfo=UTC)
+            ).total_seconds() / 60
 
         db_obj = UserTimeModel(**data)
         db.add(db_obj)
@@ -85,7 +89,7 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             )
 
         if not obj_in.login:
-            raise LoginTimeRequiredError(f"Cannot create user time entry: No login date provided.")
+            raise LoginTimeRequiredError(f"Cannot update user time entry: No login date provided.")
         if obj_in.login and obj_in.logout:
             duration_minutes = (
                 obj_in.logout.replace(tzinfo=UTC) - obj_in.login.replace(tzinfo=UTC)
