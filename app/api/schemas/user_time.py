@@ -21,7 +21,6 @@ class UserTimeCreateSchema(UserTimeBaseSchema):
     """Properties to receive via API on creation."""
 
     login: datetime
-    logout: datetime
 
 
 class UserTimeUpdateSchema(UserTimeBaseSchema):

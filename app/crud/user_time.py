@@ -18,6 +18,7 @@ from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
 from exceptions import InsufficientPermissionsError
 from exceptions import LoginTimeRequiredError
+from exceptions import MustBeLoggedOut
 from fastapi.encoders import jsonable_encoder
 from multilog import log
 from sqlalchemy import desc
@@ -62,7 +63,10 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
 
     def create(self, db: Session, *, db_obj_user: UserModel, obj_in: UserTimeCreateSchema) -> UserTimeModel:
         if not obj_in.login:
-            raise LoginTimeRequiredError(f"Cannot create user time entry: No login date provided.")
+            raise LoginTimeRequiredError("Cannot create user time entry: No login date provided.")
+
+        if db.query(self.model).filter_by(user_id=db_obj_user.id, logout=None).first():
+            raise MustBeLoggedOut("Cannot create user time entry: User isn't logged out.")
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["user_id"] = db_obj_user.id
@@ -175,7 +179,6 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             auto_break_to = datetime.combine(date.today(), db_obj_user.auto_break_to).replace(tzinfo=UTC)
 
             if login_time < auto_break_from and logout_time > auto_break_to:
-
                 # Duration for time before auto-break (update db entry)
                 duration_minutes_bb = (auto_break_from - login_time).total_seconds() / 60
                 user_time_bb = super().update(

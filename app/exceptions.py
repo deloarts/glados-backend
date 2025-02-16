@@ -51,6 +51,10 @@ class UserTimeError(BaseError):
     ...
 
 
+class MustBeLoggedOut(UserTimeError):
+    ...
+
+
 class LoginTimeRequiredError(UserTimeError):
     ...
 
