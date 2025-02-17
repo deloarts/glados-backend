@@ -39,10 +39,10 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         skip: int | None = None,
         limit: int | None = None,
         id: str | None = None,  # pylint: disable=W0622
-        login_from: date | None = None,
-        login_to: date | None = None,
-        logout_from: date | None = None,
-        logout_to: date | None = None,
+        login_from: datetime | None = None,
+        login_to: datetime | None = None,
+        logout_from: datetime | None = None,
+        logout_to: datetime | None = None,
     ) -> Tuple[int, List[UserTimeModel]]:
         query = (
             db.query(self.model)

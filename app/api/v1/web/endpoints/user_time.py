@@ -3,6 +3,7 @@
 """
 
 from datetime import date
+from datetime import datetime
 from enum import Enum
 from typing import Any
 from typing import List
@@ -45,10 +46,10 @@ def read_user_time_entries(
     skip: int | None = None,
     limit: int | None = None,
     id: int | None = None,
-    login_from: date | None = None,
-    login_to: date | None = None,
-    logout_from: date | None = None,
-    logout_to: date | None = None,
+    login_from: datetime | None = None,
+    login_to: datetime | None = None,
+    logout_from: datetime | None = None,
+    logout_to: datetime | None = None,
 ) -> Any:
     """Retrieve all time entries for the current user."""
     kwargs = locals()
