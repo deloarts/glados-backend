@@ -128,11 +128,11 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         if (
             db.query(self.model)
             .filter_by(user_id=db_obj_user.id)
-            .filter(obj_in.login > self.model.login, obj_in.login < self.model.logout)
+            .filter(self.model.id != db_obj.id, obj_in.login > self.model.login, obj_in.login < self.model.logout)
             .all()
             or db.query(self.model)
             .filter_by(user_id=db_obj_user.id)
-            .filter(obj_in.logout < self.model.logout, obj_in.logout > self.model.login)
+            .filter(self.model.id != db_obj.id, obj_in.logout < self.model.logout, obj_in.logout > self.model.login)
             .all()
         ):
             raise EntryOverlapsError("Cannot create user time entry: Overlaps with existing entry.")
