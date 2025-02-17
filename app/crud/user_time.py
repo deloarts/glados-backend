@@ -16,6 +16,7 @@ from db.models import UserModel
 from db.models import UserTimeModel
 from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
+from exceptions import EntryOverlapsError
 from exceptions import InsufficientPermissionsError
 from exceptions import LoginTimeRequiredError
 from exceptions import LogoutBeforeLoginError
@@ -79,6 +80,21 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         if obj_in.logout and obj_in.logout < obj_in.login:
             raise LogoutBeforeLoginError("Cannot create user time entry: Login time is before logout.")
 
+        if (
+            db.query(self.model)
+            .filter_by(user_id=db_obj_user.id)
+            .filter(obj_in.login > self.model.login, obj_in.login < self.model.logout)
+            .all()
+            or db.query(self.model)
+            .filter_by(user_id=db_obj_user.id)
+            .filter(obj_in.logout < self.model.logout, obj_in.logout > self.model.login)
+            .all()
+        ):
+            raise EntryOverlapsError("Cannot create user time entry: Overlaps with existing entry.")
+
+        # if obj_in.logout and obj_in.logout.date() != obj_in.login.date():
+        #     raise NotSameDayError("Cannot create user time entry: Logout date differs from login date.")
+
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["user_id"] = db_obj_user.id
         if obj_in.logout:
@@ -107,7 +123,22 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             raise LoginTimeRequiredError(f"Cannot update user time entry: No login date provided.")
 
         if obj_in.logout and obj_in.logout < obj_in.login:
-            raise LogoutBeforeLoginError("Cannot create user time entry: Login time is before logout.")
+            raise LogoutBeforeLoginError("Cannot update user time entry: Login time is before logout.")
+
+        if (
+            db.query(self.model)
+            .filter_by(user_id=db_obj_user.id)
+            .filter(obj_in.login > self.model.login, obj_in.login < self.model.logout)
+            .all()
+            or db.query(self.model)
+            .filter_by(user_id=db_obj_user.id)
+            .filter(obj_in.logout < self.model.logout, obj_in.logout > self.model.login)
+            .all()
+        ):
+            raise EntryOverlapsError("Cannot create user time entry: Overlaps with existing entry.")
+
+        # if obj_in.logout and obj_in.logout.date() != obj_in.login.date():
+        #     raise NotSameDayError("Cannot update user time entry: Logout date differs from login date.")
 
         if obj_in.login and obj_in.logout:
             duration_minutes = (

@@ -20,10 +20,12 @@ from db.models import UserTimeModel
 from db.session import get_db
 from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
+from exceptions import EntryOverlapsError
 from exceptions import InsufficientPermissionsError
 from exceptions import LoginTimeRequiredError
 from exceptions import LogoutBeforeLoginError
 from exceptions import MustBeLoggedOut
+from exceptions import NotSameDayError
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
@@ -77,6 +79,14 @@ def create_user_time_entry(
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login time required") from e
     except LogoutBeforeLoginError as e:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login cannot be after logout") from e
+    except NotSameDayError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Logout date differs from login date"
+        ) from e
+    except EntryOverlapsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="The given time overlaps with an existing entry"
+        ) from e
     except MustBeLoggedOut as e:
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Cannot create entry while logged in"
@@ -139,6 +149,14 @@ def update_user_time_entry(
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login time required") from e
     except LogoutBeforeLoginError as e:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login cannot be after logout") from e
+    except NotSameDayError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Logout date differs from login date"
+        ) from e
+    except EntryOverlapsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="The given time overlaps with an existing entry"
+        ) from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot update another users entry") from e
 

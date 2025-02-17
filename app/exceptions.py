@@ -51,6 +51,14 @@ class UserTimeError(BaseError):
     ...
 
 
+class EntryOverlapsError(UserTimeError):
+    ...
+
+
+class NotSameDayError(UserTimeError):
+    ...
+
+
 class LogoutBeforeLoginError(BaseError):
     ...
 
