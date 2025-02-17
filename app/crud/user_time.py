@@ -18,6 +18,7 @@ from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
 from exceptions import InsufficientPermissionsError
 from exceptions import LoginTimeRequiredError
+from exceptions import LogoutBeforeLoginError
 from exceptions import MustBeLoggedOut
 from fastapi.encoders import jsonable_encoder
 from multilog import log
@@ -61,12 +62,22 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         total: int = query.count()
         return total, items
 
+    def get_logged_in(self, db: Session) -> List[Tuple[UserModel, UserTimeModel]]:
+        obj_out: List[Tuple[UserModel, UserTimeModel]] = []
+        entries = db.query(self.model).filter_by(logout=None).all()
+        for entry in entries:
+            obj_out.append((entry.user, entry))
+        return obj_out
+
     def create(self, db: Session, *, db_obj_user: UserModel, obj_in: UserTimeCreateSchema) -> UserTimeModel:
         if not obj_in.login:
             raise LoginTimeRequiredError("Cannot create user time entry: No login date provided.")
 
         if db.query(self.model).filter_by(user_id=db_obj_user.id, logout=None).first():
             raise MustBeLoggedOut("Cannot create user time entry: User isn't logged out.")
+
+        if obj_in.logout and obj_in.logout < obj_in.login:
+            raise LogoutBeforeLoginError("Cannot create user time entry: Login time is before logout.")
 
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["user_id"] = db_obj_user.id
@@ -94,6 +105,10 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
 
         if not obj_in.login:
             raise LoginTimeRequiredError(f"Cannot update user time entry: No login date provided.")
+
+        if obj_in.logout and obj_in.logout < obj_in.login:
+            raise LogoutBeforeLoginError("Cannot create user time entry: Login time is before logout.")
+
         if obj_in.login and obj_in.logout:
             duration_minutes = (
                 obj_in.logout.replace(tzinfo=UTC) - obj_in.login.replace(tzinfo=UTC)

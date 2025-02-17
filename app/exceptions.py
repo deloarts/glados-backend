@@ -51,6 +51,14 @@ class UserTimeError(BaseError):
     ...
 
 
+class LogoutBeforeLoginError(BaseError):
+    ...
+
+
+class LogoutNotSameDayError(BaseError):
+    ...
+
+
 class MustBeLoggedOut(UserTimeError):
     ...
 

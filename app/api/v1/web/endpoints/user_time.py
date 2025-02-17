@@ -21,6 +21,7 @@ from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
 from exceptions import InsufficientPermissionsError
 from exceptions import LoginTimeRequiredError
+from exceptions import LogoutBeforeLoginError
 from exceptions import MustBeLoggedOut
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -73,6 +74,8 @@ def create_user_time_entry(
         return crud_user_time.create(db, db_obj_user=current_user, obj_in=data_in)
     except LoginTimeRequiredError as e:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login time required") from e
+    except LogoutBeforeLoginError as e:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login cannot be after logout") from e
     except MustBeLoggedOut as e:
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Cannot create entry while logged in"
@@ -133,6 +136,8 @@ def update_user_time_entry(
         update_entry = crud_user_time.update(db, db_obj_user=current_user, db_obj=entry, obj_in=data_in)
     except LoginTimeRequiredError as e:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login time required") from e
+    except LogoutBeforeLoginError as e:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Login cannot be after logout") from e
     except InsufficientPermissionsError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot update another users entry") from e
 
