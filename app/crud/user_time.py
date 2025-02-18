@@ -32,6 +32,15 @@ from sqlalchemy.orm import Session
 class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateSchema]):
     """CRUDUserTime class. Descendent of the CRUDBase class."""
 
+    def get(self, db: Session, id: int, db_obj_user: UserModel) -> Optional[UserTimeModel]:
+        db_obj = super().get(db, id=id)
+        if db_obj and db_obj_user.id != db_obj.user_id:
+            raise InsufficientPermissionsError(
+                f"Blocked reading of user time entry #{db_obj.id}: "
+                f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to read an entry of another user."
+            )
+        return db_obj
+
     def get_multi(
         self,
         db: Session,
