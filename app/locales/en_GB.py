@@ -65,3 +65,17 @@ class enGB:
             PASSWORD_WEAK = "This password is too weak"
             UPDATE_NO_PERMISSION = "You are not allowed to update this user"
             TOKEN_GUEST_NO_PERMISSION = "A guest user cannot create an access token"
+
+        class USERTIME:
+            LOGIN_TIME_REQUIRED = "The login time is required"
+            LOGIN_CANNOT_BE_AFTER_LOGOUT = "The login time cannot be after the logout time"
+            LOGOUT_DATE_DIFFERS_FROM_LOGIN = "Logout date differs from login date"
+            TIME_OVERLAPS_WITH_ENTRY = "The given time overlaps wih an existing entry"
+            MUST_BE_LOGGED_OUT = "Cannot create entry while you are logged in"
+            ALREADY_LOGGED_IN = "You're already logged in"
+            ALREADY_LOGGED_OUT = "You're already logged out"
+            CANNOT_READ_OTHER_USERS_ENTRY = "You're not allowed to read another users entry"
+            CANNOT_UPDATE_OTHER_USERS_ENTRY = "You're not allowed to change another users entry"
+            CANNOT_DELETE_OTHER_USERS_ENTRY = "You're not allowed to delete another users entry"
+            ENTRY_NOT_FOUND = "Time entry not found"
+            URL_FIELD_NAME_NOT_SUPPORTED = "The given field name is not supported"
