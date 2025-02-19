@@ -18,6 +18,7 @@ from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
 from exceptions import EntryOverlapsError
 from exceptions import InsufficientPermissionsError
+from exceptions import LoginNotTodayError
 from exceptions import LoginTimeRequiredError
 from exceptions import LogoutBeforeLoginError
 from exceptions import MustBeLoggedOut
@@ -72,12 +73,24 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         total: int = query.count()
         return total, items
 
-    def get_logged_in(self, db: Session) -> List[Tuple[UserModel, UserTimeModel]]:
+    def get_logged_in(self, db: Session, db_obj_user: UserModel | None = None) -> List[Tuple[UserModel, UserTimeModel]]:
         obj_out: List[Tuple[UserModel, UserTimeModel]] = []
-        entries = db.query(self.model).filter_by(logout=None).all()
+        entries = (
+            db.query(self.model)
+            .filter_by(user_id=db_obj_user.id if db_obj_user else self.model.user_id, logout=None)
+            .all()
+        )
         for entry in entries:
             obj_out.append((entry.user, entry))
         return obj_out
+
+    def get_last_login(self, db: Session, db_obj_user: UserModel) -> Optional[UserTimeModel]:
+        return (
+            db.query(self.model).filter_by(user_id=db_obj_user.id, logout=None).order_by(desc(self.model.login)).first()
+        )
+
+    def get_last_logout(self, db: Session, db_obj_user: UserModel) -> Optional[UserTimeModel]:
+        return db.query(self.model).filter_by(user_id=db_obj_user.id).order_by(desc(self.model.logout)).first()
 
     def create(self, db: Session, *, db_obj_user: UserModel, obj_in: UserTimeCreateSchema) -> UserTimeModel:
         if not obj_in.login:
@@ -88,6 +101,9 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
 
         if obj_in.logout and obj_in.logout < obj_in.login:
             raise LogoutBeforeLoginError("Cannot create user time entry: Login time is before logout.")
+
+        if not obj_in.logout and obj_in.login.date() != date.today():
+            raise LoginNotTodayError("Cannot create user time entry: Login must be today when no logout is provided.")
 
         if db.query(self.model).filter_by(user_id=db_obj_user.id).filter(
             obj_in.login > self.model.login, obj_in.login < self.model.logout

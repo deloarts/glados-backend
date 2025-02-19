@@ -5,6 +5,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Any
+from typing import Optional
 
 from api.deps import get_current_active_user
 from api.schemas import PageSchema
@@ -19,6 +20,7 @@ from exceptions import AlreadyLoggedInError
 from exceptions import AlreadyLoggedOutError
 from exceptions import EntryOverlapsError
 from exceptions import InsufficientPermissionsError
+from exceptions import LoginNotTodayError
 from exceptions import LoginTimeRequiredError
 from exceptions import LogoutBeforeLoginError
 from exceptions import MustBeLoggedOut
@@ -61,6 +63,20 @@ def read_user_time_entries(
     )
 
 
+@router.get("/login", response_model=UserTimeSchema)
+def read_user_time_login_entry(
+    db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_active_user)
+) -> Any:
+    """Get the current users login time, if they are logged in."""
+    logged_in_entry = crud_user_time.get_last_login(db, db_obj_user=current_user)
+    if not logged_in_entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=lang(current_user).API.USERTIME.ALREADY_LOGGED_OUT,
+        )
+    return logged_in_entry
+
+
 @router.post("/", response_model=UserTimeSchema)
 def create_user_time_entry(
     *,
@@ -85,6 +101,11 @@ def create_user_time_entry(
         raise HTTPException(
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail=lang(current_user).API.USERTIME.LOGOUT_DATE_DIFFERS_FROM_LOGIN,
+        ) from e
+    except LoginNotTodayError as e:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=lang(current_user).API.USERTIME.LOGIN_MUST_BE_TODAY,
         ) from e
     except EntryOverlapsError as e:
         raise HTTPException(

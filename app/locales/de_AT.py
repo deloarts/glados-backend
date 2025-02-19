@@ -70,6 +70,7 @@ class deAT:
             LOGIN_TIME_REQUIRED = "Anmeldezeit erforderlich"
             LOGIN_CANNOT_BE_AFTER_LOGOUT = "Anmeldung kann nicht nach Abmeldung erfolgen"
             LOGOUT_DATE_DIFFERS_FROM_LOGIN = "Abmeldedatum weicht vom Anmeldedatum ab"
+            LOGIN_MUST_BE_TODAY = "Das Anmeldedatum muss heute sein, wenn keine Abmeldezeit angegeben ist"
             TIME_OVERLAPS_WITH_ENTRY = "Zeit überschneidet sich mit einem Eintrag"
             MUST_BE_LOGGED_OUT = "Muss abgemeldet sein"
             ALREADY_LOGGED_IN = "Bereits angemeldet"

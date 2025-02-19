@@ -70,6 +70,7 @@ class enGB:
             LOGIN_TIME_REQUIRED = "The login time is required"
             LOGIN_CANNOT_BE_AFTER_LOGOUT = "The login time cannot be after the logout time"
             LOGOUT_DATE_DIFFERS_FROM_LOGIN = "Logout date differs from login date"
+            LOGIN_MUST_BE_TODAY = "The login date must be today when no logout time is given"
             TIME_OVERLAPS_WITH_ENTRY = "The given time overlaps wih an existing entry"
             MUST_BE_LOGGED_OUT = "Cannot create entry while you are logged in"
             ALREADY_LOGGED_IN = "You're already logged in"
