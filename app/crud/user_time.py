@@ -34,6 +34,19 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
     """CRUDUserTime class. Descendent of the CRUDBase class."""
 
     def get(self, db: Session, id: int, db_obj_user: UserModel) -> Optional[UserTimeModel]:
+        """Returns a user time entry by its ID for the given user.
+
+        Args:
+            db (Session): The DB session.
+            id (int): The user-time entry ID.
+            db_obj_user (UserModel): The user from which to lookup the time entry.
+
+        Raises:
+            InsufficientPermissionsError: Raised if the entry doesn't belong to the user.
+
+        Returns:
+            Optional[UserTimeModel]: The user time entry if found, else None.
+        """
         db_obj = super().get(db, id=id)
         if db_obj and db_obj_user.id != db_obj.user_id:
             raise InsufficientPermissionsError(
@@ -55,6 +68,16 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         logout_from: datetime | None = None,
         logout_to: datetime | None = None,
     ) -> Tuple[int, List[UserTimeModel]]:
+        """Returns multiple user time entries for the given user. Args after the asterisk are db-filters.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user from whom to read the time entries.
+
+        Returns:
+            Tuple[int, List[UserTimeModel]]: The total number of entries found with the given filter-args and the \
+                entries as list.
+        """
         query = (
             db.query(self.model)
             .filter_by(
@@ -74,6 +97,17 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         return total, items
 
     def get_logged_in(self, db: Session, db_obj_user: UserModel | None = None) -> List[Tuple[UserModel, UserTimeModel]]:
+        """Returns all logged-in users and their corresponding time entry.
+        Note: Logged-in means that the time entry has no logout-times set.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel | None, optional): If provided, only the logged-in user-time entry of this user is \
+                returned. Defaults to None.
+
+        Returns:
+            List[Tuple[UserModel, UserTimeModel]]: A list of tuples containing the logged-in user and their time entry.
+        """
         obj_out: List[Tuple[UserModel, UserTimeModel]] = []
         entries = (
             db.query(self.model)
@@ -85,14 +119,50 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         return obj_out
 
     def get_last_login(self, db: Session, db_obj_user: UserModel) -> Optional[UserTimeModel]:
+        """Returns the last user-time entry where the logout time is not set (the user is logged in).
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user from whom to get the last login time.
+
+        Returns:
+            Optional[UserTimeModel]: The last user-time entry where the user is logged in.
+        """
         return (
             db.query(self.model).filter_by(user_id=db_obj_user.id, logout=None).order_by(desc(self.model.login)).first()
         )
 
     def get_last_logout(self, db: Session, db_obj_user: UserModel) -> Optional[UserTimeModel]:
+        """Returns the last user-time entry where both login and logout times are set.
+        Warning: This doesn't necessarily mean that the user is currently logged out.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user from whom to get the entry.
+
+        Returns:
+            Optional[UserTimeModel]: The last user-time entry where the user is logged out.
+        """
         return db.query(self.model).filter_by(user_id=db_obj_user.id).order_by(desc(self.model.logout)).first()
 
     def create(self, db: Session, *, db_obj_user: UserModel, obj_in: UserTimeCreateSchema) -> UserTimeModel:
+        """Creates a user time entry for the given user.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user for whom to create the time entry.
+            obj_in (UserTimeCreateSchema): The data to create the time entry with.
+
+        Raises:
+            LoginTimeRequiredError: Raised when no login time is provided.
+            MustBeLoggedOut: Raised when the user is already logged in.
+            LogoutBeforeLoginError: Raised when the logout time is before the login time.
+            LoginNotTodayError: Raised when the login time is not today and no logout time is provided.
+            EntryOverlapsError: Raised when the new entry overlaps with an existing entry.
+
+        Returns:
+            UserTimeModel: The created user time entry.
+        """
         if not obj_in.login:
             raise LoginTimeRequiredError("Cannot create user time entry: No login date provided.")
 
@@ -119,9 +189,6 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         ):
             raise EntryOverlapsError("Cannot create user time entry: Overlaps with existing entry.")
 
-        # if obj_in.logout and obj_in.logout.date() != obj_in.login.date():
-        #     raise NotSameDayError("Cannot create user time entry: Logout date differs from login date.")
-
         data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump(exclude_unset=True)
         data["user_id"] = db_obj_user.id
         if obj_in.logout:
@@ -140,6 +207,23 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
     def update(
         self, db: Session, *, db_obj_user: UserModel, db_obj: UserTimeModel, obj_in: UserTimeUpdateSchema
     ) -> UserTimeModel:
+        """Updates a user time entry for the given user.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user who wants to update the time entry.
+            db_obj (UserTimeModel): The time entry to update.
+            obj_in (UserTimeUpdateSchema): The data to update the time entry with.
+
+        Raises:
+            InsufficientPermissionsError: Raised when the user tries to update an entry of another user.
+            LoginTimeRequiredError: Raised when no login time is provided.
+            LogoutBeforeLoginError: Raised when the logout time is before the login time.
+            EntryOverlapsError: Raised when the new entry overlaps with an existing entry.
+
+        Returns:
+            UserTimeModel: The updated user time entry.
+        """
         if db_obj_user.id != db_obj.user_id:
             raise InsufficientPermissionsError(
                 f"Blocked update of user time entry #{db_obj.id}: "
@@ -162,9 +246,6 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             .all()
         ):
             raise EntryOverlapsError("Cannot create user time entry: Overlaps with existing entry.")
-
-        # if obj_in.logout and obj_in.logout.date() != obj_in.login.date():
-        #     raise NotSameDayError("Cannot update user time entry: Logout date differs from login date.")
 
         if obj_in.login and obj_in.logout:
             duration_minutes = (
@@ -192,6 +273,21 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         db_field: InstrumentedAttribute,
         value: bool | int | float | str | date,
     ) -> UserTimeModel:
+        """Updates a single field of a user time entry for the given user.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user who wants to update the time entry.
+            db_obj (UserTimeModel): The time entry to update.
+            db_field (InstrumentedAttribute): The field to update.
+            value (bool | int | float | str | date): The new value for the field.
+
+        Raises:
+            InsufficientPermissionsError: Raised when the user tries to update an entry of another user.
+
+        Returns:
+            UserTimeModel: The updated user time entry.
+        """
         if db_obj_user.id != db_obj.user_id:
             raise InsufficientPermissionsError(
                 f"Blocked update of user time entry #{db_obj.id}: "
@@ -210,6 +306,19 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         return obj
 
     def delete(self, db: Session, *, db_obj_user: UserModel, db_obj: UserTimeModel) -> Optional[UserTimeModel]:
+        """Deletes a user time entry for the given user.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user who wants to delete the time entry.
+            db_obj (UserTimeModel): The time entry to delete.
+
+        Raises:
+            InsufficientPermissionsError: Raised when the user tries to delete an entry of another user.
+
+        Returns:
+            Optional[UserTimeModel]: Returns the deleted user time entry. If None, the item was not found.
+        """
         if db_obj_user.id != db_obj.user_id:
             raise InsufficientPermissionsError(
                 f"Blocked deletion of user time entry #{db_obj.id}: "
@@ -221,6 +330,19 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         return deleted_entry
 
     def login(self, db: Session, *, db_obj_user: UserModel, timestamp: datetime | None = None) -> UserTimeModel:
+        """Logs in a user.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user to log in.
+            timestamp (datetime | None, optional): The login-time. If None, UTC-now will be used. Defaults to None.
+
+        Raises:
+            AlreadyLoggedInError: Raised when the user is already logged in.
+
+        Returns:
+            UserTimeModel: The created user time entry.
+        """
         if not timestamp:
             timestamp = datetime.now(UTC)
 
@@ -236,6 +358,20 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
         return db_obj
 
     def logout(self, db: Session, *, db_obj_user: UserModel, timestamp: datetime | None = None) -> UserTimeModel:
+        """Logs out a user.
+        Automatically calculates the break, if the user has an automatic break set.
+
+        Args:
+            db (Session): The DB session.
+            db_obj_user (UserModel): The user to log out.
+            timestamp (datetime | None, optional): The logout-time. If None, UTC-now will be used. Defaults to None.
+
+        Raises:
+            AlreadyLoggedOutError: Raised when the user is already logged out.
+
+        Returns:
+            UserTimeModel: The created user time entry.
+        """
         if not timestamp:
             timestamp = datetime.now(UTC)
 
@@ -253,7 +389,7 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             if login_time < auto_break_from and logout_time > auto_break_to:
                 # Duration for time before auto-break (update db entry)
                 duration_minutes_bb = (auto_break_from - login_time).total_seconds() / 60
-                user_time_bb = super().update(
+                user_time_before_break = super().update(
                     db,
                     db_obj=db_obj,
                     obj_in={
@@ -264,7 +400,7 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
 
                 # Duration for time after auto-break (new db entry)
                 duration_minutes_ab = (logout_time - auto_break_to).total_seconds() / 60
-                user_time_ab = UserTimeModel(
+                user_time_after_break = UserTimeModel(
                     **{
                         "user_id": db_obj_user.id,
                         "login": auto_break_to,
@@ -272,14 +408,14 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
                         "duration_minutes": duration_minutes_ab,
                     }
                 )
-                db.add(user_time_ab)
+                db.add(user_time_after_break)
                 db.commit()
-                db.refresh(user_time_ab)
+                db.refresh(user_time_after_break)
                 log.info(
                     f"Logged out user #{db_obj_user.id} ({db_obj_user.full_name}) at {logout_time} with "
                     "automatic break."
                 )
-                return user_time_ab
+                return user_time_after_break
 
         duration_minutes = (logout_time - login_time).total_seconds() / 60
         user_time = super().update(

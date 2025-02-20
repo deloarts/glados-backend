@@ -59,6 +59,7 @@ def login_user(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user_personal_access_token),
 ) -> Any:
+    """Logs in the current user now (UTC)."""
     try:
         return crud_user_time.login(db, db_obj_user=current_user)
     except AlreadyLoggedInError as e:
@@ -81,6 +82,7 @@ def logout_user(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_user_personal_access_token),
 ) -> Any:
+    """Logs out the current user now (UTC)."""
     try:
         return crud_user_time.logout(db, db_obj_user=current_user)
     except AlreadyLoggedOutError as e:

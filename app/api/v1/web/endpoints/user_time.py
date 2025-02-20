@@ -5,9 +5,10 @@
 from datetime import datetime
 from enum import Enum
 from typing import Any
-from typing import List, Tuple
 
 from api.deps import get_current_active_user
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from api.schemas import PageSchema
 from api.schemas.user_time import UserTimeCreateSchema
 from api.schemas.user_time import UserTimeSchema
@@ -39,7 +40,13 @@ class OptionalFieldName(str, Enum):
     note = "note"
 
 
-@router.get("/", response_model=PageSchema[UserTimeSchema])
+@router.get(
+    "/",
+    response_model=PageSchema[UserTimeSchema],
+    responses={
+        **HTTP_401_RESPONSE,
+    },
+)
 def read_user_time_entries(
     db: Session = Depends(get_db),
     db_obj_user: UserModel = Depends(get_current_active_user),
@@ -63,7 +70,14 @@ def read_user_time_entries(
     )
 
 
-@router.get("/login", response_model=UserTimeSchema)
+@router.get(
+    "/login",
+    response_model=UserTimeSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "User is logged out"},
+    },
+)
 def read_user_time_login_entry(
     db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_active_user)
 ) -> Any:
@@ -77,7 +91,25 @@ def read_user_time_login_entry(
     return logged_in_entry
 
 
-@router.post("/", response_model=UserTimeSchema)
+@router.post(
+    "/",
+    response_model=UserTimeSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_406_NOT_ACCEPTABLE: {
+            "model": ResponseModelDetail,
+            "description": (
+                "There is an issue with the given time:\n"
+                " - Login time is not given\n"
+                " - Logout time is before login time\n"
+                " - Logout date differs from login date\n"
+                " - Login must be today, if no logout time is given\n"
+                " - Time overlaps with another entry"
+                " - Must be logged out to log in"
+            ),
+        },
+    },
+)
 def create_user_time_entry(
     *,
     db: Session = Depends(get_db),
@@ -119,7 +151,14 @@ def create_user_time_entry(
         ) from e
 
 
-@router.post("/login", response_model=UserTimeSchema)
+@router.post(
+    "/login",
+    response_model=UserTimeSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "User is already logged in"},
+    },
+)
 def login_user(
     *,
     db: Session = Depends(get_db),
@@ -134,7 +173,14 @@ def login_user(
         ) from e
 
 
-@router.post("/logout", response_model=UserTimeSchema)
+@router.post(
+    "/logout",
+    response_model=UserTimeSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "User is already logged out"},
+    },
+)
 def logout_user(
     *,
     db: Session = Depends(get_db),
@@ -149,7 +195,15 @@ def logout_user(
         ) from e
 
 
-@router.get("/{entry_id}", response_model=UserTimeSchema)
+@router.get(
+    "/{entry_id}",
+    response_model=UserTimeSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "Cannot read other users entry"},
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Entry with this ID not found"},
+    },
+)
 def read_user_time_entry_by_id(
     entry_id: int,
     current_user: UserModel = Depends(get_current_active_user),
@@ -171,7 +225,25 @@ def read_user_time_entry_by_id(
     return entry
 
 
-@router.put("/{entry_id}", response_model=UserTimeSchema)
+@router.put(
+    "/{entry_id}",
+    response_model=UserTimeSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "Cannot handle other users entry"},
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Entry with this ID not found"},
+        status.HTTP_406_NOT_ACCEPTABLE: {
+            "model": ResponseModelDetail,
+            "description": (
+                "There is an issue with the given time:\n"
+                " - Login time is not given\n"
+                " - Logout time is before login time\n"
+                " - Logout date differs from login date\n"
+                " - Time overlaps with another entry"
+            ),
+        },
+    },
+)
 def update_user_time_entry(
     *,
     db: Session = Depends(get_db),
@@ -224,7 +296,19 @@ def update_user_time_entry(
     return update_entry
 
 
-@router.put("/{entry_id}/field/optional/{field_name}", response_model=UserTimeSchema)
+@router.put(
+    "/{entry_id}/field/optional/{field_name}",
+    response_model=UserTimeSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "Cannot handle other users entry"},
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Entry with this ID not found"},
+        status.HTTP_405_METHOD_NOT_ALLOWED: {
+            "model": ResponseModelDetail,
+            "description": "The given field name is not supported",
+        },
+    },
+)
 def update_user_time_optional_field(
     *,
     db: Session = Depends(get_db),
@@ -268,7 +352,15 @@ def update_user_time_optional_field(
     return updated_item
 
 
-@router.delete("/{entry_id}", response_model=UserTimeSchema)
+@router.delete(
+    "/{entry_id}",
+    response_model=UserTimeSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "Cannot handle other users entry"},
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Entry with this ID not found"},
+    },
+)
 def delete_project(
     *,
     db: Session = Depends(get_db),
