@@ -45,5 +45,12 @@ class UserTimeSchema(UserTimeInDBBaseSchema):
     duration_minutes: Optional[float]
 
 
+class UserTimeNoLogoutSchema(UserTimeSchema):
+    """Schema for user time entries where no logout time is logged"""
+
+    logout: None
+    duration_minutes: None
+
+
 class UserTimeInDBSchema(UserTimeInDBBaseSchema):
     """Additional properties stored in DB."""

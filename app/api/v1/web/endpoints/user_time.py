@@ -5,7 +5,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Any
-from typing import Optional
+from typing import List, Tuple
 
 from api.deps import get_current_active_user
 from api.schemas import PageSchema
