@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 from tests.utils.user import TEST_USER_MAIL
 from tests.utils.user import TEST_USER_USERNAME
 from tests.utils.user import get_test_admin_user
+from tests.utils.user import get_test_super_user
 from tests.utils.user import get_test_user
 from tests.utils.utils import random_email
 from tests.utils.utils import random_lower_string
@@ -82,7 +83,7 @@ def test_create_user__normal_user(client: TestClient, normal_user_token_headers:
     # ----------------------------------------------
 
     assert response
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert response.json()["detail"] == lang(get_test_user(db)).API.DEPS.ADMINUSER_REQUIRED
 
 
@@ -108,8 +109,8 @@ def test_create_user__super_user(client: TestClient, super_user_token_headers: D
     # ----------------------------------------------
 
     assert response
-    assert response.status_code == 403
-    assert response.json()["detail"] == lang(get_test_user(db)).API.DEPS.ADMINUSER_REQUIRED
+    assert response.status_code == 401
+    assert response.json()["detail"] == lang(get_test_super_user(db)).API.DEPS.ADMINUSER_REQUIRED
 
 
 def test_create_user__admin_user(client: TestClient, admin_user_token_headers: dict, db: Session) -> None:

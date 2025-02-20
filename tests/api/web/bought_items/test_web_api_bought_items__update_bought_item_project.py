@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from tests.utils.bought_item import create_random_item
 from tests.utils.project import create_random_project
+from tests.utils.user import get_test_admin_user
 from tests.utils.user import get_test_guest_user
 from tests.utils.user import get_test_super_user
 from tests.utils.user import get_test_user
@@ -356,7 +357,7 @@ def test_update_item_project__super_user__inactive_project(
 
     assert response
     assert response.status_code == 403
-    assert response.json()["detail"] == lang(get_test_user(db)).API.BOUGHTITEM.PROJECT_INACTIVE
+    assert response.json()["detail"] == lang(get_test_super_user(db)).API.BOUGHTITEM.PROJECT_INACTIVE
 
 
 def test_update_item_project__admin_user__inactive_project(
@@ -413,7 +414,7 @@ def test_update_item_project__admin_user__inactive_project(
 
     assert response
     assert response.status_code == 403
-    assert response.json()["detail"] == lang(get_test_user(db)).API.BOUGHTITEM.PROJECT_INACTIVE
+    assert response.json()["detail"] == lang(get_test_admin_user(db)).API.BOUGHTITEM.PROJECT_INACTIVE
 
 
 def test_update_item_project__normal_user__already_planned(

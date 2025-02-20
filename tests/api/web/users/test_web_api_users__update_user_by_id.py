@@ -107,7 +107,7 @@ def test_update_user_by_id__normal_user(
     # ----------------------------------------------
 
     assert response
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert response.json()["detail"] == lang(t_user).API.DEPS.ADMINUSER_REQUIRED
 
 
@@ -165,7 +165,7 @@ def test_update_user_by_id__super_user(
     # ----------------------------------------------
 
     assert response
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert response.json()["detail"] == lang(t_user).API.DEPS.ADMINUSER_REQUIRED
 
 
@@ -273,7 +273,7 @@ def test_update_user_by_id__guest_user(
     # ----------------------------------------------
 
     assert response
-    assert response.status_code == 403
+    assert response.status_code == 401
     assert response.json()["detail"] == lang(t_user).API.DEPS.ADMINUSER_REQUIRED
 
 
@@ -581,7 +581,7 @@ def test_update_user_by_id__admin_user__rfid_exists(
 
     assert unsuccessful_response
     assert unsuccessful_response.status_code == 406
-    assert unsuccessful_response.json()["detail"] == lang(t_super_user).API.USER.RFID_IN_USE
+    assert unsuccessful_response.json()["detail"] == lang(get_test_admin_user(db)).API.USER.RFID_IN_USE
 
 
 def test_read_user_by_id__admin_user__unknown_user_id(
