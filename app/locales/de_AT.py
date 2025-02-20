@@ -65,3 +65,18 @@ class deAT:
             PASSWORD_WEAK = "Dieses Passwort ist nicht sicher"
             UPDATE_NO_PERMISSION = "Nicht genügend Rechte zum Aktualsieren dieses Benutzers"
             TOKEN_GUEST_NO_PERMISSION = "Gastbenutzer können keine Schlüssel erstellen"
+
+        class USERTIME:
+            LOGIN_TIME_REQUIRED = "Anmeldezeit erforderlich"
+            LOGIN_CANNOT_BE_AFTER_LOGOUT = "Anmeldung kann nicht nach Abmeldung erfolgen"
+            LOGOUT_DATE_DIFFERS_FROM_LOGIN = "Abmeldedatum weicht vom Anmeldedatum ab"
+            LOGIN_MUST_BE_TODAY = "Das Anmeldedatum muss heute sein, wenn keine Abmeldezeit angegeben ist"
+            TIME_OVERLAPS_WITH_ENTRY = "Zeit überschneidet sich mit einem Eintrag"
+            MUST_BE_LOGGED_OUT = "Muss abgemeldet sein"
+            ALREADY_LOGGED_IN = "Bereits angemeldet"
+            ALREADY_LOGGED_OUT = "Bereits abgemeldet"
+            CANNOT_READ_OTHER_USERS_ENTRY = "Kann den Eintrag eines anderen Benutzers nicht lesen"
+            CANNOT_UPDATE_OTHER_USERS_ENTRY = "Kann den Eintrag eines anderen Benutzers nicht aktualisieren"
+            CANNOT_DELETE_OTHER_USERS_ENTRY = "Kann den Eintrag eines anderen Benutzers nicht löschen"
+            ENTRY_NOT_FOUND = "Eintrag nicht gefunden"
+            URL_FIELD_NAME_NOT_SUPPORTED = "URL-Feldname wird nicht unterstützt"

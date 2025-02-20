@@ -23,10 +23,10 @@ class BaseSchedules:
 
         atexit.register(lambda: self.stop())
 
-    def add(self, function: Callable, hour: int) -> None:
+    def add(self, function: Callable, hour: int, minute: int = 0) -> None:
         """Adds a job to the schedule."""
         log.info(f"Added function {function.__qualname__!r} to scheduled.")
-        self._schedule.add_job(function, "cron", hour=str(hour))
+        self._schedule.add_job(function, "cron", hour=str(hour), minute=str(minute))
 
     def start(self) -> None:
         """Starts all jobs of the schedule."""
