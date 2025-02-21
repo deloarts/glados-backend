@@ -7,6 +7,8 @@ from typing import List
 
 from api.deps import get_current_active_user
 from api.deps import verify_token
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from api.schemas import PageSchema
 from api.schemas.project import ProjectCreateSchema
 from api.schemas.project import ProjectSchema
@@ -22,13 +24,16 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from locales import lang
-from multilog import log
 from sqlalchemy.orm import Session
 
 router = APIRouter()
 
 
-@router.get("/", response_model=PageSchema[ProjectSchema])
+@router.get(
+    "/",
+    response_model=PageSchema[ProjectSchema],
+    responses={**HTTP_401_RESPONSE},
+)
 def read_projects(
     db: Session = Depends(get_db),
     skip: int | None = None,
@@ -54,7 +59,16 @@ def read_projects(
     )
 
 
-@router.post("/", response_model=ProjectSchema)
+@router.post(
+    "/",
+    response_model=ProjectSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Designated user not found"},
+        status.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "Guest user has no permission"},
+        status.HTTP_409_CONFLICT: {"model": ResponseModelDetail, "description": "Project already exists"},
+    },
+)
 def create_project(
     *,
     db: Session = Depends(get_db),
@@ -81,7 +95,11 @@ def create_project(
     return new_project
 
 
-@router.get("/my", response_model=List[ProjectSchema])
+@router.get(
+    "/my",
+    response_model=List[ProjectSchema],
+    responses={**HTTP_401_RESPONSE},
+)
 def read_project_my(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_active_user),
@@ -90,7 +108,14 @@ def read_project_my(
     return crud_project.get_by_designated_user_id(db, user_id=current_user.id)
 
 
-@router.get("/{project_id}", response_model=ProjectSchema)
+@router.get(
+    "/{project_id}",
+    response_model=ProjectSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Project not found"},
+    },
+)
 def read_project_by_id(
     project_id: int,
     current_user: UserModel = Depends(get_current_active_user),
@@ -104,7 +129,14 @@ def read_project_by_id(
     return project
 
 
-@router.get("/number/{project_number}", response_model=ProjectSchema)
+@router.get(
+    "/number/{project_number}",
+    response_model=ProjectSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Project not found"},
+    },
+)
 def read_project_by_number(
     project_number: str,
     current_user: UserModel = Depends(get_current_active_user),
@@ -118,7 +150,11 @@ def read_project_by_number(
     return project
 
 
-@router.get("/product-number/{product_number}", response_model=List[ProjectSchema])
+@router.get(
+    "/product-number/{product_number}",
+    response_model=List[ProjectSchema],
+    responses={**HTTP_401_RESPONSE},
+)
 def read_project_by_product_number(
     product_number: str,
     current_user: UserModel = Depends(get_current_active_user),
@@ -128,7 +164,16 @@ def read_project_by_product_number(
     return crud_project.get_by_product_number(db, product_number=product_number)
 
 
-@router.put("/{project_id}", response_model=ProjectSchema)
+@router.put(
+    "/{project_id}",
+    response_model=ProjectSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Project not found"},
+        status.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "User has no permission"},
+        status.HTTP_409_CONFLICT: {"model": ResponseModelDetail, "description": "Project already exists"},
+    },
+)
 def update_project(
     *,
     db: Session = Depends(get_db),
@@ -156,7 +201,15 @@ def update_project(
     return updated_project
 
 
-@router.delete("/{project_id}", response_model=ProjectSchema)
+@router.delete(
+    "/{project_id}",
+    response_model=ProjectSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Project not found"},
+        status.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "User has no permission"},
+    },
+)
 def delete_project(
     *,
     db: Session = Depends(get_db),

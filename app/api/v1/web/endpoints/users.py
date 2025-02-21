@@ -9,6 +9,8 @@ from typing import List
 from api.deps import get_current_active_adminuser
 from api.deps import get_current_active_user
 from api.deps import verify_token
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from api.schemas.user import UserCreateSchema
 from api.schemas.user import UserSchema
 from api.schemas.user import UserUpdateSchema
@@ -33,7 +35,11 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/", response_model=List[UserSchema])
+@router.get(
+    "/",
+    response_model=List[UserSchema],
+    responses={**HTTP_401_RESPONSE},
+)
 def read_users(
     db: Session = Depends(get_db),
     skip: int | None = None,
@@ -44,7 +50,17 @@ def read_users(
     return crud_user.get_multi(db, skip=skip, limit=limit)
 
 
-@router.post("/", response_model=UserSchema)
+@router.post(
+    "/",
+    response_model=UserSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_406_NOT_ACCEPTABLE: {
+            "model": ResponseModelDetail,
+            "description": "Username, mail or rfid already in use",
+        },
+    },
+)
 def create_user(
     *,
     db: Session = Depends(get_db),
@@ -69,7 +85,11 @@ def create_user(
     return new_user
 
 
-@router.get("/me", response_model=UserSchema)
+@router.get(
+    "/me",
+    response_model=UserSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def read_user_me(
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(get_current_active_user),
@@ -78,7 +98,20 @@ def read_user_me(
     return current_user
 
 
-@router.put("/me", response_model=UserSchema)
+@router.put(
+    "/me",
+    response_model=UserSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "No permission to update user"},
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "User not found"},
+        status.HTTP_406_NOT_ACCEPTABLE: {
+            "model": ResponseModelDetail,
+            "description": "Username, mail or rfid already in use",
+        },
+        status.HTTP_409_CONFLICT: {"model": ResponseModelDetail, "description": "Password does not meet the criteria"},
+    },
+)
 def update_user_me(
     *,
     db: Session = Depends(get_db),
@@ -117,7 +150,14 @@ def update_user_me(
     return updated_user
 
 
-@router.get("/{user_id}", response_model=UserSchema)
+@router.get(
+    "/{user_id}",
+    response_model=UserSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "User not found"},
+    },
+)
 def read_user_by_id(
     user_id: int,
     current_user: UserModel = Depends(get_current_active_user),
@@ -135,7 +175,20 @@ def read_user_by_id(
     return user
 
 
-@router.put("/{user_id}", response_model=UserSchema)
+@router.put(
+    "/{user_id}",
+    response_model=UserSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "No permission to update user"},
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "User not found"},
+        status.HTTP_406_NOT_ACCEPTABLE: {
+            "model": ResponseModelDetail,
+            "description": "Username, mail or rfid already in use",
+        },
+        status.HTTP_409_CONFLICT: {"model": ResponseModelDetail, "description": "Password does not meet the criteria"},
+    },
+)
 def update_user(
     *,
     db: Session = Depends(get_db),
@@ -175,7 +228,14 @@ def update_user(
     return updated_user
 
 
-@router.put("/me/personal-access-token", response_model=str)
+@router.put(
+    "/me/personal-access-token",
+    response_model=str,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "No permission to create token"},
+    },
+)
 def update_user_personal_access_token(
     *,
     db: Session = Depends(get_db),
@@ -184,7 +244,9 @@ def update_user_personal_access_token(
 ) -> Any:
     """Updates the personal access token of an user."""
     if current_user.is_guestuser:
-        raise HTTPException(status_code=403, detail=lang(current_user).API.USER.TOKEN_GUEST_NO_PERMISSION)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.USER.TOKEN_GUEST_NO_PERMISSION
+        )
 
     access_token = create_access_token(
         subject=current_user.id, expires_delta=timedelta(minutes=expires_in_minutes), persistent=True
@@ -198,7 +260,11 @@ def update_user_personal_access_token(
     return access_token
 
 
-@router.put("/me/language", response_model=UserSchema)
+@router.put(
+    "/me/language",
+    response_model=UserSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def update_user_me_language(
     *,
     db: Session = Depends(get_db),
@@ -215,7 +281,11 @@ def update_user_me_language(
     return updated_user
 
 
-@router.put("/me/theme", response_model=UserSchema)
+@router.put(
+    "/me/theme",
+    response_model=UserSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def update_user_me_theme(
     *,
     db: Session = Depends(get_db),

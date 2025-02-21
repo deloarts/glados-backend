@@ -14,6 +14,8 @@ from typing import Literal
 
 from api.deps import get_current_active_user
 from api.deps import verify_token
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from api.schemas import PageSchema
 from api.schemas.bought_item import BoughtItemCreateWebSchema
 from api.schemas.bought_item import BoughtItemSchema
@@ -70,7 +72,11 @@ class DateFieldName(str, Enum):
     expected_delivery_date = "expected-delivery-date"
 
 
-@router.get("/", response_model=PageSchema[BoughtItemSchema])
+@router.get(
+    "/",
+    response_model=PageSchema[BoughtItemSchema],
+    responses={**HTTP_401_RESPONSE},
+)
 def read_bought_items(
     db: Session = Depends(get_db),
     skip: int | None = None,
@@ -128,7 +134,14 @@ def read_bought_items(
     )
 
 
-@router.get("/excel", response_class=FileResponse)
+@router.get(
+    "/excel",
+    response_class=FileResponse,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "EXCEL generation failed"},
+    },
+)
 def read_bought_items_excel(
     db: Session = Depends(get_db),
     skip: int | None = None,
@@ -191,7 +204,14 @@ def read_bought_items_excel(
     )
 
 
-@router.get("/excel-template", response_class=FileResponse)
+@router.get(
+    "/excel-template",
+    response_class=FileResponse,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Template not found"},
+    },
+)
 def read_bought_items_excel_template(current_user: UserModel = Depends(get_current_active_user)) -> Any:
     """Retrieve the excel template for the excel import."""
     path = Path(ROOT, TEMPLATES, cfg.templates.bought_item_excel_import)
@@ -206,7 +226,14 @@ def read_bought_items_excel_template(current_user: UserModel = Depends(get_curre
     )
 
 
-@router.get("/{item_id}", response_model=BoughtItemSchema)
+@router.get(
+    "/{item_id}",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Item not found"},
+    },
+)
 def read_bought_item_by_id(
     item_id: int, current_user: UserModel = Depends(get_current_active_user), db: Session = Depends(get_db)
 ) -> Any:
@@ -220,7 +247,14 @@ def read_bought_item_by_id(
     return item
 
 
-@router.get("/{item_id}/changelog", response_model=List[str])
+@router.get(
+    "/{item_id}/changelog",
+    response_model=List[str],
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Item not found"},
+    },
+)
 def read_bought_item_changelog_by_id(
     item_id: int, current_user: UserModel = Depends(get_current_active_user), db: Session = Depends(get_db)
 ) -> Any:
@@ -234,15 +268,29 @@ def read_bought_item_changelog_by_id(
     return item.changes
 
 
-@router.post("/validate", response_model=BoughtItemCreateWebSchema)
+@router.post(
+    "/validate",
+    response_model=BoughtItemCreateWebSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def validate_bought_item(
-    *,
-    obj_in: BoughtItemCreateWebSchema,
+    *, obj_in: BoughtItemCreateWebSchema, current_user: UserModel = Depends(get_current_active_user)
 ) -> Any:
     return obj_in
 
 
-@router.post("/", response_model=BoughtItemSchema)
+@router.post(
+    "/",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": "User has no permission or project is inactive",
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Project not found"},
+    },
+)
 def create_bought_item(
     *,
     db: Session = Depends(get_db),
@@ -267,7 +315,15 @@ def create_bought_item(
     return item
 
 
-@router.post("/excel", response_model=List[BoughtItemCreateWebSchema] | List[BoughtItemSchema] | List[dict])
+@router.post(
+    "/excel",
+    response_model=List[BoughtItemCreateWebSchema] | List[BoughtItemSchema] | List[dict],
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "EXCEL header not found in file"},
+        sc.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "EXCEL header invalid in file"},
+    },
+)
 def create_bought_items_from_excel(
     *,
     db: Session = Depends(get_db),
@@ -289,7 +345,24 @@ def create_bought_items_from_excel(
         raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail=str(e)) from e
 
 
-@router.put("/{item_id}", response_model=BoughtItemSchema)
+@router.put(
+    "/{item_id}",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - Project is inactive\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Item or project not found"},
+    },
+)
 def update_bought_item(
     *,
     db: Session = Depends(get_db),
@@ -328,7 +401,25 @@ def update_bought_item(
     return updated_item
 
 
-@router.put("/{item_id}/status", response_model=BoughtItemSchema)
+@router.put(
+    "/{item_id}/status",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - Status is unknown\n"
+                " - Cannot change to 'open'\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Item not found"},
+    },
+)
 def update_bought_item_status(
     *,
     db: Session = Depends(get_db),
@@ -367,7 +458,24 @@ def update_bought_item_status(
     return updated_item
 
 
-@router.put("/{item_id}/project", response_model=BoughtItemSchema)
+@router.put(
+    "/{item_id}/project",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - Project is inactive\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Item or project not found"},
+    },
+)
 def update_bought_item_project(
     *,
     db: Session = Depends(get_db),
@@ -408,7 +516,25 @@ def update_bought_item_project(
     return updated_item
 
 
-@router.put("/{item_id}/unit", response_model=BoughtItemSchema)
+@router.put(
+    "/{item_id}/unit",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - Project is inactive\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Item not found"},
+        sc.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "Value is not set"},
+    },
+)
 def update_bought_item_unit(
     *,
     db: Session = Depends(get_db),
@@ -449,7 +575,25 @@ def update_bought_item_unit(
     return updated_item
 
 
-@router.put("/{item_id}/quantity", response_model=BoughtItemSchema)
+@router.put(
+    "/{item_id}/quantity",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - Project is inactive\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Item not found"},
+        sc.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "Value is not set"},
+    },
+)
 def update_bought_item_quantity(
     *,
     db: Session = Depends(get_db),
@@ -490,7 +634,26 @@ def update_bought_item_quantity(
     return updated_item
 
 
-@router.put("/{item_id}/field/required/{field_name}", response_model=BoughtItemSchema)
+@router.put(
+    "/{item_id}/field/required/{field_name}",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - Project is inactive\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Field not supported"},
+        sc.HTTP_405_METHOD_NOT_ALLOWED: {"model": ResponseModelDetail, "description": "Item not found"},
+        sc.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "Value is not set"},
+    },
+)
 def update_bought_item_required_field(
     *,
     db: Session = Depends(get_db),
@@ -507,7 +670,7 @@ def update_bought_item_required_field(
     elif field_name is RequiredFieldName.manufacturer:
         db_field = BoughtItemModel.manufacturer
     else:
-        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Field not found")
+        raise HTTPException(status_code=sc.HTTP_405_METHOD_NOT_ALLOWED, detail="Field not supported")
 
     item = crud_bought_item.get(db, id=item_id)
     if not item:
@@ -541,7 +704,25 @@ def update_bought_item_required_field(
     return updated_item
 
 
-@router.put("/{item_id}/field/optional/{field_name}", response_model=BoughtItemSchema)
+@router.put(
+    "/{item_id}/field/optional/{field_name}",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - Project is inactive\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Field not supported"},
+        sc.HTTP_405_METHOD_NOT_ALLOWED: {"model": ResponseModelDetail, "description": "Item not found"},
+    },
+)
 def update_bought_item_optional_field(
     *,
     db: Session = Depends(get_db),
@@ -564,7 +745,7 @@ def update_bought_item_optional_field(
     elif field_name is OptionalFieldName.storage_place:
         db_field = BoughtItemModel.storage_place
     else:
-        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Field not found")
+        raise HTTPException(status_code=sc.HTTP_405_METHOD_NOT_ALLOWED, detail="Field not supported")
 
     item = crud_bought_item.get(db, id=item_id)
     if not item:
@@ -594,7 +775,25 @@ def update_bought_item_optional_field(
     return updated_item
 
 
-@router.put("/{item_id}/field/date/{field_name}", response_model=BoughtItemSchema)
+@router.put(
+    "/{item_id}/field/date/{field_name}",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - Project is inactive\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Field not supported"},
+        sc.HTTP_405_METHOD_NOT_ALLOWED: {"model": ResponseModelDetail, "description": "Item not found"},
+    },
+)
 def update_bought_item_date_field(
     *,
     db: Session = Depends(get_db),
@@ -609,7 +808,7 @@ def update_bought_item_date_field(
     elif field_name is DateFieldName.expected_delivery_date:
         db_field = BoughtItemModel.expected_delivery_date
     else:
-        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail="Field not found")
+        raise HTTPException(status_code=sc.HTTP_405_METHOD_NOT_ALLOWED, detail="Field not supported")
 
     item = crud_bought_item.get(db, id=item_id)
     if not item:
@@ -639,7 +838,23 @@ def update_bought_item_date_field(
     return updated_item
 
 
-@router.delete("/{item_id}", response_model=BoughtItemSchema)
+@router.delete(
+    "/{item_id}",
+    response_model=BoughtItemSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        sc.HTTP_403_FORBIDDEN: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Forbidden action\n"
+                " - User has no permission\n"
+                " - Item is already planned\n"
+                " - Item is from another user"
+            ),
+        },
+        sc.HTTP_405_METHOD_NOT_ALLOWED: {"model": ResponseModelDetail, "description": "Item not found"},
+    },
+)
 def delete_bought_item(
     *,
     db: Session = Depends(get_db),
@@ -649,7 +864,7 @@ def delete_bought_item(
     """Delete an item."""
     item = crud_bought_item.get(db, id=item_id)
     if not item:
-        raise HTTPException(status_code=sc.HTTP_403_FORBIDDEN, detail=lang(current_user).API.BOUGHTITEM.ITEM_NOT_FOUND)
+        raise HTTPException(status_code=sc.HTTP_404_NOT_FOUND, detail=lang(current_user).API.BOUGHTITEM.ITEM_NOT_FOUND)
 
     try:
         deleted_item = crud_bought_item.delete(db, db_obj_item=item, db_obj_user=current_user)
