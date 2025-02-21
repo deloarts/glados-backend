@@ -353,9 +353,10 @@ def create_bought_items_from_excel(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden actions for all users\n"
                 " - Project is inactive\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),
@@ -409,10 +410,11 @@ def update_bought_item(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden actions for all users\n"
                 " - Status is unknown\n"
                 " - Cannot change to 'open'\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),
@@ -466,9 +468,10 @@ def update_bought_item_status(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden actions for all users\n"
                 " - Project is inactive\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),
@@ -524,9 +527,10 @@ def update_bought_item_project(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden actions for all users\n"
                 " - Project is inactive\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),
@@ -583,9 +587,10 @@ def update_bought_item_unit(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden action for all users\n"
                 " - Project is inactive\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),
@@ -642,9 +647,10 @@ def update_bought_item_quantity(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden action for all users\n"
                 " - Project is inactive\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),
@@ -712,9 +718,10 @@ def update_bought_item_required_field(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden action for all users\n"
                 " - Project is inactive\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),
@@ -783,9 +790,10 @@ def update_bought_item_optional_field(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden action for all users\n"
                 " - Project is inactive\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),
@@ -846,8 +854,9 @@ def update_bought_item_date_field(
         sc.HTTP_403_FORBIDDEN: {
             "model": ResponseModelDetail,
             "description": (
-                "Forbidden action\n"
+                "Forbidden action for all users\n"
                 " - User has no permission\n"
+                "Forbidden actions (except for super- and admin-users)\n"
                 " - Item is already planned\n"
                 " - Item is from another user"
             ),

@@ -5,6 +5,8 @@
 from typing import Any
 
 from api.deps import verify_api_key
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from api.schemas.project import ProjectSchema
 from crud.project import crud_project
 from db.session import get_db
@@ -17,7 +19,14 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/{project_id}", response_model=ProjectSchema)
+@router.get(
+    "/{project_id}",
+    response_model=ProjectSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Project not found"},
+    },
+)
 def read_project_by_id(
     project_id: int,
     verified: bool = Depends(verify_api_key),
@@ -31,7 +40,14 @@ def read_project_by_id(
     return project
 
 
-@router.get("/number/{project_number}", response_model=ProjectSchema)
+@router.get(
+    "/number/{project_number}",
+    response_model=ProjectSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Project not found"},
+    },
+)
 def read_project_by_number(
     project_number: str,
     verified: bool = Depends(verify_api_key),
