@@ -2,9 +2,9 @@
     Handles files schedules.
 """
 
-from copy import deepcopy
 from datetime import date
 from datetime import datetime
+from datetime import timedelta
 
 from config import cfg
 from const import SYSTEM_USER
@@ -37,6 +37,9 @@ class DatabaseSchedules(BaseSchedules):
             self._set_status_late()
             self._delete_api_keys()
 
+        # Log out users after a server down
+        self._user_time_past_midnight()
+
     def _set_status_late(self) -> None:
         log.info("Running database schedule: Automatically setting status of late items")
         system_user = crud_user.get_by_username(db=self.db, username=SYSTEM_USER)
@@ -61,10 +64,20 @@ class DatabaseSchedules(BaseSchedules):
             log.info(f"Deleted API key #{key.id} ({key.name})")
 
     def _user_time_past_midnight(self) -> None:
+        today = datetime.today()
+        yesterday = today - timedelta(days=1)
+
         items = crud_user_time.get_logged_in(db=self.db)
         for user, entry in items:
-            login_timestamp = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
-            logout_timestamp = deepcopy(entry.login).replace(hour=23, minute=59, second=59, microsecond=0)
+            # Set the new login timestamp for today
+            # This is only needed when the user want to be logged in after midnight
+            login_timestamp = today.replace(hour=0, minute=0, second=0, microsecond=0)
+            # Set the logout timestamp for the same day as the login timestamp
+            logout_timestamp = entry.login.replace(hour=23, minute=59, second=59, microsecond=0)
+
             crud_user_time.logout(db=self.db, db_obj_user=user, timestamp=logout_timestamp)
-            if not user.auto_logout:
+
+            # Only log the user back in if they want it and if their last login date was yesterday
+            # This prevents wrong entries after a longer server-downtime
+            if not user.auto_logout and entry.login.date() == yesterday.date():
                 crud_user_time.login(db=self.db, db_obj_user=user, timestamp=login_timestamp)
