@@ -31,6 +31,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from locales import lang
+from mail.send import send_test_mail
 from multilog import log
 from utilities.config_editor.bought_items import bought_item_config
 from utilities.disc_space import get_disc_space
@@ -96,6 +97,16 @@ def get_host_config_mailing(verified: bool = Depends(deps.verify_token_adminuser
     cfg_copy = asdict(deepcopy(cfg.mailing))
     cfg_copy["password"] = "********"
     return HostConfigMailingSchema(enabled=enabled, config=ConfigMailing(**cfg_copy))
+
+
+@router.post(
+    "/config/mailing/test",
+    response_model=HostConfigMailingSchema,
+    responses={**HTTP_401_RESPONSE},
+)
+def post_send_test_mail(receiver: str, verified: bool = Depends(deps.verify_token_adminuser)) -> Any:
+    send_test_mail(receiver_mail=receiver)
+    return get_host_config_mailing(verified=verified)
 
 
 @router.get(

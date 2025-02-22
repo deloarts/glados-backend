@@ -27,7 +27,7 @@ class SendProcess(Process):
             self._target(*self._args, **self._kwargs)  # type: ignore
 
 
-def send_mail(receiver: Receiver, mail: Mail) -> None:
+def send_mail(receiver: Receiver, mail: Mail, force: bool = False) -> None:
     """Sends email using SMTP.
 
     Args:
@@ -39,7 +39,7 @@ def send_mail(receiver: Receiver, mail: Mail) -> None:
         log.warning("Mailing is disabled: Missing required information in the config file")
         return
 
-    if cfg.debug:
+    if cfg.debug and not force:
         if cfg.mailing.debug_no_send or not cfg.mailing.debug_receiver:
             log.warning("Debug-Mode: Mails are not sent.")
             return
@@ -84,3 +84,9 @@ def send_mail(receiver: Receiver, mail: Mail) -> None:
 
     process = SendProcess(target=send)
     process.start()
+
+
+def send_test_mail(receiver_mail: str) -> None:
+    receiver = Receiver(to=[receiver_mail])
+    mail = Mail(subject="Glados test mail", body="This is a test mail.")
+    send_mail(receiver=receiver, mail=mail, force=True)
