@@ -5,6 +5,8 @@
 from typing import Any
 
 from api.deps import get_current_active_adminuser
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from db.models import UserModel
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -18,14 +20,25 @@ from utilities.log_files import read_logfile
 router = APIRouter()
 
 
-@router.get("/", response_model=list)
+@router.get(
+    "/",
+    response_model=list,
+    responses={**HTTP_401_RESPONSE},
+)
 def get_logs(request: Request, current_user: UserModel = Depends(get_current_active_adminuser)) -> Any:
     """Returns a list all log files."""
     log_files = gather_logs()
     return log_files
 
 
-@router.get("/{logfile}", response_model=list)
+@router.get(
+    "/{logfile}",
+    response_model=list,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Log not found"},
+    },
+)
 def get_log(
     request: Request,
     logfile: str,

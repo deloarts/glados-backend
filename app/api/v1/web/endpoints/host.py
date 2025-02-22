@@ -2,12 +2,16 @@
     Handles all routes to the host-resource.
 """
 
+from copy import deepcopy
+from dataclasses import asdict
 from datetime import datetime
 from typing import Any
 from typing import Dict
 
 from api import deps
 from api.deps import get_current_active_adminuser
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from api.schemas.host import HostConfigItemsBoughtFilterAddSchema
 from api.schemas.host import HostConfigItemsBoughtFilterSchema
 from api.schemas.host import HostConfigItemsBoughtStatusSchema
@@ -16,6 +20,7 @@ from api.schemas.host import HostConfigSchema
 from api.schemas.host import HostInfoSchema
 from api.schemas.host import HostTimeSchema
 from api.schemas.host import HostVersionSchema
+from config import Config
 from config import cfg
 from const import VERSION
 from db.models import UserModel
@@ -33,64 +38,99 @@ from utilities.system import get_os
 router = APIRouter()
 
 
-@router.get("/version", response_model=HostVersionSchema)
+@router.get(
+    "/version",
+    response_model=HostVersionSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def get_host_version(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns server version."""
-    return {"version": VERSION}
+    return HostVersionSchema(version=VERSION)
 
 
-@router.get("/time", response_model=HostTimeSchema)
+@router.get(
+    "/time",
+    response_model=HostTimeSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def get_host_time(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns server time."""
-    return {"now": datetime.now(), "timezone": cfg.locale.tz}
+    return HostTimeSchema(now=datetime.now(), timezone=cfg.locale.tz)
 
 
-@router.get("/info", response_model=HostInfoSchema)
+@router.get(
+    "/info",
+    response_model=HostInfoSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def get_host_info(verified: bool = Depends(deps.verify_token_adminuser)) -> Any:
     """Returns vulnerable host information."""
-    return {
-        "now": datetime.now(),
-        "version": VERSION,
-        "os": get_os(),
-        "hostname": get_hostname(),
-        "disc_space": get_disc_space(),
-    }
+    return HostInfoSchema(
+        now=datetime.now(), version=VERSION, os=get_os(), hostname=get_hostname(), disc_space=get_disc_space()
+    )
 
 
-@router.get("/config", response_model=HostConfigSchema)
+@router.get(
+    "/config",
+    response_model=HostConfigSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def get_host_config(verified: bool = Depends(deps.verify_token_adminuser)) -> Any:
     """Returns vulnerable host configuration."""
-    return {
-        "now": datetime.now(),
-        "config": cfg,
-    }
+    cfg_copy = asdict(deepcopy(cfg))
+    cfg_copy["mailing"]["password"] = "********"
+    cfg_copy["init"]["password"] = "********"
+    return HostConfigSchema(now=datetime.now(), config=Config(**cfg_copy))
 
 
-@router.get("/config/items/bought/status", response_model=HostConfigItemsBoughtStatusSchema)
+@router.get(
+    "/config/items/bought/status",
+    response_model=HostConfigItemsBoughtStatusSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def get_host_config_items_bought_status(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns available bought items status."""
     return cfg.items.bought.status
 
 
-@router.get("/config/items/bought/units", response_model=HostConfigItemsBoughtUnitsSchema)
+@router.get(
+    "/config/items/bought/units",
+    response_model=HostConfigItemsBoughtUnitsSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def get_host_config_items_bought_units(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns available bought items units."""
     return cfg.items.bought.units
 
 
-@router.get("/config/items/bought/filters", response_model=Dict[str, HostConfigItemsBoughtFilterSchema])
+@router.get(
+    "/config/items/bought/filters",
+    response_model=Dict[str, HostConfigItemsBoughtFilterSchema],
+    responses={**HTTP_401_RESPONSE},
+)
 def get_host_config_items_bought_filter(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns available bought items filters."""
     return bought_item_config.filters
 
 
-@router.get("/config/items/bought/filters/default", response_model=HostConfigItemsBoughtFilterSchema)
+@router.get(
+    "/config/items/bought/filters/default",
+    response_model=HostConfigItemsBoughtFilterSchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def get_host_config_items_bought_filter_default(verified: bool = Depends(deps.verify_token)) -> Any:
     """Returns the default bought items filter."""
     return HostConfigItemsBoughtFilterSchema()
 
 
-@router.post("/config/items/bought/filters/{filter_name}", response_model=Dict[str, HostConfigItemsBoughtFilterSchema])
+@router.post(
+    "/config/items/bought/filters/{filter_name}",
+    response_model=Dict[str, HostConfigItemsBoughtFilterSchema],
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "Configuration exists"},
+    },
+)
 def post_host_config_items_bought_filter(
     filter_name: str,
     filter_in: HostConfigItemsBoughtFilterAddSchema,
@@ -110,7 +150,14 @@ def post_host_config_items_bought_filter(
     return bought_item_config.filters
 
 
-@router.put("/config/items/bought/filters/{filter_name}", response_model=Dict[str, HostConfigItemsBoughtFilterSchema])
+@router.put(
+    "/config/items/bought/filters/{filter_name}",
+    response_model=Dict[str, HostConfigItemsBoughtFilterSchema],
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Configuration not found"},
+    },
+)
 def update_host_config_items_bought_filter(
     filter_name: str,
     filter_in: HostConfigItemsBoughtFilterAddSchema,
@@ -131,7 +178,12 @@ def update_host_config_items_bought_filter(
 
 
 @router.delete(
-    "/config/items/bought/filters/{filter_name}", response_model=Dict[str, HostConfigItemsBoughtFilterSchema]
+    "/config/items/bought/filters/{filter_name}",
+    response_model=Dict[str, HostConfigItemsBoughtFilterSchema],
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Configuration not found"},
+    },
 )
 def delete_host_config_items_bought_filter(
     filter_name: str, current_user: UserModel = Depends(get_current_active_adminuser)

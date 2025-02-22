@@ -6,6 +6,8 @@ from datetime import timedelta
 from typing import Any
 
 from api.deps import get_api_key
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from api.schemas.api_key import APIKeySchema
 from api.schemas.token import TokenSchema
 from config import cfg
@@ -23,13 +25,26 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.post("/login/test-api-key", response_model=APIKeySchema)
+@router.post(
+    "/login/test-api-key",
+    response_model=APIKeySchema,
+    responses={**HTTP_401_RESPONSE},
+)
 def test_api_key(api_key: APIKeyModel = Depends(get_api_key)) -> Any:
     """Test api key: This must be provided as api key header."""
     return api_key
 
 
-@router.post("/login/rfid/{rfid}", response_model=TokenSchema)
+@router.post(
+    "/login/rfid/{rfid}",
+    response_model=TokenSchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_403_FORBIDDEN: {"model": ResponseModelDetail, "description": "Account inactive"},
+        status.HTTP_405_METHOD_NOT_ALLOWED: {"model": ResponseModelDetail, "description": "RFID login is disabled"},
+        status.HTTP_406_NOT_ACCEPTABLE: {"model": ResponseModelDetail, "description": "Invalid value for RFID login"},
+    },
+)
 def login_rfid(
     db: Session = Depends(get_db),
     api_key: APIKeyModel = Depends(get_api_key),
@@ -40,11 +55,12 @@ def login_rfid(
         raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="RFID login is disabled")
     if not rfid:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Invalid value for RFID login")
+
     user = crud_user.authenticate_rfid(db, rfid=rfid)
     if not user:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail=lang(user).API.LOGIN.INCORRECT_CREDS)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=lang(user).API.LOGIN.INCORRECT_CREDS)
     if not crud_user.is_active(user):
-        raise HTTPException(status_code=400, detail=lang(user).API.LOGIN.INACTIVE_ACCOUNT)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=lang(user).API.LOGIN.INACTIVE_ACCOUNT)
     access_token_expires = timedelta(minutes=cfg.security.expire_minutes)
     return {
         "access_token": create_access_token(user.id, expires_delta=access_token_expires, persistent=False),
