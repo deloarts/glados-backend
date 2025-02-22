@@ -360,6 +360,7 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
     def logout(self, db: Session, *, db_obj_user: UserModel, timestamp: datetime | None = None) -> UserTimeModel:
         """Logs out a user.
         Automatically calculates the break, if the user has an automatic break set.
+        The logout date will always be the login date (not logged time over midnight).
 
         Args:
             db (Session): The DB session.
@@ -380,11 +381,11 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             raise AlreadyLoggedOutError(f"User #{db_obj_user.id} tried to logout, but is already logged out.")
 
         login_time = db_obj.login.replace(tzinfo=UTC)
-        logout_time = timestamp.replace(tzinfo=UTC)
+        logout_time = timestamp.replace(tzinfo=UTC, year=login_time.year, month=login_time.month, day=login_time.day)
 
         if db_obj_user.auto_break_from and db_obj_user.auto_break_to:
-            auto_break_from = datetime.combine(date.today(), db_obj_user.auto_break_from).replace(tzinfo=UTC)
-            auto_break_to = datetime.combine(date.today(), db_obj_user.auto_break_to).replace(tzinfo=UTC)
+            auto_break_from = datetime.combine(login_time.date(), db_obj_user.auto_break_from).replace(tzinfo=UTC)
+            auto_break_to = datetime.combine(login_time.date(), db_obj_user.auto_break_to).replace(tzinfo=UTC)
 
             if login_time < auto_break_from and logout_time > auto_break_to:
                 # Duration for time before auto-break (update db entry)
