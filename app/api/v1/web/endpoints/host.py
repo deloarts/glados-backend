@@ -16,11 +16,13 @@ from api.schemas.host import HostConfigItemsBoughtFilterAddSchema
 from api.schemas.host import HostConfigItemsBoughtFilterSchema
 from api.schemas.host import HostConfigItemsBoughtStatusSchema
 from api.schemas.host import HostConfigItemsBoughtUnitsSchema
+from api.schemas.host import HostConfigMailingSchema
 from api.schemas.host import HostConfigSchema
 from api.schemas.host import HostInfoSchema
 from api.schemas.host import HostTimeSchema
 from api.schemas.host import HostVersionSchema
 from config import Config
+from config import ConfigMailing
 from config import cfg
 from const import VERSION
 from db.models import UserModel
@@ -81,6 +83,19 @@ def get_host_config(verified: bool = Depends(deps.verify_token_adminuser)) -> An
     cfg_copy["mailing"]["password"] = "********"
     cfg_copy["init"]["password"] = "********"
     return HostConfigSchema(now=datetime.now(), config=Config(**cfg_copy))
+
+
+@router.get(
+    "/config/mailing",
+    response_model=HostConfigMailingSchema,
+    responses={**HTTP_401_RESPONSE},
+)
+def get_host_config_mailing(verified: bool = Depends(deps.verify_token_adminuser)) -> Any:
+    """Returns mailing configuration."""
+    enabled = all([cfg.mailing.server, cfg.mailing.port, cfg.mailing.account, cfg.mailing.password])
+    cfg_copy = asdict(deepcopy(cfg.mailing))
+    cfg_copy["password"] = "********"
+    return HostConfigMailingSchema(enabled=enabled, config=ConfigMailing(**cfg_copy))
 
 
 @router.get(
