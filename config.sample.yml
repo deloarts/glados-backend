@@ -84,10 +84,10 @@ excel:
 mailing:
   server: smtp.office365.com
   port: 587
-  account: glados@company.com
-  password: "FooBarBla"
-  debug_receiver: admin@company.com
-  debug_no_send: True
+  account: null
+  password: null
+  debug_receiver: null
+  debug_no_send: null
 
 templates:
   bought_item_excel_import: "bought_item_import.xlsx"

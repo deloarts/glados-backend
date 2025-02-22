@@ -228,12 +228,12 @@ class ConfigSchedules:
 
 @dataclass(slots=True, kw_only=True, frozen=True)
 class ConfigMailing:
-    server: str
-    port: int
-    account: str
-    password: str
-    debug_receiver: str
-    debug_no_send: bool
+    server: str | None
+    port: int | None
+    account: str | None
+    password: str | None
+    debug_receiver: str | None
+    debug_no_send: bool | None
 
 
 @dataclass(slots=True, kw_only=True, frozen=True)

@@ -35,8 +35,12 @@ def send_mail(receiver: Receiver, mail: Mail) -> None:
         mail (Mail): The mail object.
     """
 
+    if not (cfg.mailing.server and cfg.mailing.port and cfg.mailing.account and cfg.mailing.password):
+        log.warning("Mailing is disabled: Missing required information in the config file")
+        return
+
     if cfg.debug:
-        if cfg.mailing.debug_no_send:
+        if cfg.mailing.debug_no_send or not cfg.mailing.debug_receiver:
             log.warning("Debug-Mode: Mails are not sent.")
             return
         receiver.to = [cfg.mailing.debug_receiver]
@@ -61,6 +65,10 @@ def send_mail(receiver: Receiver, mail: Mail) -> None:
     msg.attach(MIMEText(mail.body, "html"))
 
     def send():  # TODO: Refactor this.
+        if not (cfg.mailing.server and cfg.mailing.port and cfg.mailing.account and cfg.mailing.password):
+            log.error("Mailing is disabled")
+            return
+
         smtp = smtplib.SMTP(cfg.mailing.server, cfg.mailing.port)
         try:
             smtp.ehlo("mylowercasehost")
