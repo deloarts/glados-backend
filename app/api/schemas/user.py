@@ -8,6 +8,7 @@ from typing import Optional
 
 from config import cfg
 from pydantic import BaseModel
+from pydantic import EmailStr
 from pydantic import Field
 
 
@@ -32,6 +33,8 @@ class UserBaseSchema(BaseModel):
 class UserCreateSchema(UserBaseSchema):
     """Properties to receive via API on creation."""
 
+    email: EmailStr = Field()
+
     is_systemuser: Optional[bool] = False
 
     password: str = Field(..., min_length=cfg.security.min_pw_len)
@@ -42,6 +45,7 @@ class UserUpdateSchema(UserBaseSchema):
     """Properties to receive via API on update."""
 
     full_name: Optional[str] = Field(None, min_length=1)
+    email: Optional[EmailStr] = Field(None)
     language: Optional[str] = Field(None, min_length=1)
     theme: Optional[str] = Field(None, min_length=1)
     password: Optional[str] = Field(None, min_length=cfg.security.min_pw_len)
