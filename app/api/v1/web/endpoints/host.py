@@ -16,11 +16,13 @@ from api.schemas.host import HostConfigItemsBoughtFilterAddSchema
 from api.schemas.host import HostConfigItemsBoughtFilterSchema
 from api.schemas.host import HostConfigItemsBoughtStatusSchema
 from api.schemas.host import HostConfigItemsBoughtUnitsSchema
+from api.schemas.host import HostConfigMailingSchema
 from api.schemas.host import HostConfigSchema
 from api.schemas.host import HostInfoSchema
 from api.schemas.host import HostTimeSchema
 from api.schemas.host import HostVersionSchema
 from config import Config
+from config import ConfigMailing
 from config import cfg
 from const import VERSION
 from db.models import UserModel
@@ -29,7 +31,9 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.routing import APIRouter
 from locales import lang
+from mail.send import send_test_mail
 from multilog import log
+from pydantic import EmailStr
 from utilities.config_editor.bought_items import bought_item_config
 from utilities.disc_space import get_disc_space
 from utilities.system import get_hostname
@@ -81,6 +85,29 @@ def get_host_config(verified: bool = Depends(deps.verify_token_adminuser)) -> An
     cfg_copy["mailing"]["password"] = "********"
     cfg_copy["init"]["password"] = "********"
     return HostConfigSchema(now=datetime.now(), config=Config(**cfg_copy))
+
+
+@router.get(
+    "/config/mailing",
+    response_model=HostConfigMailingSchema,
+    responses={**HTTP_401_RESPONSE},
+)
+def get_host_config_mailing(verified: bool = Depends(deps.verify_token_adminuser)) -> Any:
+    """Returns mailing configuration."""
+    enabled = all([cfg.mailing.server, cfg.mailing.port, cfg.mailing.account, cfg.mailing.password])
+    cfg_copy = asdict(deepcopy(cfg.mailing))
+    cfg_copy["password"] = "********"
+    return HostConfigMailingSchema(enabled=enabled, config=ConfigMailing(**cfg_copy))
+
+
+@router.post(
+    "/config/mailing/test",
+    response_model=HostConfigMailingSchema,
+    responses={**HTTP_401_RESPONSE},
+)
+def post_send_test_mail(receiver: EmailStr, verified: bool = Depends(deps.verify_token_adminuser)) -> Any:
+    send_test_mail(receiver_mail=receiver)
+    return get_host_config_mailing(verified=verified)
 
 
 @router.get(

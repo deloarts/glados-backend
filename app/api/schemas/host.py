@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import List
 
 from config import Config
+from config import ConfigMailing
 from pydantic import BaseModel
 from utilities.config_editor.bought_items import ConfigBoughtItems
 from utilities.config_editor.bought_items import ConfigBoughtItemsFilter
@@ -30,6 +31,13 @@ class HostConfigSchema(BaseModel):
 
     now: datetime
     config: Config
+
+
+class HostConfigMailingSchema(BaseModel):
+    """Host configuration schema for the mailing part."""
+
+    enabled: bool
+    config: ConfigMailing
 
 
 class HostInfoSchema(BaseModel):
