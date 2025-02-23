@@ -381,7 +381,17 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
             raise AlreadyLoggedOutError(f"User #{db_obj_user.id} tried to logout, but is already logged out.")
 
         login_time = db_obj.login.replace(tzinfo=UTC)
-        logout_time = timestamp.replace(tzinfo=UTC, year=login_time.year, month=login_time.month, day=login_time.day)
+        logout_time = timestamp.replace(tzinfo=UTC)
+        if logout_time.date() != logout_time.date():
+            logout_time.replace(
+                year=login_time.year,
+                month=login_time.month,
+                day=login_time.day,
+                hour=23,
+                minute=59,
+                second=59,
+                microsecond=0,
+            )
 
         if db_obj_user.auto_break_from and db_obj_user.auto_break_to:
             auto_break_from = datetime.combine(login_time.date(), db_obj_user.auto_break_from).replace(tzinfo=UTC)
