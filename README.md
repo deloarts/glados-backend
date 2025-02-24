@@ -142,6 +142,7 @@ MIT
 
 ## 7 changelog
 
+**v0.14.0**: Add user-time-logger. Add mailing-api. Add tests.  
 **v0.13.1**: Fix deps issue.  
 **v0.13.0**: Add pagination.  
 **v0.12.3**: Add proxy config.  

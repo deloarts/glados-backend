@@ -5,7 +5,7 @@ from locales import Locales
 
 
 def test_version():
-    assert VERSION == "0.13.1"
+    assert VERSION == "0.14.0"
 
 
 def test_server_default():
