@@ -311,10 +311,7 @@ class CRUDUser(CRUDBase[UserModel, UserCreateSchema, UserUpdateSchema]):
 
     def authenticate_rfid(self, db: Session, *, rfid: str) -> Optional[UserModel]:
         """Authenticates a user by the rfid id"""
-        user = self.get_by_rfid(db, rfid=rfid)
-        if not user:
-            return None
-        return user
+        return self.get_by_rfid(db, rfid=rfid)
 
     def is_active(self, user: UserModel) -> bool:
         """Checks if the user is active."""
