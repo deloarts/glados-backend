@@ -39,6 +39,7 @@ def get_key_id_from_access_token(token: str) -> Optional[int]:
 
 def validate_api_key(db: Session = Depends(get_db), token: str = Security(api_key_header)) -> bool:
     """Validates the api key."""
+    key = None
     key_id = get_key_id_from_access_token(token)
     if key_id is not None:
         key = crud_api_key.get(db, id=key_id)

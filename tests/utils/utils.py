@@ -56,15 +56,3 @@ def random_supplier() -> str:
 
 def random_note() -> str:
     return fake.text()
-
-
-def get_systemuser_token_headers(client: TestClient) -> Dict[str, str]:
-    login_data = {
-        "username": SYSTEM_USER,
-        "password": cfg.init.password,
-    }
-    r = client.post(f"{cfg.server.api.web}/login/access-token", data=login_data)
-    tokens = r.json()
-    a_token = tokens["access_token"]
-    headers = {"Authorization": f"Bearer {a_token}"}
-    return headers

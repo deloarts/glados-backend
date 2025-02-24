@@ -7,7 +7,7 @@ from app.crud.user import crud_user
 from app.db.models import ProjectModel
 from app.db.models import UserModel
 from tests.utils.user import TEST_ADMIN_USERNAME
-from tests.utils.user import TEST_USERNAME
+from tests.utils.user import TEST_USER_USERNAME
 from tests.utils.user import get_test_admin_user
 from tests.utils.user import get_test_user
 from tests.utils.utils import random_lower_string
@@ -42,7 +42,7 @@ def create_project(
 
 def create_random_project(db: Session) -> ProjectModel:
     admin_user = crud_user.get_by_username(db, username=TEST_ADMIN_USERNAME)
-    normal_user = crud_user.get_by_username(db, username=TEST_USERNAME)
+    normal_user = crud_user.get_by_username(db, username=TEST_USER_USERNAME)
     if not admin_user:
         admin_user = get_test_admin_user(db)
     if not normal_user:
@@ -65,9 +65,9 @@ def create_random_project(db: Session) -> ProjectModel:
 
 
 def get_test_project(db: Session) -> ProjectModel:
-    """Returns the test project, creates it if doesn't exists."""
+    """Returns the test project, creates it if doesn't exists. Designates the normal test user."""
     admin_user = crud_user.get_by_username(db, username=TEST_ADMIN_USERNAME)
-    normal_user = crud_user.get_by_username(db, username=TEST_USERNAME)
+    normal_user = crud_user.get_by_username(db, username=TEST_USER_USERNAME)
     if not admin_user:
         admin_user = get_test_admin_user(db)
     if not normal_user:

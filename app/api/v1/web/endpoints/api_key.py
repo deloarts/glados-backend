@@ -8,6 +8,8 @@ from typing import Any
 from typing import List
 
 from api import deps
+from api.responses import HTTP_401_RESPONSE
+from api.responses import ResponseModelDetail
 from api.schemas.api_key import APIKeyCreateSchema
 from api.schemas.api_key import APIKeySchema
 from crud.api_key import crud_api_key
@@ -21,7 +23,11 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.get("/", response_model=List[APIKeySchema])
+@router.get(
+    "/",
+    response_model=List[APIKeySchema],
+    responses={**HTTP_401_RESPONSE},
+)
 def read_api_keys(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -33,7 +39,14 @@ def read_api_keys(
     return api_keys
 
 
-@router.get("/{api_key_id}", response_model=APIKeySchema)
+@router.get(
+    "/{api_key_id}",
+    response_model=APIKeySchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Key not found"},
+    },
+)
 def read_api_key_by_id(
     api_key_id: int,
     db: Session = Depends(get_db),
@@ -43,13 +56,16 @@ def read_api_key_by_id(
     api_key = crud_api_key.get(db, id=api_key_id)
     if not api_key:
         raise HTTPException(
-            status_code=404,
-            detail="An api key with this id does not exist in the system",
+            status_code=status.HTTP_404_NOT_FOUND, detail="An api key with this id does not exist in the system"
         )
     return api_key
 
 
-@router.get("/deleted-keys/", response_model=List[APIKeySchema])
+@router.get(
+    "/deleted-keys/",
+    response_model=List[APIKeySchema],
+    responses={**HTTP_401_RESPONSE},
+)
 def read_deleted_api_keys(
     db: Session = Depends(get_db),
     skip: int = 0,
@@ -61,7 +77,14 @@ def read_deleted_api_keys(
     return deleted_api_keys
 
 
-@router.get("/deleted-keys/{api_key_id}", response_model=APIKeySchema)
+@router.get(
+    "/deleted-keys/{api_key_id}",
+    response_model=APIKeySchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Key not found"},
+    },
+)
 def read_deleted_api_key_by_id(
     api_key_id: int,
     db: Session = Depends(get_db),
@@ -71,13 +94,27 @@ def read_deleted_api_key_by_id(
     deleted_api_key = crud_api_key.get_deleted(db, id=api_key_id)
     if not deleted_api_key:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="An api key with this id does not exist in the system",
         )
     return deleted_api_key
 
 
-@router.post("/", response_model=APIKeySchema)
+@router.post(
+    "/",
+    response_model=APIKeySchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_406_NOT_ACCEPTABLE: {
+            "model": ResponseModelDetail,
+            "description": (
+                "Condition failed:\n"
+                "1. An api key with this name already exists\n"
+                "2. The expiration date cannot be in the past"
+            ),
+        },
+    },
+)
 def create_api_key(
     *,
     db: Session = Depends(get_db),
@@ -99,28 +136,14 @@ def create_api_key(
     return crud_api_key.create(db, obj_in=data_in)
 
 
-# @router.put("/{api_key_id}", response_model=APIKeySchema)
-# def update_api_key(
-#     *,
-#     db: Session = Depends(get_db),
-#     api_key_id: int,
-#     data_in: APIKeyUpdateSchema,
-#     verified: bool = Depends(deps.verify_token_adminuser),
-# ) -> Any:
-#     """
-#     Update an api key.
-#     """
-#     api_key = crud_crud_api_key.get(db, id=api_key_id)
-#     if not api_key:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="An api key with this id does not exist in the system",
-#         )
-#     api_key = crud_crud_api_key.update(db, db_obj=api_key, obj_in=data_in)
-#     return api_key
-
-
-@router.delete("/{api_key_id}", response_model=APIKeySchema)
+@router.delete(
+    "/{api_key_id}",
+    response_model=APIKeySchema,
+    responses={
+        **HTTP_401_RESPONSE,
+        status.HTTP_404_NOT_FOUND: {"model": ResponseModelDetail, "description": "Key not found"},
+    },
+)
 def delete_api_key(
     *,
     db: Session = Depends(get_db),
@@ -131,7 +154,7 @@ def delete_api_key(
     api_key = crud_api_key.get(db, id=api_key_id)
     if not api_key:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="An api key with this id does not exist in the system",
         )
     api_key = crud_api_key.delete(db, id=api_key_id)

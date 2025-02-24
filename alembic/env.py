@@ -17,6 +17,7 @@ from sqlalchemy import engine_from_config, pool  # isort:skip
 # This is the class name from the model itself.
 # Do not import the models like this: UserModel, BoughtItemModel, ...
 from db.models.user import User  # isort:skip
+from db.models.user_time import UserTime  # isort:skip
 from db.models.project import Project  # isort:skip
 from db.models.bought_item import BoughtItem  # isort:skip
 from db.models.api_key import APIKey  # isort:skip

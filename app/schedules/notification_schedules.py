@@ -60,11 +60,14 @@ class NotificationSchedules(BaseSchedules):
                 crud_email_notification.delete(db=self.db, id=pending.id)
 
             log.info(f"Sending email notification to {current_user.email!r}...")
-            body = render_template(
-                template_file=Path(TEMPLATES, cfg.templates.mail_item_notification),
-                items=current_items,
-                user=jsonable_encoder(current_user),
-            )
+
+            if Path(TEMPLATES, cfg.templates.mail_item_notification).exists():
+                body_path = Path(TEMPLATES, cfg.templates.mail_item_notification)
+            else:
+                log.error(f"Mail template file {cfg.templates.mail_item_notification!r} not found")
+                body_path = Path(TEMPLATES, "item_notification.sample.j2")
+
+            body = render_template(template_file=body_path, items=current_items, user=jsonable_encoder(current_user))
             receiver = Receiver(to=[current_user.email])
             mail = Mail(subject="Glados Notification Service", body=body)
             send_mail(receiver=receiver, mail=mail)

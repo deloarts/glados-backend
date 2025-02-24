@@ -3,10 +3,12 @@
 """
 
 from datetime import datetime
+from datetime import time
 from typing import Optional
 
 from config import cfg
 from pydantic import BaseModel
+from pydantic import EmailStr
 from pydantic import Field
 
 
@@ -16,6 +18,12 @@ class UserBaseSchema(BaseModel):
     username: str = Field(..., min_length=1)
     full_name: str = Field(..., min_length=1)
     email: str = Field(..., min_length=1)
+
+    work_hours_per_week: Optional[float] = Field(default=None)
+    auto_break_from: Optional[time] = Field(default=None)
+    auto_break_to: Optional[time] = Field(default=None)
+    auto_logout: Optional[bool] = True
+
     is_active: Optional[bool] = True
     is_adminuser: Optional[bool] = False
     is_superuser: Optional[bool] = False
@@ -25,7 +33,10 @@ class UserBaseSchema(BaseModel):
 class UserCreateSchema(UserBaseSchema):
     """Properties to receive via API on creation."""
 
+    email: EmailStr = Field()
+
     is_systemuser: Optional[bool] = False
+
     password: str = Field(..., min_length=cfg.security.min_pw_len)
     rfid: Optional[str] = Field(None, min_length=8)
 
@@ -34,6 +45,7 @@ class UserUpdateSchema(UserBaseSchema):
     """Properties to receive via API on update."""
 
     full_name: Optional[str] = Field(None, min_length=1)
+    email: Optional[EmailStr] = Field(None)
     language: Optional[str] = Field(None, min_length=1)
     theme: Optional[str] = Field(None, min_length=1)
     password: Optional[str] = Field(None, min_length=cfg.security.min_pw_len)

@@ -128,7 +128,7 @@ cd glados-backend
 git checkout {TAG_NAME}
 ```
 
-Enter your username and your access token when prompted. Replace `{TAG_NAME}` with the version you want to clone, e.g. `v0.13.1`.
+Enter your username and your access token when prompted. Replace `{TAG_NAME}` with the version you want to clone, e.g. `v0.14.0`.
 
 > ✏️ You can use this command to update the app as well. Just modify the tag name.
 >
@@ -214,12 +214,12 @@ excel/style/data_color_1 | `str` | The hex text color for even rows
 excel/style/data_bg_color_1 | `str` | The hex background color for even rows
 excel/style/data_color_2 | `str` | The hex text color for odd rows
 excel/style/data_bg_color_2 | `str` | The hex background color for odd rows
-mailing/server | `str` | The mail server used for sending notification mails
-mailing/port | `int` | The mail server port
-mailing/account | `str` | The mail address used for sending notification mails
-mailing/password | `str` | The password for the account
-mailing/debug_receiver | `str` | The mail address which is used when `debug` is `True`
-mailing/debug_no_send | `bool` | Toggle for disabled mailing when `debug` is `True`
+mailing/server | `str or null` | The mail server used for sending notification mails. Mailing is disabled if this is `null`
+mailing/port | `int or null` | The mail server port. Mailing is disabled if this is `null`
+mailing/account | `str or null` | The mail address used for sending notification mails. Mailing is disabled if this is `null`
+mailing/password | `str or null` | The password for the account. Mailing is disabled if this is `null`
+mailing/debug_receiver | `str or null` | The mail address which is used when `debug` is `True`
+mailing/debug_no_send | `bool or null` | Toggle for disabled mailing when `debug` is `True`
 templates/bought_item_excel_import | `str` | The template filename for the bought item batch import
 templates/mail_item_notification | `str` | The template filename for notification mails
 templates/mail_schedule_error | `str` | The template filename for schedule error mails

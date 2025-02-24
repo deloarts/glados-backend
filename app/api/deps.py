@@ -110,14 +110,14 @@ def get_api_key(db: Session = Depends(get_db), token: str = Security(api_key_hea
     key_id = get_key_id_from_access_token(token)
     if not key_id:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
     key = crud_api_key.get(db, id=key_id)
     if not key:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API key not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API key not found")
     if key.api_key != token:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Token doesn't match")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token doesn't match")
     return key
 
 
@@ -132,12 +132,12 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(reusabl
 
     if not user_id:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
     user = crud_user.get(db, id=user_id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
 
 
@@ -148,7 +148,7 @@ def get_current_active_user(
     Returns the current user if active. Raises a HTTP exception if not.
     """
     if not crud_user.is_active(current_user):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=lang(current_user).API.DEPS.INACTIVE)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=lang(current_user).API.DEPS.INACTIVE)
     return current_user
 
 
@@ -159,10 +159,10 @@ def get_current_active_superuser(
     Returns the current user if it's an active super user. Raises a HTTP exception if not.
     """
     if not crud_user.is_active(current_user):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=lang(current_user).API.DEPS.INACTIVE)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=lang(current_user).API.DEPS.INACTIVE)
     if not crud_user.is_superuser(current_user):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.DEPS.SUPERUSER_REQUIRED
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=lang(current_user).API.DEPS.SUPERUSER_REQUIRED
         )
     return current_user
 
@@ -174,10 +174,10 @@ def get_current_active_adminuser(
     Returns the current user if it's an active admin user. Raises a HTTP exception if not.
     """
     if not crud_user.is_active(current_user):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=lang(current_user).API.DEPS.INACTIVE)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=lang(current_user).API.DEPS.INACTIVE)
     if not crud_user.is_adminuser(current_user):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.DEPS.ADMINUSER_REQUIRED
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=lang(current_user).API.DEPS.ADMINUSER_REQUIRED
         )
     return current_user
 
@@ -189,10 +189,10 @@ def get_current_active_guestuser(
     Returns the current user if it's an active guest user. Raises a HTTP exception if not.
     """
     if not crud_user.is_active(current_user):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=lang(current_user).API.DEPS.INACTIVE)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=lang(current_user).API.DEPS.INACTIVE)
     if not crud_user.is_guestuser(current_user):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=lang(current_user).API.DEPS.GUESTUSER_REQUIRED
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=lang(current_user).API.DEPS.GUESTUSER_REQUIRED
         )
     return current_user
 
@@ -204,17 +204,19 @@ def get_current_user_personal_access_token(
 ) -> UserModel:
     """
     Verifies the current user by its personal access token. Returns the user if valid.
-    Raises a HTTP exception if not.
+    Raises a HTTP exception if not. User must be active.
     """
     user_id = get_user_id_from_access_token(token)
     if not user_id:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
     user = crud_user.get(db, id=user_id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     if user.personal_access_token != token:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Token doesn't match")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token doesn't match")
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is inactive")
     return user

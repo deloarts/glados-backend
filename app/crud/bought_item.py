@@ -498,7 +498,7 @@ class CRUDBoughtItem(
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to move the item to project "
                 f"number #{db_obj_item.project_id}, but this project doesn't exists."
             )
-        if db_obj_item.project_id != db_obj_item.project_id and not project.is_active:
+        if db_obj_item.project_id != project.id and not project.is_active:
             raise ProjectInactiveError(
                 f"Blocked update of a bought item #{db_obj_item.id} ({db_obj_item.partnumber}): "
                 f"User #{db_obj_user.id} ({db_obj_user.full_name}) tried to move the item to project "
