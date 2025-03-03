@@ -5,8 +5,6 @@
 [![python](https://img.shields.io/badge/Python-3.11-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
 
-> ✏️ Glados is in use at my company for handling bought items. Its meant to be the interface between the engineering department and the purchase department. Therefore this software must reach certain requirements, which cannot be changed due to company guidelines.
-
 Table of contents:
 
 - [glados backend](#glados-backend)
@@ -28,7 +26,7 @@ Table of contents:
 
 ## 1 introduction
 
-Glados is a resource planning software with a web ui: *Create and manage your projects and items with ease, keep your purchase process in perfect order*.
+Glados is a resource planning software with a web ui: _Create and manage your projects and items with ease, keep your purchase process in perfect order_.
 
 Glados is a free open source software, so feel free to use it if it fits your needs. Glados is still in development and has not reached major version 1.0.0 yet, meaning it can change in its appearance and functionality at any time without notice.
 
@@ -130,7 +128,7 @@ The **guestuser** has the lowest level of permissions. This user exist, so peopl
 
 ### 5.5 systemuser
 
-The **systemuser** is created at DB init. The credentials for the **systemuser** must be applied in the *config.yml* file before the first run of the app. The following rules are applied to the **systemuser**:
+The **systemuser** is created at DB init. The credentials for the **systemuser** must be applied in the _config.yml_ file before the first run of the app. The following rules are applied to the **systemuser**:
 
 - There can only be one **systemuser**
 - The **systemuser** has the same rights as the **adminuser**
