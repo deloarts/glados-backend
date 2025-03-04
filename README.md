@@ -2,7 +2,7 @@
 
 ![state](https://img.shields.io/badge/State-beta-brown.svg?style=for-the-badge)
 ![version](https://img.shields.io/github/v/release/deloarts/glados-backend?style=for-the-badge&color=orange)
-[![python](https://img.shields.io/badge/Python-3.11-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
+[![python](https://img.shields.io/badge/Python-3.12-blue.svg?style=for-the-badge)](https://www.python.org/downloads/)
 ![OS](https://img.shields.io/badge/OS-UNIX-blue.svg?style=for-the-badge)
 
 Table of contents:
@@ -47,7 +47,7 @@ System requirements:
 - Unix (tested on Debian 11)
 - Approx. 25GB free space (this can change in the future)
 - An open TCP port
-- Python 3.11
+- Python 3.12
 
 Package requirements (apt):
 

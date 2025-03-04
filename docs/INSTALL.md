@@ -24,7 +24,7 @@
 - Unix (tested on Debian 11)
 - Approx. 25GB free space (this can change in the future)
 - An open TCP port
-- Python 3.11
+- Python 3.12
 
 ## 2 filesystem
 
@@ -70,17 +70,17 @@ Install build dependencies:
 apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev python3-distutils -y
 ```
 
-Download and extract python 3.11:
+Download and extract python 3.12:
 
 ```bash
-wget https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz
-tar -xvf Python-3.11.9.tgz
+wget https://www.python.org/ftp/python/3.12.9/Python-3.12.9.tgz
+tar -xvf Python-3.12.9.tgz
 ```
 
 Build and install python:
 
 ```bash
-cd Python-3.11.9
+cd Python-3.12.9
 ./configure --enable-optimizations
 make -j 2
 make altinstall
@@ -93,7 +93,7 @@ Add alias to bashrc:
 nano ~/.bashrc
 
 # In .bashrc file:
-alias python='python3.11'
+alias python='python3.12'
 # Save & close with CTRL+O then CTRL+X
 
 # Load bashrc
@@ -106,7 +106,7 @@ Verify the installation:
 python --version
 
 # This should print the following output:
-Python 3.11.9
+Python 3.12.9
 ```
 
 ### 3.2 install git
