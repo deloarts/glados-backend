@@ -1,5 +1,5 @@
 """
-    Create-Read-Update-Delete: User Time
+Create-Read-Update-Delete: User Time
 """
 
 from datetime import UTC
@@ -393,7 +393,19 @@ class CRUDUserTime(CRUDBase[UserTimeModel, UserTimeCreateSchema, UserTimeUpdateS
                 microsecond=0,
             )
 
-        if db_obj_user.auto_break_from and db_obj_user.auto_break_to:
+        auto_break_day_is_enabled = any(
+            [
+                db_obj_user.auto_break_mon and timestamp.weekday() == 0,
+                db_obj_user.auto_break_tue and timestamp.weekday() == 1,
+                db_obj_user.auto_break_wed and timestamp.weekday() == 2,
+                db_obj_user.auto_break_thu and timestamp.weekday() == 3,
+                db_obj_user.auto_break_fri and timestamp.weekday() == 4,
+                db_obj_user.auto_break_sat and timestamp.weekday() == 5,
+                db_obj_user.auto_break_sun and timestamp.weekday() == 6,
+            ]
+        )
+
+        if auto_break_day_is_enabled and db_obj_user.auto_break_from and db_obj_user.auto_break_to:
             auto_break_from = datetime.combine(login_time.date(), db_obj_user.auto_break_from).replace(tzinfo=UTC)
             auto_break_to = datetime.combine(login_time.date(), db_obj_user.auto_break_to).replace(tzinfo=UTC)
 
