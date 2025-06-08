@@ -1,8 +1,8 @@
 """
-    DB user model.
+DB user model.
 
-    Important note: There can only be one `system user`.
-    This user is created at db init.
+Important note: There can only be one `system user`.
+This user is created at db init.
 """
 
 # pylint: disable=C0115,R0903
@@ -65,9 +65,16 @@ class User(Base):
     is_systemuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
 
     work_hours_per_week: Mapped[float] = mapped_column(Float, nullable=True)
+    auto_logout: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
     auto_break_from: Mapped[time] = mapped_column(Time, nullable=True)
     auto_break_to: Mapped[time] = mapped_column(Time, nullable=True)
-    auto_logout: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
+    auto_break_mon: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
+    auto_break_tue: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
+    auto_break_wed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
+    auto_break_thu: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
+    auto_break_fri: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
+    auto_break_sat: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
+    auto_break_sun: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
 
     # relations
     user_time: Mapped[List["UserTime"]] = relationship(

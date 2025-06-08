@@ -1,5 +1,5 @@
 """
-    DB user schema.
+DB user schema.
 """
 
 from datetime import datetime
@@ -20,9 +20,16 @@ class UserBaseSchema(BaseModel):
     email: str = Field(..., min_length=1)
 
     work_hours_per_week: Optional[float] = Field(default=None)
+    auto_logout: Optional[bool] = True
     auto_break_from: Optional[time] = Field(default=None)
     auto_break_to: Optional[time] = Field(default=None)
-    auto_logout: Optional[bool] = True
+    auto_break_mon: Optional[bool] = True
+    auto_break_tue: Optional[bool] = True
+    auto_break_wed: Optional[bool] = True
+    auto_break_thu: Optional[bool] = True
+    auto_break_fri: Optional[bool] = True
+    auto_break_sat: Optional[bool] = True
+    auto_break_sun: Optional[bool] = True
 
     is_active: Optional[bool] = True
     is_adminuser: Optional[bool] = False
