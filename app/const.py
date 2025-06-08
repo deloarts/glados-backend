@@ -8,13 +8,13 @@ from enum import Enum
 from enum import unique
 from pathlib import Path
 
-VERSION = "0.14.0"
+VERSION = "0.15.0"
 NAME = "glados"
 
 SYSTEM_USER = "system"
 
 # DB
-ALEMBIC_VERSION = "8723510377cf"
+ALEMBIC_VERSION = "44bf23b4a684"
 SERVER_DEFAULT_LANGUAGE = "enGB"
 SERVER_DEFAULT_THEME = "dark"
 
