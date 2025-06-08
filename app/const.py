@@ -8,7 +8,7 @@ from enum import Enum
 from enum import unique
 from pathlib import Path
 
-VERSION = "0.14.0"
+VERSION = "0.15.0"
 NAME = "glados"
 
 SYSTEM_USER = "system"

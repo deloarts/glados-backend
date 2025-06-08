@@ -140,6 +140,7 @@ MIT
 
 ## 7 changelog
 
+**v0.15.0**: Add break day selection to user-time-logger.  
 **v0.14.0**: Add user-time-logger. Add mailing-api. Add tests.  
 **v0.13.1**: Fix deps issue.  
 **v0.13.0**: Add pagination.  
