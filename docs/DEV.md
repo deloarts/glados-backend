@@ -34,12 +34,12 @@ The main branch is protected: it's not allowed to make changes directly to it. C
 ### 1.3 branch naming convention
 
 1. Use grouping tokens at the beginning of your branch names, such as:
-    - feature: A new feature that will be added to the project
-    - fix: For bugfixes
-    - tests: Adding or updating tests
-    - docs: For updating the docs
-    - wip: Work in progress, won't be finished soon
-    - junk: Just for experimenting
+   - feature: A new feature that will be added to the project
+   - fix: For bugfixes
+   - tests: Adding or updating tests
+   - docs: For updating the docs
+   - wip: Work in progress, won't be finished soon
+   - junk: Just for experimenting
 2. Use slashes `/` as delimiter in branch names (`feature/docket-export`)
 3. Avoid long descriptive names, rather refer to an issue
 4. Do not use bare numbers as leading parts (`fix/108` is bad, `fix/issue108` is good)
